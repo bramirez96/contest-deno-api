@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "SS-Deno-BE",
+      "Group": "Servers",
+      "Port": 5932,
+      "Username": "docker",
+      "Host": "ss-deno-be",
+      "SSLMode": "prefer",
+      "MaintenanceDB": "postgres"
+    }
+  }
+}

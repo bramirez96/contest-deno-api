@@ -1,0 +1,1 @@
+web: deno run --allow-net --allow-read -c ./tsconfig.json src/app.ts
