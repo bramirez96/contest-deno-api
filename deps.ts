@@ -47,3 +47,13 @@ export type {
   Info,
   Migration,
 } from 'https://deno.land/x/nessie@1.1.3/mod.ts';
+
+// deno_s3
+export { S3Bucket } from 'https://deno.land/x/s3@0.3.0/mod.ts';
+
+// multiparser
+export { multiParser } from 'https://deno.land/x/multiparser@v2.0.3/mod.ts';
+export type {
+  Form,
+  FormFile,
+} from 'https://deno.land/x/multiparser@v2.0.3/mod.ts';
