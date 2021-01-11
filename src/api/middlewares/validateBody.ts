@@ -1,13 +1,19 @@
-import { Schema, Request, Response, NextFunction } from '../../../deps.ts';
+import {
+  Schema,
+  Request,
+  Response,
+  NextFunction,
+  createError,
+} from '../../../deps.ts';
 
-const validateBody = (schema: Schema) => (
+export default (schema: Schema) => (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const vRes = schema.validate(req.body) as IValidationResponse;
   if (vRes.errors && Object.keys(vRes.errors).length !== 0) {
-    res.setStatus(403).json({ error: 'Invalid request body.' });
+    next(createError(400, 'Invalid request data'));
   } else {
     next();
   }
@@ -22,5 +28,3 @@ interface IValidationResponse {
   value: { [key: string]: string };
   errors: { [key: string]: string };
 }
-
-export default validateBody;

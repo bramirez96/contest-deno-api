@@ -14,12 +14,12 @@ export default class UserModel {
   public async add(user: IUserSignup) {
     const builder = new Query();
     const sql = builder.table('users').insert(user).build();
-    console.log(sql);
+
+    // Our querybuilder needs some parsing to get valid PGSQL
     const parsedSql1 = sql.replaceAll('"', "'");
     const parsedSql2 = parsedSql1.replaceAll('`', '"');
-    console.log(parsedSql2);
+
     const result = await this.dbConnect.query(parsedSql2);
-    console.log(result.rows);
   }
 }
 

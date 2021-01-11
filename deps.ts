@@ -1,5 +1,10 @@
 // Opine v1.0.2
-export { Router, opine, json } from 'https://deno.land/x/opine@1.0.2/mod.ts';
+export {
+  Router,
+  opine,
+  json,
+  urlencoded,
+} from 'https://deno.land/x/opine@1.0.2/mod.ts';
 export type {
   Request,
   Response,
@@ -57,3 +62,21 @@ export type {
   Form,
   FormFile,
 } from 'https://deno.land/x/multiparser@v2.0.3/mod.ts';
+
+// djwt
+export * as jwt from 'https://deno.land/x/djwt@v2.0/mod.ts';
+export type {
+  AlgorithmInput,
+  Algorithm,
+} from 'https://deno.land/x/djwt@v2.0/algorithm.ts';
+
+// cors
+export { opineCors } from 'https://deno.land/x/cors@v1.2.1/mod.ts';
+
+// http-errors
+export { createError } from 'https://deno.land/x/http_errors@3.0.0/mod.ts';
+export type { IError } from 'https://deno.land/x/http_errors@3.0.0/mod.ts';
+
+// logger
+export * as log from 'https://deno.land/std@0.83.0/log/mod.ts';
+export type { Logger } from 'https://deno.land/std@0.83.0/log/mod.ts';
