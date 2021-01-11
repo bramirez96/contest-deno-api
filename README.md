@@ -12,32 +12,21 @@ To log in to PGAdmin, open [http://localhost:5950](http://localhost:5950) in you
 
 ## Database Migrations
 
-### New Migration
+Currently, we're using Knex to run our database migrations through Yarn.
 
 ```bash
-deno run --allow-net --allow-read --allow-write --allow-env https://deno.land/x/nessie@1.1.3/cli.ts make <migrationName> -c ./nessie.config.ts
-```
+# new migration
+yarn make <migrationName>
 
-### New Seedfile
+# new seed file
+yarn makeseed <seedName>
 
-```bash
-deno run --allow-net --allow-read --allow-write --allow-env https://deno.land/x/nessie@1.1.3/cli.ts make:seed <seedName> -c ./nessie.config.ts
-```
+# run migrations
+yarn latest
 
-### Run Migrations
+# roll back migrations
+yarn rollback
 
-```bash
-deno run --allow-net --allow-read --allow-write --allow-env https://deno.land/x/nessie@1.1.3/cli.ts migrate <numberOfMigrations> -c ./nessie.config.ts
-```
-
-### Roll Back Migrations
-
-```bash
-deno run --allow-net --allow-read --allow-write --allow-env https://deno.land/x/nessie@1.1.3/cli.ts rollback <numberOfMigrations> -c ./nessie.config.ts
-```
-
-### Run Seeds
-
-```bash
-deno run --allow-net --allow-read --allow-write --allow-env https://deno.land/x/nessie@1.1.3/cli.ts seed -c ./nessie.config.ts
+# run seeds
+yarn seed
 ```
