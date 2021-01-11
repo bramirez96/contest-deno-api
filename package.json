@@ -1,0 +1,20 @@
+{
+  "name": "ss-deno-be",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/bramirez96/deno-server-ss.git",
+  "author": "Brandon Ramirez <bran.ramirez.don@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "latest": "yarn knex migrate:latest",
+    "rollback": "yarn knex migrate:rollback",
+    "seed": "yarn knex seed:run",
+    "make": "yarn knex migrate:make",
+    "makeseed": "yarn knex seed:make"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "knex": "^0.21.15",
+    "pg": "^8.5.1"
+  }
+}
