@@ -39,7 +39,12 @@ export const serviceCollection = new ServiceCollection();
 export { config } from 'https://deno.land/x/dotenv/mod.ts';
 
 // sql_builder v1.8.0
-export { Query } from 'https://deno.land/x/sql_builder/mod.ts';
+export {
+  Query,
+  Join,
+  Order,
+  Where,
+} from 'https://deno.land/x/sql_builder@v1.8.0/mod.ts';
 
 // nessie v1.1.3
 export {

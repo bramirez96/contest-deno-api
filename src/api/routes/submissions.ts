@@ -7,8 +7,12 @@ const route = Router();
 export default (app: IRouter) => {
   app.use('/submit', route);
 
-  route.post('/story', restricted(false), (req: Request, res: Response) => {
-    console.log({ body: req.body });
-    res.setStatus(200).end();
-  });
+  route.post(
+    '/story',
+    restricted({ authRequired: false }),
+    (req: Request, res: Response) => {
+      console.log({ body: req.body });
+      res.setStatus(200).end();
+    }
+  );
 };
