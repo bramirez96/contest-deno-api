@@ -1,6 +1,6 @@
 import 'https://cdn.pika.dev/@abraham/reflection@^0.7.0';
 import { opine } from '../deps.ts';
-import env from "./config/env.ts";
+import env from './config/env.ts';
 import loaders from './loaders/index.ts';
 
 const startServer = async () => {

@@ -7,6 +7,12 @@ exports.up = function (knex) {
     t.string('parentEmail').notNullable();
     t.string('password').notNullable();
     t.integer('age').notNullable();
+    t.integer('roleId')
+      .notNullable()
+      .unsigned()
+      .references('roles.id')
+      .onUpdate('CASCADE')
+      .onDelete('RESTRICT');
     t.datetime('createdAt', { precision: 6 }).defaultTo(knex.fn.now(6));
     t.datetime('updatedAt', { precision: 6 }).defaultTo(knex.fn.now(6));
   });

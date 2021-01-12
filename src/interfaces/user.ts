@@ -4,6 +4,7 @@ export interface IUserSignup {
   parentEmail: string;
   password: string;
   age: number;
+  roleId: number;
 }
 
 export interface IUser {
@@ -13,6 +14,7 @@ export interface IUser {
   password: string;
   parentEmail: string;
   age: number;
+  roleId: number;
   createdAt: Date;
   updatedAt: Date;
 }

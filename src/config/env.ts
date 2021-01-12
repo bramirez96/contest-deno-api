@@ -1,4 +1,4 @@
-import { config } from '../../deps.ts';
+import { config, Algorithm } from '../../deps.ts';
 
 config();
 
@@ -17,5 +17,9 @@ export default {
     bucket: Deno.env.get('s3_BUCKET') || '',
     region: Deno.env.get('S3_REGION') || '',
     secretKey: Deno.env.get('AWS_SECRET_KEY') || '',
+  },
+  JWT: {
+    SECRET: Deno.env.get('JWT_SECRET') || '',
+    ALGO: (Deno.env.get('JWT_ALGORITHM') as Algorithm) || 'HS512',
   },
 };
