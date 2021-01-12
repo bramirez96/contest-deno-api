@@ -17,7 +17,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
   const form = await multiParser(req);
 
   if (!form) {
-    return res.setStatus(403).json({ message: 'No form data detected.' });
+    return res.setStatus(400).json({ message: 'No form data detected.' });
   }
   try {
     const x = form.files.pages as { filename: string; content: Uint8Array };

@@ -1,5 +1,10 @@
 // Opine v1.0.2
-export { Router, opine, json } from 'https://deno.land/x/opine@1.0.2/mod.ts';
+export {
+  Router,
+  opine,
+  json,
+  urlencoded,
+} from 'https://deno.land/x/opine@1.0.2/mod.ts';
 export type {
   Request,
   Response,
@@ -34,7 +39,12 @@ export const serviceCollection = new ServiceCollection();
 export { config } from 'https://deno.land/x/dotenv/mod.ts';
 
 // sql_builder v1.8.0
-export { Query } from 'https://deno.land/x/sql_builder/mod.ts';
+export {
+  Query,
+  Join,
+  Order,
+  Where,
+} from 'https://deno.land/x/sql_builder@v1.8.0/mod.ts';
 
 // nessie v1.1.3
 export {
@@ -48,12 +58,33 @@ export type {
   Migration,
 } from 'https://deno.land/x/nessie@1.1.3/mod.ts';
 
-// deno_s3
+// deno_s3 @0.3.0
 export { S3Bucket } from 'https://deno.land/x/s3@0.3.0/mod.ts';
 
-// multiparser
+// multiparser @v2.0.3
 export { multiParser } from 'https://deno.land/x/multiparser@v2.0.3/mod.ts';
 export type {
   Form,
   FormFile,
 } from 'https://deno.land/x/multiparser@v2.0.3/mod.ts';
+
+// djwt @v2.0
+export * as jwt from 'https://deno.land/x/djwt@v2.0/mod.ts';
+export type {
+  AlgorithmInput,
+  Algorithm,
+} from 'https://deno.land/x/djwt@v2.0/algorithm.ts';
+
+// cors @1.2.1
+export { opineCors } from 'https://deno.land/x/cors@v1.2.1/mod.ts';
+
+// http-errors @3.0.0
+export { createError } from 'https://deno.land/x/http_errors@3.0.0/mod.ts';
+export type { IError } from 'https://deno.land/x/http_errors@3.0.0/mod.ts';
+
+// logger @0.83.0
+export * as log from 'https://deno.land/std@0.83.0/log/mod.ts';
+export type { Logger } from 'https://deno.land/std@0.83.0/log/mod.ts';
+
+// event @0.2.1
+export { EventEmitter } from 'https://deno.land/x/event@0.2.1/mod.ts';
