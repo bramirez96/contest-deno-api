@@ -44,6 +44,7 @@ export default (app: Opine) => {
   });
   // Parsing DB Errors
   app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
+    logger.debug(`${err.status} ${err.message}`);
     if (err.message.includes('violates unique constraint')) {
       return next(createError(403, 'Could not create duplicate'));
     } else if (err.status === 500) {

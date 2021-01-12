@@ -6,8 +6,13 @@ import {
   string,
   IRouter,
   serviceCollection,
+  number,
 } from '../../../deps.ts';
-import { emailRegex, passwordRegex } from '../../config/dataConstraints.ts';
+import {
+  codenameRegex,
+  emailRegex,
+  passwordRegex,
+} from '../../config/dataConstraints.ts';
 import validateBody from '../middlewares/validateBody.ts';
 import AuthService from '../../services/auth.ts';
 import UserModel from '../../models/user.ts';
@@ -21,23 +26,21 @@ export default (app: IRouter) => {
     '/register',
     validateBody(
       object({
+        codename: string().min(1).max(20).match(codenameRegex),
         email: string().match(emailRegex),
+        parentEmail: string().match(emailRegex),
         password: string().match(passwordRegex),
+        age: number(),
+        roleId: number(),
       })
     ),
     async (req: Request, res: Response) => {
       const authServiceInstance = serviceCollection.get(AuthService);
       const userModelInstance = serviceCollection.get(UserModel);
 
-      // await authServiceInstance.SignUp();
-      await userModelInstance.add({
-        age: 12,
-        codename: 'SomeCodename',
-        email: 'someemail@email.com',
-        parentEmail: 'someemail@email.com',
-        password: 'aComplexPasswordString',
-      });
-      res.setStatus(201).json({ message: 'HIT' });
+      const { user, token } = await authServiceInstance.SignUp(req.body);
+
+      res.setStatus(201).json({ user, token });
     }
   );
 

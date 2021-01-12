@@ -7,6 +7,7 @@ import {
   Client,
   serviceCollection,
   createError,
+  Logger,
 } from '../../deps.ts';
 import { IUserSignup } from '../interfaces/user.ts';
 
@@ -15,14 +16,21 @@ export default class UserModel {
   constructor(@Inject('pg') private dbConnect: Client) {}
 
   public async add(user: IUserSignup) {
+    const logger: Logger = serviceCollection.get('logger');
     const builder = new Query();
     const sql = builder.table('users').insert(user).build();
 
     // Our querybuilder needs some parsing to get valid PGSQL
-    const parsedSql1 = sql.replaceAll('"', "'");
+    const sqlWithReturn = sql + 'RETURNING id, codename, email';
+    const parsedSql1 = sqlWithReturn.replaceAll('"', "'");
     const parsedSql2 = parsedSql1.replaceAll('`', '"');
+    logger.warning(parsedSql2);
 
     const result = await this.dbConnect.query(parsedSql2);
+    const {
+      rows: [[id, codename, email]],
+    } = result;
+    return { id, codename, email };
   }
 
   public async isAdmin(id: number) {

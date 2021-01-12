@@ -4,11 +4,11 @@ import logger from './logger.ts';
 
 export default async () => {
   try {
-    const pg = await pgConnect();
-    serviceCollection.addStatic('pg', pg);
-
     const log = await logger();
     serviceCollection.addStatic('logger', log);
+
+    const pg = await pgConnect();
+    serviceCollection.addStatic('pg', pg);
   } catch (err) {
     console.log({ err });
     throw err;
