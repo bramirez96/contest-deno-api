@@ -9,19 +9,19 @@ import {
   NextFunction,
   IError,
   serviceCollection,
-  Logger,
+  log,
 } from '../../deps.ts';
 import routes from '../api/index.ts';
 
 export default (app: Opine) => {
-  const logger: Logger = serviceCollection.get('logger');
+  const logger: log.Logger = serviceCollection.get('logger');
   // Test Endpoints
   app.get('/status', (req: Request, res: Response) => {
-    logger.debug('200 Test hit.');
+    logger.debug('GET 200 Test hit.');
     res.setStatus(200).end();
   });
   app.head('/status', (req: Request, res: Response) => {
-    logger.debug('200 Test hit.');
+    logger.debug('HEAD 200 Test hit.');
     res.setStatus(200).end();
   });
 
@@ -42,15 +42,13 @@ export default (app: Opine) => {
   app.use((req: Request, res: Response, next: NextFunction) => {
     next(createError(404, 'Route Not Found'));
   });
-  // Parsing DB Errors
+  // Parsing DB Errors/Catching Unhandled Errors
   app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
     logger.debug(`${err.status} ${err.message}`);
     if (err.message.includes('violates unique constraint')) {
       return next(createError(403, 'Could not create duplicate'));
-    } else if (err.status === 500) {
-      logger.warning(
-        `${err.status || 500} ${err.message} - NEEDS CUSTOM ERROR HANDLING`
-      );
+    } else if (!err.status || err.status === 500) {
+      logger.warning(`${err.message} - NEEDS CUSTOM ERROR HANDLING`);
     }
     next(err);
   });

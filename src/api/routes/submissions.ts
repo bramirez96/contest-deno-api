@@ -1,4 +1,11 @@
-import { Router, IRouter, Request, Response } from '../../../deps.ts';
+import {
+  Router,
+  IRouter,
+  Request,
+  Response,
+  serviceCollection,
+} from '../../../deps.ts';
+import MailService from '../../services/mailer.ts';
 import restricted from '../middlewares/restricted.ts';
 import upload from '../middlewares/upload.ts';
 
@@ -15,4 +22,18 @@ export default (app: IRouter) => {
       res.setStatus(200).end();
     }
   );
+
+  route.post(
+    '/test',
+    restricted({ adminOnly: true, authRequired: true }),
+    (req: Request, res: Response) => {
+      res.setStatus(200).json({ hit: 'it' });
+    }
+  );
+
+  route.get('/test', async (req: Request, res: Response) => {
+    const mailServiceInstance = serviceCollection.get(MailService);
+    const result = await mailServiceInstance.sendEmail();
+    res.setStatus(200).json(result);
+  });
 };
