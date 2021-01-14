@@ -14,6 +14,8 @@ export default class MailService {
     @Inject('logger') private logger: log.Logger
   ) {}
 
+  public async sendValidationEmail(email: string, token: string) {}
+
   public async sendEmail() {
     this.logger.debug('Generating email');
     const thestuff = new SendEmailCommand({

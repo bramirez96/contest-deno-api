@@ -97,3 +97,7 @@ export {
   SESv2Client as SES,
   SendEmailCommand,
 } from 'https://deno.land/x/aws_sdk@v0.0.1/client-sesv2/mod.ts';
+export type { SendEmailRequest } from 'https://deno.land/x/aws_sdk@v0.0.1/client-sesv2/mod.ts';
+
+// uuid v0.83.0
+export { v5 } from 'https://deno.land/std@0.83.0/uuid/mod.ts';

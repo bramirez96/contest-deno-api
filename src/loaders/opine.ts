@@ -46,7 +46,13 @@ export default (app: Opine) => {
   app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
     logger.debug(`${err.status} ${err.message}`);
     if (err.message.includes('violates unique constraint')) {
-      return next(createError(403, 'Could not create duplicate'));
+      const dataName = err.message.match(/_([^_]+)/);
+      return next(
+        createError(
+          403,
+          `Could not create duplicate${dataName ? ' ' + dataName[1] : ''}`
+        )
+      );
     } else if (!err.status || err.status === 500) {
       logger.warning(`${err.message} - NEEDS CUSTOM ERROR HANDLING`);
     }
