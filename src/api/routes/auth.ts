@@ -18,7 +18,6 @@ import {
 } from '../../config/dataConstraints.ts';
 import validate from '../middlewares/validate.ts';
 import AuthService from '../../services/auth.ts';
-import ResetService from '../../services/reset.ts';
 
 const route = Router();
 
@@ -95,7 +94,7 @@ export default (app: IRouter) => {
         logger.debug(
           `User (ID: ${user.id}) successfully validated and signed in`
         );
-        res.setStatus(204).json({ user, token });
+        res.setStatus(200).json({ user, token });
       } catch (err) {
         logger.error(err);
         next(err);
@@ -108,8 +107,8 @@ export default (app: IRouter) => {
     validate(object({ email: string() }), 'query'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const resetServiceInstance = serviceCollection.get(ResetService);
-        await resetServiceInstance.GetResetEmail(req.query.email);
+        const authServiceInstance = serviceCollection.get(AuthService);
+        await authServiceInstance.GetResetEmail(req.query.email);
 
         res.setStatus(200).json({ message: 'Password reset email sent!' });
       } catch (err) {
@@ -130,8 +129,8 @@ export default (app: IRouter) => {
     ),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const resetServiceInstance = serviceCollection.get(ResetService);
-        await resetServiceInstance.ResetPassword(
+        const authServiceInstance = serviceCollection.get(AuthService);
+        await authServiceInstance.ResetPasswordWithCode(
           req.body.email,
           req.body.password,
           req.body.code

@@ -1,6 +1,4 @@
 import {
-  Join,
-  Where,
   Service,
   serviceCollection,
   Query,
@@ -8,18 +6,15 @@ import {
   log,
   Inject,
   v5,
-  createError,
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import PGModel from './pgModel.ts';
 import { INewValidationEntry, IValidation } from '../interfaces/validation.ts';
-import UserModel from './user.ts';
 
 @Service()
 export default class ValidationModel extends PGModel {
   constructor(
     @Inject('pg') protected dbConnect: Client,
-    @Inject(UserModel) protected userModel: UserModel,
     @Inject('logger') protected logger: log.Logger
   ) {
     super();
@@ -56,48 +51,6 @@ export default class ValidationModel extends PGModel {
       }) as string; // Cast as string since we're not passing buffer
 
       return validationToken;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  public async validateWithCode(email: string, token: string) {
-    try {
-      this.logger.debug(`Attempting to validate user (EMAIL: ${email})`);
-
-      const builder = new Query();
-      const sql = builder
-        .table('users')
-        .join(Join.inner('validation').on('users.id', 'validation.userId'))
-        .where(Where.field('users.email').eq(email))
-        .where(Where.field('validation.code').eq(token))
-        .select('users.isValidated', 'users.id')
-        .build();
-
-      // Check if we return any rows, throw error if we don't
-      this.logger.debug(`Checking validation code for user (EMAIL: ${email})`);
-      const result = await this.dbConnect.query(this.parseSql(sql));
-      if (result.rowCount === 0) {
-        throw createError(401, 'Invalid authorization code');
-      }
-
-      // Parse out isValidated field from user table, return false if user is already validated
-      const { isValidated, id } = (this.parseResponse(result, {
-        first: true,
-      }) as unknown) as { isValidated: boolean; id: number };
-      if (isValidated) {
-        // Don't allow them to sign in or re-validate
-        throw createError(
-          409,
-          `User (EMAIL: ${email}) has already been validated`
-        );
-      }
-
-      // Mark user's profile as validated and return the user
-      const user = await this.userModel.setUserHasBeenValidated(id);
-
-      return user;
     } catch (err) {
       this.logger.error(err);
       throw err;

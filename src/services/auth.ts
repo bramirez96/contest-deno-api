@@ -75,18 +75,89 @@ export default class AuthService {
   public async Validate(email: string, token: string): Promise<IAuthResponse> {
     try {
       // Attempt to validate the user
-      const user = await this.validationModel.validateWithCode(email, token);
+      const { id, isValidated } = await this.userModel.checkIsValidated(
+        email,
+        token
+      );
+      if (isValidated) {
+        // Don't allow them to sign in or re-validate
+        throw createError(
+          409,
+          `User (EMAIL: ${email}) has already been validated`
+        );
+      }
+      const updatedUser = await this.userModel.update(id, {
+        isValidated: true,
+      });
 
       // Remove password hash from response body
-      Reflect.deleteProperty(user, 'password');
+      Reflect.deleteProperty(updatedUser, 'password');
 
       // Generate a JWT for the user to login
-      const jwt = await this.generateToken(user);
+      const jwt = await this.generateToken(updatedUser);
 
       return {
-        user,
+        user: updatedUser,
         token: jwt,
       };
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async GetResetEmail(email: string) {
+    try {
+      this.logger.debug(`Looking up record for user (EMAIL: ${email})`);
+      const user = await this.userModel.findOne({ email });
+
+      if (!user) throw createError(404, 'Email not found');
+
+      const resetItem = await this.resetModel.getResetItem(user);
+      if (resetItem) {
+        const timeSinceLastRequest = Date.now() - resetItem.createdAt.getTime();
+        if (timeSinceLastRequest < 600000) {
+          throw createError(429, 'Cannot get another code so soon');
+        } else {
+          // Able to generate another code, so delete the old one
+          await this.resetModel.deleteUserResets(user);
+        }
+      }
+
+      const { code } = await this.resetModel.generateCode(user);
+
+      await this.mailer.sendPasswordResetEmail(user, code);
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async ResetPasswordWithCode(
+    email: string,
+    password: string,
+    token: string
+  ) {
+    try {
+      this.logger.debug(`Looking up record for user (EMAIL: ${email})`);
+      const user = await this.userModel.findOne({ email });
+      if (!user) throw createError(404, 'Email not found');
+
+      const resetItem = await this.resetModel.getResetItem(user);
+      if (!resetItem)
+        throw createError(409, 'Password reset code has not been created');
+      if (resetItem.code !== token)
+        throw createError(400, 'Invalid password reset code');
+      this.logger.debug(
+        `Password reset code verified for user (ID: ${user.id})`
+      );
+
+      const hashedPassword = await this.userModel.hashPassword(password);
+      await this.userModel.update(user.id, { password: hashedPassword });
+
+      await this.resetModel.deleteUserResets(user);
+
+      return user;
     } catch (err) {
       this.logger.error(err);
       throw err;

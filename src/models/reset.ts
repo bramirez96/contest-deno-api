@@ -1,5 +1,4 @@
 import {
-  Join,
   Where,
   Service,
   serviceCollection,
@@ -8,7 +7,6 @@ import {
   log,
   Inject,
   v5,
-  createError,
   Order,
 } from '../../deps.ts';
 import env from '../config/env.ts';
@@ -63,45 +61,6 @@ export default class ResetModel extends PGModel {
     }
   }
 
-  public async resetPassword(email: string, password: string, token: string) {
-    try {
-      this.logger.debug(
-        `Attempting to reset password for user (EMAIL: ${email})`
-      );
-
-      const builder = new Query();
-      const sql = builder
-        .table('users')
-        .join(Join.inner('reset').on('users.id', 'reset.userId'))
-        .where(Where.field('users.email').eq(email))
-        .where(Where.field('reset.code').eq(token))
-        .select('users.isValidated', 'users.id')
-        .build();
-
-      // Check if we return any rows, throw error if we don't
-      this.logger.debug(`Checking reset code for user (EMAIL: ${email})`);
-      const result = await this.dbConnect.query(this.parseSql(sql));
-      if (result.rowCount === 0) {
-        throw createError(401, 'Invalid reset code');
-      }
-
-      // Parse out isValidated field from user table, return false if user is already validated
-      const { isValidated, id } = (this.parseResponse(result, {
-        first: true,
-      }) as unknown) as { isValidated: boolean; id: number };
-      if (isValidated) {
-        // Don't allow them to sign in or re-validate
-        throw createError(
-          409,
-          `User (EMAIL: ${email}) has already been validated`
-        );
-      }
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
   public async getResetItem(user: IUser) {
     try {
       this.logger.debug(`Searching for reset code for user (ID: ${user.id})`);
@@ -142,7 +101,7 @@ export default class ResetModel extends PGModel {
 
       const result = await this.dbConnect.query(this.parseSql(sql));
       this.logger.debug(
-        `Passwore reset codes deleted for user (ID: ${user.id})`
+        `Password reset codes deleted for user (ID: ${user.id})`
       );
       return result.rowCount;
     } catch (err) {

@@ -57,7 +57,7 @@ export default ({
           // Get an instance of the UserModel if we need to admin check
           const userModelInstance = serviceCollection.get(UserModel);
           // If user is not an admin
-          if (!(await userModelInstance.isAdmin(id))) {
+          if (!(await userModelInstance.checkIsAdmin(id))) {
             return next(createError(401, 'Must be admin'));
           }
         }
