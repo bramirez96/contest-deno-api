@@ -28,6 +28,8 @@ export {
   Pool,
   PostgresError,
 } from 'https://deno.land/x/postgres@v0.4.6/mod.ts';
+export type { ConnectionOptions } from 'https://deno.land/x/postgres@v0.4.6/connection_params.ts';
+export { QueryResult } from 'https://deno.land/x/postgres@v0.4.6/query.ts';
 
 // di v0.1.1 (dependency injector)
 import { ServiceCollection } from 'https://deno.land/x/di@v0.1.1/mod.ts';
@@ -53,7 +55,6 @@ export {
 } from 'https://deno.land/x/nessie@1.1.3/mod.ts';
 export type {
   ClientOptions,
-  ConnectionOptions,
   Info,
   Migration,
 } from 'https://deno.land/x/nessie@1.1.3/mod.ts';
@@ -84,7 +85,26 @@ export type { IError } from 'https://deno.land/x/http_errors@3.0.0/mod.ts';
 
 // logger @0.83.0
 export * as log from 'https://deno.land/std@0.83.0/log/mod.ts';
-export type { Logger } from 'https://deno.land/std@0.83.0/log/mod.ts';
 
 // event @0.2.1
 export { EventEmitter } from 'https://deno.land/x/event@0.2.1/mod.ts';
+
+// bcrypt v0.2.4
+export * as bcrypt from 'https://deno.land/x/bcrypt@v0.2.4/mod.ts';
+
+// AWS SES client v0.01
+export {
+  SESv2Client as SES,
+  SendEmailCommand,
+} from 'https://deno.land/x/aws_sdk@v0.0.1/client-sesv2/mod.ts';
+export type { SendEmailRequest } from 'https://deno.land/x/aws_sdk@v0.0.1/client-sesv2/mod.ts';
+
+// uuid v0.83.0
+export { v4, v5 } from 'https://deno.land/std@0.83.0/uuid/mod.ts';
+
+// handlebars v0.6.0
+export { Handlebars } from 'https://deno.land/x/handlebars@v0.6.0/mod.ts';
+export type { HandlebarsConfig } from 'https://deno.land/x/handlebars@v0.6.0/mod.ts';
+
+// media_types v2.7.0
+export { extension } from 'https://deno.land/x/media_types@v2.7.0/mod.ts';

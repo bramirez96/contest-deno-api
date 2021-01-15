@@ -7,6 +7,7 @@ exports.up = function (knex) {
     t.string('parentEmail').notNullable();
     t.string('password').notNullable();
     t.integer('age').notNullable();
+    t.boolean('isValidated').defaultTo(false);
     t.integer('roleId')
       .notNullable()
       .unsigned()
