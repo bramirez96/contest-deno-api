@@ -1,6 +1,6 @@
-import { Router, IRouter, Request, Response } from '../../../deps.ts';
-import restricted from '../middlewares/restricted.ts';
-import upload from '../middlewares/upload.ts';
+import { Router, IRouter, Request, Response } from '../../../../deps.ts';
+import restricted from '../../middlewares/restricted.ts';
+import upload from '../../middlewares/upload.ts';
 
 const route = Router();
 

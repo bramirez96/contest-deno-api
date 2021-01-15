@@ -21,8 +21,8 @@ export default class AuthService {
     @Inject(UserModel) private userModel: UserModel,
     @Inject(ValidationModel) private validationModel: ValidationModel,
     @Inject(ResetModel) private resetModel: ResetModel,
-    @Inject('logger') private logger: log.Logger,
-    @Inject(MailService) private mailer: MailService
+    @Inject(MailService) private mailer: MailService,
+    @Inject('logger') private logger: log.Logger
   ) {}
 
   public async SignUp(body: IUserSignup, config?: { roleId: number }) {

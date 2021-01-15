@@ -46,7 +46,7 @@ export default (app: Opine) => {
   app.use(urlencoded({ extended: false }));
 
   // App Routes
-  app.use('/api', routes());
+  app.use(routes());
 
   // Error Handlers
   // Invalid Route
