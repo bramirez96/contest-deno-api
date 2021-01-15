@@ -1,31 +1,81 @@
 import {
-  S3Bucket,
   Request,
   Response,
   NextFunction,
   multiParser,
+  serviceCollection,
+  log,
+  createError,
+  FormFile,
+  extension,
 } from '../../../deps.ts';
-import env from '../../config/env.ts';
-
-const s3 = new S3Bucket(env.S3_CONFIG);
-
-const uploadFile = (name: string, buffer: Uint8Array) => {
-  return s3.putObject(name, buffer);
-};
+import BucketService from '../../services/bucket.ts';
 
 export default async (req: Request, res: Response, next: NextFunction) => {
-  const form = await multiParser(req);
-
-  if (!form) {
-    return res.setStatus(400).json({ message: 'No form data detected.' });
-  }
+  const logger: log.Logger = serviceCollection.get('logger');
   try {
-    const x = form.files.pages as { filename: string; content: Uint8Array };
-    const uploadResponse = await uploadFile(x.filename, x.content);
-    console.log(uploadResponse);
+    // Parse the form data, and throw if none found
+    const form = await multiParser(req);
+    if (!form) throw createError(400, 'No form data found');
+
+    const bucketServiceInstance = serviceCollection.get(BucketService);
+
+    // This will store our uploaded files as we iterate over each field
+    const resolvedFiles: {
+      [key: string]: { etag: string; bucketStorageTag: string }[];
+    } = {};
+    // Generate checksums later!
+
+    // Loop over each FormData field with file data
+    const fileFieldNames = Object.keys(form.files);
+    for await (const f of fileFieldNames) {
+      // Check if it's an array, if so, we're uploading multiple files
+      if (Array.isArray(form.files[f])) {
+        // Multiple file upload
+        const files = form.files[f] as FormFile[];
+        logger.debug(
+          `Attempting to upload ${files.length} files for field: ${f}`
+        );
+
+        // Generate a list of fileUpload promises
+        const promiseList = files.map((fileData) =>
+          bucketServiceInstance.upload(
+            fileData.content,
+            extension(fileData.contentType)
+          )
+        );
+
+        // Resolve those promises together and add them to the resolvedFiles object
+        const resolved = await Promise.all(promiseList);
+        resolvedFiles[f] = resolved;
+        logger.debug(
+          `Successfully uploaded ${files.length} files for field: ${f}`
+        );
+      } else {
+        // Single file upload
+        logger.debug(`Attempting to upload one file for field: ${f}`);
+        const fileData = form.files[f] as FormFile;
+
+        // Upload the single file and append it to the reolvedFiles object as an array
+        const resolved = await bucketServiceInstance.upload(
+          fileData.content,
+          extension(fileData.contentType)
+        );
+        resolvedFiles[f] = [resolved];
+        logger.debug(`Successfully uploaded file for field: ${f}`);
+      }
+    }
+
+    // Add the resolved file data as well as the form field data to the original req.body
+    req.body = {
+      ...req.body,
+      ...resolvedFiles,
+      ...form.fields,
+    };
 
     next();
   } catch (err) {
-    res.setStatus(409).json({ error: 'Could not upload to S3.' });
+    logger.error(err);
+    throw err;
   }
 };

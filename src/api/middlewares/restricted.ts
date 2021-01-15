@@ -18,6 +18,15 @@ export default ({
   next: NextFunction
 ) => {
   const token = req.get('Authorization');
+  // const daysUntilExpiry = 2;
+  // const today = new Date();
+  // const exp = new Date(today);
+  // exp.setDate(today.getDate() + daysUntilExpiry);
+  // const token = await jwt.create(
+  //   { alg: env.JWT.ALGO },
+  //   { iss: 'anemawwww@email.com', sub: '2', exp: exp.getTime() },
+  //   env.JWT.SECRET
+  // );
 
   if (!token) {
     // If no token, check if auth is even required...

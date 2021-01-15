@@ -8,11 +8,27 @@ export default (app: IRouter) => {
   app.use('/submit', route);
 
   route.post(
-    '/story',
+    '/',
+    restricted({ authRequired: true }),
+    upload,
+    (req: Request, res: Response) => {
+      res.setStatus(200).end();
+    }
+  );
+
+  route.get(
+    '/',
     restricted({ authRequired: false }),
     (req: Request, res: Response) => {
-      console.log({ body: req.body });
       res.setStatus(200).end();
+    }
+  );
+
+  route.post(
+    '/test',
+    restricted({ adminOnly: true, authRequired: true }),
+    (req: Request, res: Response) => {
+      res.setStatus(200).json({ hit: 'it' });
     }
   );
 };

@@ -14,6 +14,7 @@ export interface IUser {
   password: string;
   parentEmail: string;
   age: number;
+  isValidated: boolean;
   roleId: number;
   createdAt: Date;
   updatedAt: Date;

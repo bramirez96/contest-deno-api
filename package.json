@@ -10,7 +10,8 @@
     "rollback": "yarn knex migrate:rollback",
     "seed": "yarn knex seed:run",
     "make": "yarn knex migrate:make",
-    "makeseed": "yarn knex seed:make"
+    "makeseed": "yarn knex seed:make",
+    "reset": "yarn rollback && yarn latest && yarn seed"
   },
   "dependencies": {
     "dotenv": "^8.2.0",

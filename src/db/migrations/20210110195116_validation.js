@@ -2,7 +2,6 @@
 exports.up = function (knex) {
   return knex.schema.createTable('validation', (t) => {
     t.increments('id');
-    t.boolean('completed').notNullable().defaultTo(false);
     t.string('code').notNullable().index();
     t.integer('userId')
       .notNullable()
