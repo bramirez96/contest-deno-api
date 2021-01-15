@@ -8,6 +8,7 @@ import {
   Handlebars,
 } from '../../deps.ts';
 import hbsConfig from '../../hbsConfig.ts';
+import env from '../config/env.ts';
 
 @Service()
 export default class MailService {
@@ -17,39 +18,43 @@ export default class MailService {
   ) {}
 
   public async sendValidationEmail(email: string, token: string) {
-    const handle = new Handlebars(hbsConfig());
-    // const result = await handle.renderView('activation.hbs', {
-    //   url: token,
-    // });
-    const result = await handle.renderView('activation', {
-      url: token,
-    });
-    console.log(result);
-  }
+    this.logger.debug(`Sending activation email for user (EMAIL: ${email})`);
 
-  public async sendEmail() {
-    this.logger.debug('Generating email');
-    const thestuff = new SendEmailCommand({
-      Destination: {
-        ToAddresses: ['bran.ramirez.don@gmail.com'],
-      },
-      FromEmailAddress: 'bran.ramirez.don@gmail.com',
-      Content: {
-        Simple: {
-          Body: {
-            Text: {
-              Data: 'FINALLY MY EMAIL BODY',
+    const urlParams = new URLSearchParams({ token, email });
+    const url = env.SERVER_URL + '/api/auth/activate?' + urlParams.toString();
+    this.logger.debug(
+      `Activation link (${url}) generated for user (EMAIL: ${email})`
+    );
+
+    try {
+      const handle = new Handlebars(hbsConfig());
+      const result = await handle.renderView('activation', { url });
+      const thestuff = new SendEmailCommand({
+        Destination: {
+          ToAddresses: [email],
+        },
+        FromEmailAddress: 'bran.ramirez.don@gmail.com',
+        Content: {
+          Simple: {
+            Body: {
+              Html: {
+                Data: result,
+              },
+            },
+            Subject: {
+              Data: 'Activate your Story Squad Account!',
             },
           },
-          Subject: {
-            Data: 'THE SUBJECT',
-          },
         },
-      },
-    });
-    this.logger.debug('Sending email');
-    const res = await this.mailer.send(thestuff);
-    return res;
+      });
+      await this.mailer.send(thestuff);
+      this.logger.debug(
+        `Activation email successfully sent to user (EMAIL: ${email})`
+      );
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 }
 

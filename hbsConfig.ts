@@ -1,6 +1,5 @@
 import { HandlebarsConfig } from './deps.ts';
-
-const echoHelper = (str: string) => str;
+import helpers from './views/helpers/index.ts';
 
 export default () => {
   const hbc: HandlebarsConfig = {
@@ -9,9 +8,7 @@ export default () => {
     defaultLayout: 'main',
     layoutsDir: 'layouts/',
     partialsDir: 'partials/',
-    helpers: {
-      echoHelper,
-    },
+    helpers: helpers,
     compilerOptions: undefined,
   };
   return hbc;

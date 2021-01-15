@@ -14,7 +14,7 @@ import {
   emailRegex,
   passwordRegex,
 } from '../../config/dataConstraints.ts';
-import validateBody from '../middlewares/validateBody.ts';
+import validate from '../middlewares/validate.ts';
 import AuthService from '../../services/auth.ts';
 
 const route = Router();
@@ -25,7 +25,7 @@ export default (app: IRouter) => {
 
   route.post(
     '/register',
-    validateBody(
+    validate(
       object({
         codename: string().min(1).max(20).match(codenameRegex),
         email: string().match(emailRegex),
@@ -36,17 +36,17 @@ export default (app: IRouter) => {
     ),
     async (req: Request, res: Response) => {
       const authServiceInstance = serviceCollection.get(AuthService);
-      const { user, token } = await authServiceInstance.SignUp(req.body, {
+      await authServiceInstance.SignUp(req.body, {
         roleId: 1,
       });
-      logger.debug(`User (ID: ${user.id}) successfully registered`);
-      res.setStatus(201).json({ user, token });
+
+      res.setStatus(201).json({ message: 'User creation successful.' });
     }
   );
 
   route.post(
     '/login',
-    validateBody(
+    validate(
       object({
         email: string().match(emailRegex),
         password: string(),
@@ -60,6 +60,28 @@ export default (app: IRouter) => {
       );
       logger.debug(`User (ID: ${user.id}) successfully signed in`);
       res.setStatus(200).json({ user, token });
+    }
+  );
+
+  route.get(
+    '/activate',
+    validate(
+      object({
+        token: string(),
+        email: string(),
+      }),
+      'query'
+    ),
+    async (req: Request, res: Response) => {
+      const authServiceInstance = serviceCollection.get(AuthService);
+      const { user, token } = await authServiceInstance.Validate(
+        req.query.email,
+        req.query.token
+      );
+      logger.debug(
+        `User (ID: ${user.id}) successfully validated and signed in`
+      );
+      res.setStatus(204).json({ user, token });
     }
   );
 

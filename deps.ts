@@ -100,8 +100,11 @@ export {
 export type { SendEmailRequest } from 'https://deno.land/x/aws_sdk@v0.0.1/client-sesv2/mod.ts';
 
 // uuid v0.83.0
-export { v5 } from 'https://deno.land/std@0.83.0/uuid/mod.ts';
+export { v4, v5 } from 'https://deno.land/std@0.83.0/uuid/mod.ts';
 
 // handlebars v0.6.0
 export { Handlebars } from 'https://deno.land/x/handlebars@v0.6.0/mod.ts';
 export type { HandlebarsConfig } from 'https://deno.land/x/handlebars@v0.6.0/mod.ts';
+
+// media_types v2.7.0
+export { extension } from 'https://deno.land/x/media_types@v2.7.0/mod.ts';

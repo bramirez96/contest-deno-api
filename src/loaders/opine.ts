@@ -49,8 +49,10 @@ export default (app: Opine) => {
       const dataName = err.message.match(/_([^_]+)/);
       return next(
         createError(
-          403,
-          `Could not create duplicate${dataName ? ' ' + dataName[1] : ''}`
+          409,
+          dataName && dataName[1]
+            ? '"' + dataName[1] + '" already in use'
+            : 'Could not create duplicate'
         )
       );
     } else if (!err.status || err.status === 500) {
