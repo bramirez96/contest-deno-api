@@ -19,15 +19,11 @@ export default class MailService {
   ) {}
 
   public async sendValidationEmail(email: string, token: string) {
-    this.logger.debug(`Sending activation email for user (EMAIL: ${email})`);
-
     const urlParams = new URLSearchParams({ token, email });
     const url = env.SERVER_URL + '/api/auth/activate?' + urlParams.toString();
-    this.logger.debug(
-      `Activation link (${url}) generated for user (EMAIL: ${email})`
-    );
 
     try {
+      this.logger.debug(`Sending activation email for user (EMAIL: ${email})`);
       const handle = new Handlebars(hbsConfig());
       const result = await handle.renderView('activation', { url });
       const emailContent = new SendEmailCommand({
@@ -59,17 +55,13 @@ export default class MailService {
   }
 
   public async sendPasswordResetEmail(user: IUser, token: string) {
-    this.logger.debug(
-      `Sending password reset email for user (EMAIL: ${user.email})`
-    );
-
     const urlParams = new URLSearchParams({ code: token, email: user.email });
     const url = env.REACT_APP_URL + '/reset?' + urlParams.toString();
-    this.logger.debug(
-      `Reset link (${url}) generated for user (EMAIL: ${user.email})`
-    );
 
     try {
+      this.logger.debug(
+        `Sending password reset email for user (EMAIL: ${user.email})`
+      );
       const handle = new Handlebars(hbsConfig());
       const result = await handle.renderView('resetPassword', {
         url,

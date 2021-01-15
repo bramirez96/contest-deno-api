@@ -9,7 +9,7 @@ import {
   v5,
 } from '../../deps.ts';
 import env from '../config/env.ts';
-import { IUser, IUserSignup } from '../interfaces/user.ts';
+import { IUser, IUserSignup, UserRoles } from '../interfaces/user.ts';
 import UserModel from '../models/user.ts';
 import ValidationModel from '../models/validation.ts';
 import ResetModel from '../models/reset.ts';
@@ -27,21 +27,17 @@ export default class AuthService {
 
   public async SignUp(body: IUserSignup, config?: { roleId: number }) {
     try {
-      // Maybe store salt in ENV or something?
-      this.logger.debug('Hashing password');
-      const salt = await bcrypt.genSalt(8);
-      const hashedPassword = await bcrypt.hash(body.password, salt);
+      const hashedPassword = await this.userModel.hashPassword(body.password);
 
       const { id } = await this.userModel.add({
         ...body,
         password: hashedPassword,
-        roleId: config?.roleId || 1,
+        roleId: config?.roleId || UserRoles['user'],
       });
 
-      const { code } = await this.validationModel.generateCode(
-        id,
-        body.codename
-      );
+      const code = this.validationModel.generateCode(id, body.codename);
+
+      await this.validationModel.add({ code, userId: id });
 
       await this.mailer.sendValidationEmail(
         body.parentEmail || body.email,

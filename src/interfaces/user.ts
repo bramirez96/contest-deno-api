@@ -4,7 +4,7 @@ export interface IUserSignup {
   parentEmail: string;
   password: string;
   age: number;
-  roleId: number;
+  roleId: UserRoles;
 }
 
 export interface IUser {
@@ -18,4 +18,9 @@ export interface IUser {
   roleId: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export enum UserRoles {
+  user = 1,
+  admin = 2,
 }

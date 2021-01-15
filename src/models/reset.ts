@@ -9,43 +9,26 @@ import {
   Inject,
   v5,
   createError,
+  Order,
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import PGModel from './pgModel.ts';
 import UserModel from './user.ts';
 import { IUser } from '../interfaces/user.ts';
 import { IReset } from '../interfaces/reset.ts';
-import MailService from '../services/mailer.ts';
 
 @Service()
 export default class ResetModel extends PGModel {
   constructor(
     @Inject('pg') protected dbConnect: Client,
     @Inject(UserModel) protected userModel: UserModel,
-    @Inject('logger') protected logger: log.Logger,
-    @Inject(MailService) protected mailer: MailService
+    @Inject('logger') protected logger: log.Logger
   ) {
     super();
   }
 
-  public async getResetEmail(email: string) {
+  public async generateCode(user: IUser) {
     try {
-      this.logger.debug(`Looking up record for user (EMAIL: ${email})`);
-      const user = await this.userModel.findOne({ email });
-
-      if (!user) throw createError(404, 'Email not found');
-
-      const resetItem = await this.getResetItem(user);
-      if (resetItem) {
-        const timeSinceLastRequest = Date.now() - resetItem.createdAt.getTime();
-        if (timeSinceLastRequest < 600000) {
-          throw createError(429, 'Cannot get another code so soon');
-        } else {
-          // Able to generate another code, so delete the old one
-          await this.deleteUserResets(user);
-        }
-      }
-
       this.logger.debug(
         `Generating a new password reset code for user (ID: ${user.id})`
       );
@@ -73,31 +56,33 @@ export default class ResetModel extends PGModel {
         first: true,
       }) as unknown) as IReset;
 
-      await this.mailer.sendPasswordResetEmail(user, newResetItem.code);
+      return newResetItem;
     } catch (err) {
       this.logger.error(err);
       throw err;
     }
   }
 
-  public async validateWithCode(email: string, token: string) {
+  public async resetPassword(email: string, password: string, token: string) {
     try {
-      this.logger.debug(`Attempting to validate user (EMAIL: ${email})`);
+      this.logger.debug(
+        `Attempting to reset password for user (EMAIL: ${email})`
+      );
 
       const builder = new Query();
       const sql = builder
         .table('users')
-        .join(Join.inner('validation').on('users.id', 'validation.userId'))
+        .join(Join.inner('reset').on('users.id', 'reset.userId'))
         .where(Where.field('users.email').eq(email))
-        .where(Where.field('validation.code').eq(token))
+        .where(Where.field('reset.code').eq(token))
         .select('users.isValidated', 'users.id')
         .build();
 
       // Check if we return any rows, throw error if we don't
-      this.logger.debug(`Checking validation code for user (EMAIL: ${email})`);
+      this.logger.debug(`Checking reset code for user (EMAIL: ${email})`);
       const result = await this.dbConnect.query(this.parseSql(sql));
       if (result.rowCount === 0) {
-        throw createError(401, 'Invalid authorization code');
+        throw createError(401, 'Invalid reset code');
       }
 
       // Parse out isValidated field from user table, return false if user is already validated
@@ -111,27 +96,21 @@ export default class ResetModel extends PGModel {
           `User (EMAIL: ${email}) has already been validated`
         );
       }
-
-      // Mark user's profile as validated and return the user
-      const user = await this.userModel.setUserHasBeenValidated(id);
-
-      return user;
     } catch (err) {
       this.logger.error(err);
       throw err;
     }
   }
 
-  private async getResetItem(user: IUser) {
+  public async getResetItem(user: IUser) {
     try {
-      this.logger.debug(
-        `Checking table for reset code for user (ID: ${user.id})`
-      );
+      this.logger.debug(`Searching for reset code for user (ID: ${user.id})`);
       const builder = new Query();
       const sql = builder
         .table('reset')
         .where(Where.field('userId').eq(user.id))
         .select('*')
+        .order(Order.by('id').desc)
         .build();
 
       const result = await this.dbConnect.query(this.parseSql(sql));
@@ -162,6 +141,9 @@ export default class ResetModel extends PGModel {
         .build();
 
       const result = await this.dbConnect.query(this.parseSql(sql));
+      this.logger.debug(
+        `Passwore reset codes deleted for user (ID: ${user.id})`
+      );
       return result.rowCount;
     } catch (err) {
       this.logger.error(err);

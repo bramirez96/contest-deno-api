@@ -14,10 +14,11 @@ import {
   codenameRegex,
   emailRegex,
   passwordRegex,
+  uuidV5Regex,
 } from '../../config/dataConstraints.ts';
 import validate from '../middlewares/validate.ts';
 import AuthService from '../../services/auth.ts';
-import ResetModel from '../../models/reset.ts';
+import ResetService from '../../services/reset.ts';
 
 const route = Router();
 
@@ -107,10 +108,36 @@ export default (app: IRouter) => {
     validate(object({ email: string() }), 'query'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const resetModelInstance = serviceCollection.get(ResetModel);
-        await resetModelInstance.getResetEmail(req.query.email);
+        const resetServiceInstance = serviceCollection.get(ResetService);
+        await resetServiceInstance.GetResetEmail(req.query.email);
 
         res.setStatus(200).json({ message: 'Password reset email sent!' });
+      } catch (err) {
+        logger.error(err);
+        next(err);
+      }
+    }
+  );
+
+  route.post(
+    '/reset',
+    validate(
+      object({
+        email: string(),
+        password: string().match(passwordRegex),
+        code: string().match(uuidV5Regex),
+      })
+    ),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const resetServiceInstance = serviceCollection.get(ResetService);
+        await resetServiceInstance.ResetPassword(
+          req.body.email,
+          req.body.password,
+          req.body.code
+        );
+
+        res.setStatus(204).end();
       } catch (err) {
         logger.error(err);
         next(err);

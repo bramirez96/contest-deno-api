@@ -4,3 +4,8 @@ export interface IValidation {
   userId: number;
   createdAt: Date;
 }
+
+export interface INewValidationEntry {
+  userId: number;
+  code: string;
+}

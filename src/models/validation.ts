@@ -12,7 +12,7 @@ import {
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import PGModel from './pgModel.ts';
-import { IValidation } from '../interfaces/validation.ts';
+import { INewValidationEntry, IValidation } from '../interfaces/validation.ts';
 import UserModel from './user.ts';
 
 @Service()
@@ -25,36 +25,37 @@ export default class ValidationModel extends PGModel {
     super();
   }
 
-  public async generateCode(id: number, codename: string) {
+  public async add(item: INewValidationEntry) {
+    this.logger.debug(
+      `Adding validation code to database for user (ID: ${item.userId})`
+    );
+    const builder = new Query();
+    const sql = builder.table('validation').insert(item).build();
+
+    // Parse into valid PG syntax and run query
+    const sqlWithReturn = sql + 'RETURNING *';
+    const result = await this.dbConnect.query(this.parseSql(sqlWithReturn));
+    this.logger.debug(`Validation code added for user (ID: ${item.userId})`);
+
+    // User parser member to generate proper data
+    const validationItem = (this.parseResponse(result, {
+      first: true,
+    }) as unknown) as IValidation;
+
+    return validationItem;
+  }
+
+  public generateCode(id: number, codename: string) {
     try {
       this.logger.debug(
-        `Generating email activation token for user (ID: ${id})`
+        `Generating email validation token for user (ID: ${id})`
       );
       const validationToken = v5.generate({
         namespace: env.UUID_NAMESPACE,
         value: codename,
       }) as string; // Cast as string since we're not passing buffer
 
-      this.logger.debug(
-        `Adding validation code to database for user (ID: ${id})`
-      );
-      const builder = new Query();
-      const sql = builder
-        .table('validation')
-        .insert({ code: validationToken, userId: id })
-        .build();
-
-      // Parse into valid PG syntax and run query
-      const sqlWithReturn = sql + 'RETURNING *';
-      const result = await this.dbConnect.query(this.parseSql(sqlWithReturn));
-      this.logger.debug(`Validation code added for user (ID: ${id})`);
-
-      // User parser member to generate proper data
-      const validationItem = (this.parseResponse(result, {
-        first: true,
-      }) as unknown) as IValidation;
-
-      return validationItem;
+      return validationToken;
     } catch (err) {
       this.logger.error(err);
       throw err;
