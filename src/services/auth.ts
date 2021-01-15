@@ -12,6 +12,7 @@ import env from '../config/env.ts';
 import { IUser, IUserSignup } from '../interfaces/user.ts';
 import UserModel from '../models/user.ts';
 import ValidationModel from '../models/validation.ts';
+import ResetModel from '../models/reset.ts';
 import MailService from './mailer.ts';
 
 @Service()
@@ -19,6 +20,7 @@ export default class AuthService {
   constructor(
     @Inject(UserModel) private userModel: UserModel,
     @Inject(ValidationModel) private validationModel: ValidationModel,
+    @Inject(ResetModel) private resetModel: ResetModel,
     @Inject('logger') private logger: log.Logger,
     @Inject(MailService) private mailer: MailService
   ) {}
@@ -75,19 +77,24 @@ export default class AuthService {
   }
 
   public async Validate(email: string, token: string): Promise<IAuthResponse> {
-    // Attempt to validate the user
-    const user = await this.validationModel.validateWithCode(email, token);
+    try {
+      // Attempt to validate the user
+      const user = await this.validationModel.validateWithCode(email, token);
 
-    // Remove password hash from response body
-    Reflect.deleteProperty(user, 'password');
+      // Remove password hash from response body
+      Reflect.deleteProperty(user, 'password');
 
-    // Generate a JWT for the user to login
-    const jwt = await this.generateToken(user);
+      // Generate a JWT for the user to login
+      const jwt = await this.generateToken(user);
 
-    return {
-      user,
-      token: jwt,
-    };
+      return {
+        user,
+        token: jwt,
+      };
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 
   private generateToken(user: Omit<IUser, 'password'>) {

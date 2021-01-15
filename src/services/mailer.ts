@@ -9,6 +9,7 @@ import {
 } from '../../deps.ts';
 import hbsConfig from '../../hbsConfig.ts';
 import env from '../config/env.ts';
+import { IUser } from '../interfaces/user.ts';
 
 @Service()
 export default class MailService {
@@ -29,11 +30,11 @@ export default class MailService {
     try {
       const handle = new Handlebars(hbsConfig());
       const result = await handle.renderView('activation', { url });
-      const thestuff = new SendEmailCommand({
+      const emailContent = new SendEmailCommand({
         Destination: {
           ToAddresses: [email],
         },
-        FromEmailAddress: 'bran.ramirez.don@gmail.com',
+        FromEmailAddress: env.SES_CONFIG.email,
         Content: {
           Simple: {
             Body: {
@@ -47,9 +48,54 @@ export default class MailService {
           },
         },
       });
-      await this.mailer.send(thestuff);
+      await this.mailer.send(emailContent);
       this.logger.debug(
         `Activation email successfully sent to user (EMAIL: ${email})`
+      );
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async sendPasswordResetEmail(user: IUser, token: string) {
+    this.logger.debug(
+      `Sending password reset email for user (EMAIL: ${user.email})`
+    );
+
+    const urlParams = new URLSearchParams({ code: token, email: user.email });
+    const url = env.REACT_APP_URL + '/reset?' + urlParams.toString();
+    this.logger.debug(
+      `Reset link (${url}) generated for user (EMAIL: ${user.email})`
+    );
+
+    try {
+      const handle = new Handlebars(hbsConfig());
+      const result = await handle.renderView('resetPassword', {
+        url,
+        username: user.codename,
+      });
+      const emailContent = new SendEmailCommand({
+        Destination: {
+          ToAddresses: [user.email],
+        },
+        FromEmailAddress: env.SES_CONFIG.email,
+        Content: {
+          Simple: {
+            Body: {
+              Html: {
+                Data: result,
+              },
+            },
+            Subject: {
+              Data: 'Reset your Story Squad account password!',
+            },
+          },
+        },
+      });
+      await this.mailer.send(emailContent);
+      this.logger.debug(
+        `Reset email successfully sent to user (EMAIL: ${user.email})`
       );
     } catch (err) {
       this.logger.error(err);

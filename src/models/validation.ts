@@ -73,7 +73,6 @@ export default class ValidationModel extends PGModel {
         .where(Where.field('validation.code').eq(token))
         .select('users.isValidated', 'users.id')
         .build();
-      this.logger.warning(sql);
 
       // Check if we return any rows, throw error if we don't
       this.logger.debug(`Checking validation code for user (EMAIL: ${email})`);
