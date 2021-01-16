@@ -1,4 +1,4 @@
-import { QueryResult } from '../../deps.ts';
+import { QueryResult, Query } from '../../deps.ts';
 
 export default class PGModel {
   protected parseSql(sql: string) {

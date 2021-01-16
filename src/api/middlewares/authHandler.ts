@@ -12,7 +12,7 @@ import UserModel from '../../models/user.ts';
 export default ({
   authRequired = true,
   adminOnly = false,
-}: IRestrictedConfig) => async (
+}: IAuthHandlerConfig) => async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -72,7 +72,7 @@ export default ({
   }
 };
 
-interface IRestrictedConfig {
+interface IAuthHandlerConfig {
   authRequired?: boolean;
   adminOnly?: boolean;
 }

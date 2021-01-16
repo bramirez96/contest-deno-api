@@ -1,15 +1,21 @@
-import { Router, IRouter, Request, Response } from '../../../../deps.ts';
-import restricted from '../../middlewares/restricted.ts';
+import {
+  Router,
+  IRouter,
+  Request,
+  Response,
+  NextFunction,
+} from '../../../../deps.ts';
+import authHandler from '../../middlewares/authHandler.ts';
 import upload from '../../middlewares/upload.ts';
 
 const route = Router();
 
 export default (app: IRouter) => {
-  app.use('/submit', route);
+  app.use(['/submit', '/submission', '/submissions'], route);
 
   route.post(
     '/',
-    restricted({ authRequired: true }),
+    authHandler({ authRequired: true }),
     upload,
     (req: Request, res: Response) => {
       res.setStatus(200).end();
@@ -18,17 +24,29 @@ export default (app: IRouter) => {
 
   route.get(
     '/',
-    restricted({ authRequired: false }),
+    authHandler({ authRequired: false }),
     (req: Request, res: Response) => {
-      res.setStatus(200).end();
+      // I don't know what this one does yet??
+      res.setStatus(200).json({ hit: req.path });
+    }
+  );
+
+  route.get(
+    '/:submissionId',
+    authHandler({ authRequired: false }),
+    (req: Request, res: Response) => {
+      // Here is where you get submission data from s3
+      res.setStatus(200).json({ hit: req.path });
     }
   );
 
   route.post(
     '/test',
-    restricted({ adminOnly: true, authRequired: true }),
+    authHandler({ adminOnly: true, authRequired: true }),
     (req: Request, res: Response) => {
       res.setStatus(200).json({ hit: 'it' });
     }
   );
+
+  console.log('Submission router loaded.');
 };

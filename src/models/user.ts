@@ -3,12 +3,12 @@ import {
   Where,
   Service,
   serviceCollection,
-  Query,
   Client,
   log,
   Inject,
   createError,
   bcrypt,
+  Query,
 } from '../../deps.ts';
 import { IUser, IUserSignup } from '../interfaces/user.ts';
 import PGModel from './pgModel.ts';
@@ -58,7 +58,10 @@ export default class UserModel extends PGModel {
       const sql = builder
         .table('users')
         .where(Where.field('id').eq(id))
-        .update({ ...changes, updatedAt: new Date() })
+        .update({
+          ...changes,
+          updatedAt: new Date().toUTCString(),
+        })
         .build();
       const sqlWithReturn = sql + ' RETURNING *';
 
@@ -138,14 +141,6 @@ export default class UserModel extends PGModel {
     }
   }
 
-  public async hashPassword(password: string) {
-    this.logger.debug('Hashing password');
-    const salt = await bcrypt.genSalt(8);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    this.logger.debug('Password hashed');
-    return hashedPassword;
-  }
-
   public async checkIsValidated(email: string, token: string) {
     try {
       this.logger.debug(`Attempting to validate user (EMAIL: ${email})`);
@@ -176,6 +171,14 @@ export default class UserModel extends PGModel {
       this.logger.error(err);
       throw err;
     }
+  }
+
+  public async hashPassword(password: string) {
+    this.logger.debug('Hashing password');
+    const salt = await bcrypt.genSalt(8);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    this.logger.debug('Password hashed');
+    return hashedPassword;
   }
 }
 

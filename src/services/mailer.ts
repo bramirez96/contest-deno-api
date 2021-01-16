@@ -18,9 +18,13 @@ export default class MailService {
     @Inject('logger') private logger: log.Logger
   ) {}
 
-  public async sendValidationEmail(email: string, token: string) {
+  public async sendValidationEmail(
+    email: string,
+    token: string,
+    parentEmail?: string
+  ) {
     const urlParams = new URLSearchParams({ token, email });
-    const url = env.SERVER_URL + '/api/auth/activate?' + urlParams.toString();
+    const url = env.SERVER_URL + '/auth/activate?' + urlParams.toString();
 
     try {
       this.logger.debug(`Sending activation email for user (EMAIL: ${email})`);
@@ -28,7 +32,7 @@ export default class MailService {
       const result = await handle.renderView('activation', { url });
       const emailContent = new SendEmailCommand({
         Destination: {
-          ToAddresses: [email],
+          ToAddresses: [parentEmail || email],
         },
         FromEmailAddress: env.SES_CONFIG.email,
         Content: {
@@ -46,7 +50,7 @@ export default class MailService {
       });
       await this.mailer.send(emailContent);
       this.logger.debug(
-        `Activation email successfully sent to user (EMAIL: ${email})`
+        `Activation email successfully sent for user (EMAIL: ${email})`
       );
     } catch (err) {
       this.logger.error(err);

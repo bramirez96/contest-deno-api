@@ -4,4 +4,5 @@ export interface IReset {
   code: string;
   userId: number;
   createdAt: Date;
+  expiresAt: Date;
 }

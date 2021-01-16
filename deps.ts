@@ -108,3 +108,6 @@ export type { HandlebarsConfig } from 'https://deno.land/x/handlebars@v0.6.0/mod
 
 // media_types v2.7.0
 export { extension } from 'https://deno.land/x/media_types@v2.7.0/mod.ts';
+
+import moment from 'https://deno.land/x/momentjs@2.29.1-deno/mod.ts';
+export { moment };

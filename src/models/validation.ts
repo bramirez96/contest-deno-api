@@ -1,11 +1,11 @@
 import {
   Service,
   serviceCollection,
-  Query,
   Client,
   log,
   Inject,
   v5,
+  Query,
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import PGModel from './pgModel.ts';

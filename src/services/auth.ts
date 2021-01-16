@@ -6,7 +6,6 @@ import {
   log,
   bcrypt,
   createError,
-  v5,
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import { IUser, IUserSignup, UserRoles } from '../interfaces/user.ts';
@@ -27,6 +26,17 @@ export default class AuthService {
 
   public async SignUp(body: IUserSignup, config?: { roleId: number }) {
     try {
+      // Underage users must have a parent email on file for validation
+      if (
+        body.age < 13 &&
+        (!body.parentEmail || body.email === body.parentEmail)
+      ) {
+        throw createError(
+          400,
+          'Underage users must have a parent email on file'
+        );
+      }
+
       const hashedPassword = await this.userModel.hashPassword(body.password);
 
       const { id } = await this.userModel.add({
@@ -120,7 +130,7 @@ export default class AuthService {
           throw createError(429, 'Cannot get another code so soon');
         } else {
           // Able to generate another code, so delete the old one
-          await this.resetModel.deleteUserResets(user);
+          await this.resetModel.completeUserResets(user);
         }
       }
 
@@ -144,8 +154,7 @@ export default class AuthService {
       if (!user) throw createError(404, 'Email not found');
 
       const resetItem = await this.resetModel.getResetItem(user);
-      if (!resetItem)
-        throw createError(409, 'Password reset code has not been created');
+      if (!resetItem) throw createError(409, 'No password resets are active');
       if (resetItem.code !== token)
         throw createError(400, 'Invalid password reset code');
       this.logger.debug(
@@ -155,7 +164,7 @@ export default class AuthService {
       const hashedPassword = await this.userModel.hashPassword(password);
       await this.userModel.update(user.id, { password: hashedPassword });
 
-      await this.resetModel.deleteUserResets(user);
+      await this.resetModel.completeUserResets(user);
 
       return user;
     } catch (err) {

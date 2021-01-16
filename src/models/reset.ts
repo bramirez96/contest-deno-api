@@ -2,12 +2,13 @@ import {
   Where,
   Service,
   serviceCollection,
-  Query,
   Client,
   log,
   Inject,
   v5,
   Order,
+  Query,
+  createError,
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import PGModel from './pgModel.ts';
@@ -68,6 +69,7 @@ export default class ResetModel extends PGModel {
       const sql = builder
         .table('reset')
         .where(Where.field('userId').eq(user.id))
+        .where(Where.field('completed').eq(false))
         .select('*')
         .order(Order.by('id').desc)
         .build();
@@ -76,6 +78,10 @@ export default class ResetModel extends PGModel {
       const resetItem = (this.parseResponse(result, {
         first: true,
       }) as unknown) as IReset | undefined;
+
+      if (resetItem && resetItem.expiresAt <= new Date()) {
+        throw createError(401, 'Password reset is expired');
+      }
 
       this.logger.debug(
         `${resetItem ? 'R' : 'No r'}eset field found for user (ID: ${user.id})`
@@ -87,21 +93,21 @@ export default class ResetModel extends PGModel {
     }
   }
 
-  public async deleteUserResets(user: IUser) {
+  public async completeUserResets(user: IUser) {
     try {
       this.logger.debug(
-        `Attempting to delete reset codes for user (ID: ${user.id})`
+        `Attempting to mark reset codes for user (ID: ${user.id}) as completed`
       );
       const builder = new Query();
       const sql = builder
         .table('reset')
         .where(Where.field('userId').eq(user.id))
-        .delete()
+        .update({ completed: true })
         .build();
 
       const result = await this.dbConnect.query(this.parseSql(sql));
       this.logger.debug(
-        `Password reset codes deleted for user (ID: ${user.id})`
+        `Password reset codes completed for user (ID: ${user.id})`
       );
       return result.rowCount;
     } catch (err) {

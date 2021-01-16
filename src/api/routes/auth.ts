@@ -18,6 +18,7 @@ import {
 } from '../../config/dataConstraints.ts';
 import validate from '../middlewares/validate.ts';
 import AuthService from '../../services/auth.ts';
+import env from '../../config/env.ts';
 
 const route = Router();
 
@@ -92,9 +93,11 @@ export default (app: IRouter) => {
           req.query.token
         );
         logger.debug(
-          `User (ID: ${user.id}) successfully validated and signed in`
+          `User (ID: ${user.id}) successfully validated and authenticated`
         );
-        res.setStatus(200).json({ user, token });
+
+        const redirectURL = env.REACT_APP_URL + '/activated?authToken=' + token;
+        res.redirect(302, redirectURL);
       } catch (err) {
         logger.error(err);
         next(err);
