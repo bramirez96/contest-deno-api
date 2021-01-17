@@ -48,8 +48,8 @@ export default ({
         // If token is formatted incorrectly
         throw createError(401, 'Invalid token body');
       } else {
-        logger.debug('Successfully authenticated, checking admin status');
         if (adminOnly) {
+          logger.debug('Successfully authenticated, checking admin status');
           // Get an instance of the UserModel if we need to admin check
           const userModelInstance = serviceCollection.get(UserModel);
           // If user is not an admin

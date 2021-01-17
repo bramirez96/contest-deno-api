@@ -29,12 +29,11 @@ export default () => async (
           files[f] = [form.files[f] as FormFile];
         }
       }
-      req.body.files = files;
+      req.body = { ...req.body, ...files };
     }
     if (form.fields) {
       req.body = { ...req.body, ...form.fields };
     }
-    console.log(req.body);
     next();
   } catch (err) {
     logger.error(err);

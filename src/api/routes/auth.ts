@@ -2,11 +2,16 @@ import {
   Router,
   Request,
   Response,
-  object,
-  string,
+  validateObject,
+  isString,
+  isNumber,
+  isEmail,
+  minLength,
+  maxLength,
+  required,
+  match,
   IRouter,
   serviceCollection,
-  number,
   log,
   NextFunction,
 } from '../../../deps.ts';
@@ -28,15 +33,19 @@ export default (app: IRouter) => {
 
   route.post(
     '/register',
-    validate(
-      object({
-        codename: string().min(1).max(20).match(codenameRegex),
-        email: string().match(emailRegex),
-        parentEmail: string().match(emailRegex),
-        password: string().match(passwordRegex),
-        age: number(),
-      })
-    ),
+    validate({
+      codename: [
+        required,
+        isString,
+        minLength(1),
+        maxLength(20),
+        match(codenameRegex),
+      ],
+      email: [required, isEmail, match(emailRegex)],
+      parentEmail: [required, isEmail, match(emailRegex)],
+      password: [required, isString, match(passwordRegex)],
+      age: [required, isNumber],
+    }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const authServiceInstance = serviceCollection.get(AuthService);
@@ -54,12 +63,10 @@ export default (app: IRouter) => {
 
   route.post(
     '/login',
-    validate(
-      object({
-        email: string().match(emailRegex),
-        password: string(),
-      })
-    ),
+    validate({
+      email: [required, isEmail],
+      password: [required, isString],
+    }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const authServiceInstance = serviceCollection.get(AuthService);
@@ -79,10 +86,10 @@ export default (app: IRouter) => {
   route.get(
     '/activation',
     validate(
-      object({
-        token: string(),
-        email: string(),
-      }),
+      {
+        token: [required, isString],
+        email: [required, isEmail, match(emailRegex)],
+      },
       'query'
     ),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -107,7 +114,12 @@ export default (app: IRouter) => {
 
   route.get(
     '/reset',
-    validate(object({ email: string() }), 'query'),
+    validate(
+      {
+        email: [required, isEmail, match(emailRegex)],
+      },
+      'query'
+    ),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const authServiceInstance = serviceCollection.get(AuthService);
@@ -123,13 +135,11 @@ export default (app: IRouter) => {
 
   route.post(
     '/reset',
-    validate(
-      object({
-        email: string(),
-        password: string().match(passwordRegex),
-        code: string().match(uuidV5Regex),
-      })
-    ),
+    validate({
+      email: [required, isEmail, match(emailRegex)],
+      password: [required, isString, match(passwordRegex)],
+      code: [required, isString, match(uuidV5Regex)],
+    }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const authServiceInstance = serviceCollection.get(AuthService);

@@ -6,11 +6,14 @@ import {
   NextFunction,
   log,
   serviceCollection,
-  multiParser,
-  createError,
+  validateArray,
+  validateObject,
+  isString,
+  required,
 } from '../../../../deps.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 import upload from '../../middlewares/upload.ts';
+import validate from '../../middlewares/validate.ts';
 
 const route = Router();
 
@@ -20,6 +23,13 @@ export default (app: IRouter) => {
 
   route.post(
     '/',
+    // This will ensure there is only one item in the story field before upload
+    validate({
+      story: validateArray(true, [], {
+        minLength: 1,
+        maxLength: 1,
+      }),
+    }),
     upload('story'),
     authHandler({ authRequired: true }),
     (req: Request, res: Response, next: NextFunction) => {
