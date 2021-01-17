@@ -22,6 +22,7 @@ export {
   validateArray,
   validateObject,
   firstMessages,
+  flattenMessages,
   validate,
   minLength,
   maxLength,

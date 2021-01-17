@@ -10,6 +10,7 @@ import {
   validateObject,
   isString,
   required,
+  isNumber,
 } from '../../../../deps.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 import upload from '../../middlewares/upload.ts';
@@ -23,15 +24,23 @@ export default (app: IRouter) => {
 
   route.post(
     '/',
+    authHandler({ authRequired: true }),
     // This will ensure there is only one item in the story field before upload
     validate({
-      story: validateArray(true, [], {
-        minLength: 1,
-        maxLength: 1,
-      }),
+      story: validateArray(
+        true,
+        validateObject(true, {
+          name: [required, isString],
+          filename: [required, isString],
+          size: [required, isNumber],
+        }),
+        {
+          minLength: 1,
+          maxLength: 1,
+        }
+      ),
     }),
     upload('story'),
-    authHandler({ authRequired: true }),
     (req: Request, res: Response, next: NextFunction) => {
       try {
         res.setStatus(201).json({ message: 'Upload successful!' });
@@ -63,6 +72,7 @@ export default (app: IRouter) => {
   route.post(
     '/test',
     authHandler({ adminOnly: true, authRequired: true }),
+    upload('field1', 'field2'),
     (req: Request, res: Response, next: NextFunction) => {
       res.setStatus(200).json({ hit: 'it' });
     }

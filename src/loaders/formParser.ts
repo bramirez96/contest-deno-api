@@ -17,7 +17,7 @@ export default () => async (
   const logger: log.Logger = serviceCollection.get('logger');
   try {
     const form = await multiParser(req);
-    if (!form) throw createError(400, 'No form data found in request');
+    if (!form) return next();
 
     if (form.files) {
       const files: { [key: string]: FormFile[] } = {};

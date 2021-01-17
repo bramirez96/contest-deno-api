@@ -2,7 +2,6 @@ import {
   Request,
   Response,
   NextFunction,
-  multiParser,
   serviceCollection,
   log,
   createError,
