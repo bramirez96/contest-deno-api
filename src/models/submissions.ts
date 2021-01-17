@@ -45,6 +45,34 @@ export default class SubmissionModel extends PGModel {
       throw err;
     }
   }
+
+  public async getOne(id: number) {
+    try {
+      this.logger.debug(
+        `Attempting to add submission to database for user (ID: ${id})`
+      );
+
+      const builder = new Query();
+      const sql = builder
+        .table('submissions')
+        .where(Where.field('id').eq(id))
+        .select('*')
+        .build();
+
+      // Parse and run query
+      const result = await this.dbConnect.query(this.parseSql(sql));
+
+      // Parse Data
+      const sub = (this.parseResponse(result, {
+        first: true,
+      }) as unknown) as ISubmission;
+
+      return sub;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
 }
 
 serviceCollection.addTransient(SubmissionModel);

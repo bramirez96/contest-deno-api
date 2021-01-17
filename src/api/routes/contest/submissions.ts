@@ -12,6 +12,7 @@ import {
   required,
   isNumber,
 } from '../../../../deps.ts';
+import SubmissionService from '../../../services/submission.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 import upload from '../../middlewares/upload.ts';
 import validate from '../../middlewares/validate.ts';
@@ -24,7 +25,7 @@ export default (app: IRouter) => {
 
   route.post(
     '/',
-    authHandler({ authRequired: true }),
+    // authHandler({ authRequired: true }),
     // This will ensure there is only one item in the story field before upload
     validate({
       story: validateArray(
@@ -41,8 +42,12 @@ export default (app: IRouter) => {
       ),
     }),
     upload('story'),
-    (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
       try {
+        const submissionModelInstance = serviceCollection.get(
+          SubmissionService
+        );
+        await submissionModelInstance.sendToDSAndStore(req.body.story[0]);
         res.setStatus(201).json({ message: 'Upload successful!' });
       } catch (err) {
         logger.error(err);
@@ -63,9 +68,12 @@ export default (app: IRouter) => {
   route.get(
     '/:submissionId',
     authHandler({ authRequired: false }),
-    (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
       // Here is where you get submission data from s3
-      res.setStatus(200).json({ hit: req.path });
+      const subServiceInstance = serviceCollection.get(SubmissionService);
+      const sub = await subServiceInstance.retrieveImage(1);
+      console.log(sub);
+      res.setStatus(200).json(sub);
     }
   );
 

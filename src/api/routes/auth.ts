@@ -2,7 +2,6 @@ import {
   Router,
   Request,
   Response,
-  validateObject,
   isString,
   isNumber,
   isEmail,

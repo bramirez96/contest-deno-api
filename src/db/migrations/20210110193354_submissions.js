@@ -2,7 +2,7 @@
 exports.up = (knex) => {
   return knex.schema.createTable('submissions', (t) => {
     t.increments('id');
-    t.string('s3Label', 20).notNullable().index();
+    t.string('s3Label').notNullable().index();
     t.string('etag').notNullable().index();
     t.string('transcription');
     t.integer('confidence');

@@ -21,3 +21,8 @@ export interface INewSubmission {
   userId: number;
   promptId: number;
 }
+
+export interface IUploadResponse {
+  etag: string;
+  s3Label: string;
+}
