@@ -5,9 +5,10 @@ import {
   NextFunction,
   createError,
   serviceCollection,
+  log,
 } from '../../../deps.ts';
 import env from '../../config/env.ts';
-import UserModel from '../../models/user.ts';
+import UserModel from '../../models/users.ts';
 
 export default ({
   authRequired = true,
@@ -17,26 +18,18 @@ export default ({
   res: Response,
   next: NextFunction
 ) => {
+  const logger: log.Logger = serviceCollection.get('logger');
   const token = req.get('Authorization');
-  // const daysUntilExpiry = 2;
-  // const today = new Date();
-  // const exp = new Date(today);
-  // exp.setDate(today.getDate() + daysUntilExpiry);
-  // const token = await jwt.create(
-  //   { alg: env.JWT.ALGO },
-  //   { iss: 'anemawwww@email.com', sub: '2', exp: exp.getTime() },
-  //   env.JWT.SECRET
-  // );
-
-  if (!token) {
+  if (!token || token === 'null') {
     // If no token, check if auth is even required...
-    if (authRequired) next(createError(401, 'You must be logged in'));
+    if (authRequired) throw createError(401, 'You must be logged in');
     // If it's not required, this is like the voting route, where
     // the token is optional and you can continue without it
-    else next();
+    else return next();
   } else {
     // If it's there, we'll try to
     try {
+      logger.debug('Attempting to verify token');
       const { iss, sub, exp } = await jwt.verify(
         token,
         env.JWT.SECRET,
@@ -45,20 +38,24 @@ export default ({
 
       const id = parseInt(sub || `${sub}`);
       const email = iss;
+      logger.debug(`Token data - { id: ${id}, email: ${email} }`);
 
+      logger.debug('Checking token expiration');
       if (!exp || exp < Date.now()) {
         // If token is expired, let them know
-        return next(createError(401, 'Token is expired'));
-        // If token is formatted incorrectly
+        throw createError(401, 'Token is expired');
       } else if (!id || !email) {
-        return next(createError(401, 'Invalid token body'));
+        // If token is formatted incorrectly
+        throw createError(401, 'Invalid token body');
       } else {
+        logger.debug('Successfully authenticated, checking admin status');
         if (adminOnly) {
           // Get an instance of the UserModel if we need to admin check
           const userModelInstance = serviceCollection.get(UserModel);
           // If user is not an admin
-          if (!(await userModelInstance.checkIsAdmin(id))) {
-            return next(createError(401, 'Must be admin'));
+          const userIsAdmin = await userModelInstance.checkIsAdmin(id);
+          if (!userIsAdmin) {
+            throw createError(401, 'Must be admin');
           }
         }
         // Pull the relevant snippets and continue
@@ -67,7 +64,8 @@ export default ({
         next();
       }
     } catch (err) {
-      next(createError(401, 'Could not authenticate'));
+      logger.error(err);
+      throw err;
     }
   }
 };

@@ -12,6 +12,7 @@ import {
   log,
 } from '../../deps.ts';
 import routes from '../api/index.ts';
+import formParser from './formParser.ts';
 
 export default (app: Opine) => {
   const logger: log.Logger = serviceCollection.get('logger');
@@ -44,6 +45,7 @@ export default (app: Opine) => {
     })
   );
   app.use(urlencoded({ extended: false }));
+  app.use(formParser());
 
   // App Routes
   app.use(routes());

@@ -9,7 +9,7 @@ import {
 } from '../../deps.ts';
 import hbsConfig from '../../hbsConfig.ts';
 import env from '../config/env.ts';
-import { IUser } from '../interfaces/user.ts';
+import { IUser } from '../interfaces/users.ts';
 
 @Service()
 export default class MailService {
@@ -24,7 +24,7 @@ export default class MailService {
     parentEmail?: string
   ) {
     const urlParams = new URLSearchParams({ token, email });
-    const url = env.SERVER_URL + '/auth/activate?' + urlParams.toString();
+    const url = env.SERVER_URL + '/auth/activation?' + urlParams.toString();
 
     try {
       this.logger.debug(`Sending activation email for user (EMAIL: ${email})`);

@@ -77,7 +77,7 @@ export default (app: IRouter) => {
   );
 
   route.get(
-    '/activate',
+    '/activation',
     validate(
       object({
         token: string(),
@@ -96,7 +96,7 @@ export default (app: IRouter) => {
           `User (ID: ${user.id}) successfully validated and authenticated`
         );
 
-        const redirectURL = env.REACT_APP_URL + '/activated?authToken=' + token;
+        const redirectURL = env.REACT_APP_URL + '/activate?authToken=' + token;
         res.redirect(302, redirectURL);
       } catch (err) {
         logger.error(err);

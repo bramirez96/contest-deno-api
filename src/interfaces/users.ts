@@ -1,4 +1,4 @@
-export interface IUserSignup {
+export interface INewUser {
   codename: string;
   email: string;
   parentEmail: string;

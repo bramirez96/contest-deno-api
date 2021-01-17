@@ -10,7 +10,7 @@ import {
   bcrypt,
   Query,
 } from '../../deps.ts';
-import { IUser, IUserSignup } from '../interfaces/user.ts';
+import { IUser, INewUser } from '../interfaces/users.ts';
 import PGModel from './pgModel.ts';
 
 @Service()
@@ -21,7 +21,7 @@ export default class UserModel extends PGModel {
   ) {
     super();
   }
-  public async add(body: IUserSignup): Promise<{ id: number }> {
+  public async add(body: INewUser): Promise<{ id: number }> {
     try {
       this.logger.debug(
         `Attempting to add user (EMAIL: ${body.email}) to database`

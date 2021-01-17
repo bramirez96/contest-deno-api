@@ -17,25 +17,20 @@ export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
   app.use(['/prompt', '/prompts'], route);
 
-  route.get(
-    '/',
-    authHandler({ authRequired: false }),
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const promptModelInstance = serviceCollection.get(PromptModel);
-        const prompt = await promptModelInstance.getCurrent();
+  route.get('/', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const promptModelInstance = serviceCollection.get(PromptModel);
+      const prompt = await promptModelInstance.getCurrent();
 
-        res.setStatus(200).json(prompt);
-      } catch (err) {
-        logger.error(err);
-        next(err);
-      }
+      res.setStatus(200).json(prompt);
+    } catch (err) {
+      logger.error(err);
+      next(err);
     }
-  );
+  });
 
   route.get(
     '/test',
-    authHandler({ authRequired: false }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const adminServiceInstance = serviceCollection.get(AdminService);

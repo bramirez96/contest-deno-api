@@ -9,7 +9,7 @@ import {
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import PGModel from './pgModel.ts';
-import { INewValidationEntry, IValidation } from '../interfaces/validation.ts';
+import { INewValidation, IValidation } from '../interfaces/validations.ts';
 
 @Service()
 export default class ValidationModel extends PGModel {
@@ -20,7 +20,7 @@ export default class ValidationModel extends PGModel {
     super();
   }
 
-  public async add(item: INewValidationEntry) {
+  public async add(item: INewValidation) {
     this.logger.debug(
       `Adding validation code to database for user (ID: ${item.userId})`
     );

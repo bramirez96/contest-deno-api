@@ -8,10 +8,10 @@ import {
   createError,
 } from '../../deps.ts';
 import env from '../config/env.ts';
-import { IUser, IUserSignup, UserRoles } from '../interfaces/user.ts';
-import UserModel from '../models/user.ts';
-import ValidationModel from '../models/validation.ts';
-import ResetModel from '../models/reset.ts';
+import { IUser, INewUser, UserRoles } from '../interfaces/users.ts';
+import UserModel from '../models/users.ts';
+import ValidationModel from '../models/validations.ts';
+import ResetModel from '../models/resets.ts';
 import MailService from './mailer.ts';
 
 @Service()
@@ -24,7 +24,7 @@ export default class AuthService {
     @Inject('logger') private logger: log.Logger
   ) {}
 
-  public async SignUp(body: IUserSignup, config?: { roleId: number }) {
+  public async SignUp(body: INewUser, config?: { roleId: number }) {
     try {
       // Underage users must have a parent email on file for validation
       if (

@@ -22,6 +22,12 @@ export default class AdminService {
         throw createError(409, 'Prompt is already up-to-date');
       }
 
+      const curHour = parseInt(new Date().toISOString().split('T')[1], 10);
+      if (curHour < 1 || curHour > 22) {
+        this.logger.debug('Could not update at this time');
+        // throw createError(409, 'Could not update at this time')
+      }
+
       await Promise.all([
         this.promptModel.update(newPromptId, { active: true }),
         this.promptModel.update(currentPrompt.id, { active: false }),

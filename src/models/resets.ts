@@ -12,9 +12,9 @@ import {
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import PGModel from './pgModel.ts';
-import UserModel from './user.ts';
-import { IUser } from '../interfaces/user.ts';
-import { IReset } from '../interfaces/reset.ts';
+import UserModel from './users.ts';
+import { IUser } from '../interfaces/users.ts';
+import { IReset } from '../interfaces/resets.ts';
 
 @Service()
 export default class ResetModel extends PGModel {

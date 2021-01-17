@@ -5,7 +5,7 @@ export interface IValidation {
   createdAt: Date;
 }
 
-export interface INewValidationEntry {
+export interface INewValidation {
   userId: number;
   code: string;
 }
