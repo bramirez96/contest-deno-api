@@ -24,13 +24,7 @@ mkdir ~/.etc && mkdir ~/.etc/bash_completion.d
 deno completions bash > ~/.etc/bash_completion.d/deno.bash
 ```
 
-> This command adds the autocompletion file to your bash configuration
-
-```bash
-source ~/.etc/bash_completion.d/deno.bash
-```
-
-> This command will create a bash configuration file that allows you to easily add Deno onto your path (giving you the option to run the `deno` command straight from bash) as well as allowing you to autocomplete the Deno scripts
+> This command will create a bash configuration file that allows you to easily add Deno onto your path (giving you the option to run the `deno` command straight from bash) as well as adding the Deno autocomplete scripts to your configuration
 
 ```bash
 echo $'export DENO_INSTALL="/$HOME/.deno"\nexport PATH="$DENO_INSTALL/bin:$PATH"\nsource ~/.etc/bash_completion.d/deno.bash' > ~/.bashrc

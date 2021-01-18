@@ -8,21 +8,26 @@ To log in to PGAdmin, open [http://localhost:5950](http://localhost:5950) in you
 
 ## Database Migrations and Seeding
 
-Currently, we're using Knex to run our database migrations through Yarn.
+Install the Cotton CLI to run migrations:
 
 ```bash
-# new migration
-yarn make <migrationName>
-
-# new seed file
-yarn makeseed <seedName>
-
-# run migrations
-yarn latest
-
-# roll back migrations
-yarn rollback
-
-# run seeds
-yarn seed
+deno install --allow-net --allow-read --allow-write -n cotton https://deno.land/x/cotton@v0.7.5/cli.ts
 ```
+
+Add the Cotton cmd script to your bash aliases:
+
+Open your `.bashrc` configuration file
+
+```bash
+vim ~/.bashrc
+```
+
+Press `i` to enter insert mode.
+
+On a new line, add the following snippet:
+
+```bash
+alias cotton='~/.deno/bin/cotton.cmd'
+```
+
+> This allows you to run Cotton CLI scripts directly from bash just with the `cotton` keyword!
