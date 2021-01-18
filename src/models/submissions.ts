@@ -1,78 +1,47 @@
 import {
+  BelongsTo,
+  Column,
+  DataType,
+  Model,
+  Primary,
   Service,
-  Inject,
-  Client,
-  log,
   serviceCollection,
-  Query,
-  Where,
-  Join,
 } from '../../deps.ts';
-import { INewSubmission, ISubmission } from '../interfaces/submissions.ts';
-import PGModel from './pgModel.ts';
+import Prompt from './prompts.ts';
+import User from './users.ts';
 
+@Model('submissions')
 @Service()
-export default class SubmissionModel extends PGModel {
-  constructor(
-    @Inject('pg') protected dbConnect: Client,
-    @Inject('logger') protected logger: log.Logger
-  ) {
-    super();
-  }
+export default class Submission {
+  @Primary()
+  id!: number;
 
-  public async add(body: INewSubmission) {
-    try {
-      this.logger.debug(
-        `Attempting to add submission to database for user \
-        (ID: ${body.userId}), prompt (ID: ${body.promptId})`
-      );
+  @Column({ type: DataType.String })
+  s3Label!: string;
 
-      const builder = new Query();
-      const sql = builder.table('submissions').insert(body).build();
+  @Column({ type: DataType.Number })
+  confidence!: number;
 
-      // Parse and run query
-      const sqlWithReturn = sql + ' RETURNING *';
-      const result = await this.dbConnect.query(this.parseSql(sqlWithReturn));
+  @Column({ type: DataType.Number })
+  dsScore!: number;
 
-      // Parse Data
-      const sub = (this.parseResponse(result, {
-        first: true,
-      }) as unknown) as ISubmission;
+  @Column({ default: 0, type: DataType.Number })
+  rotation!: number;
 
-      return sub;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
+  @Column({ default: new Date().toUTCString(), type: DataType.Date })
+  createdAt!: Date;
 
-  public async getOne(id: number) {
-    try {
-      this.logger.debug(
-        `Attempting to add submission to database for user (ID: ${id})`
-      );
+  @Column({ type: DataType.Number })
+  userId!: number;
 
-      const builder = new Query();
-      const sql = builder
-        .table('submissions')
-        .where(Where.field('id').eq(id))
-        .select('*')
-        .build();
+  @Column({ type: DataType.Number })
+  promptId!: number;
 
-      // Parse and run query
-      const result = await this.dbConnect.query(this.parseSql(sql));
+  @BelongsTo(() => User, 'userId')
+  user!: User;
 
-      // Parse Data
-      const sub = (this.parseResponse(result, {
-        first: true,
-      }) as unknown) as ISubmission;
-
-      return sub;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
+  @BelongsTo(() => Prompt, 'promptId')
+  prompt!: Prompt;
 }
 
-serviceCollection.addTransient(SubmissionModel);
+serviceCollection.addTransient(Submission);

@@ -1,185 +1,59 @@
 import {
-  Join,
-  Where,
+  BelongsTo,
+  Column,
+  DataType,
+  HasMany,
+  Model,
+  Primary,
   Service,
   serviceCollection,
-  Client,
-  log,
-  Inject,
-  createError,
-  bcrypt,
-  Query,
 } from '../../deps.ts';
-import { IUser, INewUser } from '../interfaces/users.ts';
-import PGModel from './pgModel.ts';
+import Reset from './resets.ts';
+import Role from './roles.ts';
+import Submission from './submissions.ts';
+import Validation from './validations.ts';
 
+@Model('users')
 @Service()
-export default class UserModel extends PGModel {
-  constructor(
-    @Inject('pg') protected dbConnect: Client,
-    @Inject('logger') protected logger: log.Logger
-  ) {
-    super();
-  }
-  public async add(body: INewUser): Promise<{ id: number }> {
-    try {
-      this.logger.debug(
-        `Attempting to add user (EMAIL: ${body.email}) to database`
-      );
+export default class User {
+  @Primary()
+  id!: number;
 
-      const builder = new Query();
-      const sql = builder.table('users').insert(body).build();
+  @Column({ type: DataType.String })
+  codename!: string;
 
-      // Our querybuilder needs some parsing to get valid PGSQL
-      const sqlWithReturn = sql + 'RETURNING id';
-      const result = await this.dbConnect.query(this.parseSql(sqlWithReturn));
+  @Column({ type: DataType.String })
+  email!: string;
 
-      // Use the parser function to generate proper data
-      const { id } = (this.parseResponse(result, {
-        first: true,
-      }) as unknown) as { id: number };
+  @Column({ type: DataType.String })
+  parentEmail!: string;
 
-      this.logger.debug(`Added new user (ID: ${id}, EMAIL: ${body.email})`);
-      return { id };
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
+  @Column({ type: DataType.String })
+  password!: string;
 
-  public async update(id: number, changes: Partial<IUser>) {
-    try {
-      this.logger.debug(
-        `Updating user (ID: ${id}) fields: ${Object.keys(changes).join(', ')}`
-      );
+  @Column({ type: DataType.Number })
+  age!: number;
 
-      // Generate query to mark user as validated
-      const builder = new Query();
-      const sql = builder
-        .table('users')
-        .where(Where.field('id').eq(id))
-        .update({
-          ...changes,
-          updatedAt: new Date().toUTCString(),
-        })
-        .build();
-      const sqlWithReturn = sql + ' RETURNING *';
+  @Column({ type: DataType.Number })
+  roleId!: number;
 
-      // Parse and run the query
-      const response = await this.dbConnect.query(this.parseSql(sqlWithReturn));
-      if (response.rowCount === 0) {
-        // If no rows were changed, user was not validated
-        throw createError(409, 'Unable to update user');
-      }
+  @Column({ type: DataType.Date, default: () => new Date().toUTCString() })
+  createdAt!: Date;
 
-      // Parse the user out of the response
-      const user = (this.parseResponse(response, {
-        first: true,
-      }) as unknown) as IUser;
-      this.logger.debug(`User (ID: ${id}) successfully updated`);
+  @Column({ type: DataType.Date, default: () => new Date().toUTCString() })
+  updatedAt!: Date;
 
-      return user;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
+  @BelongsTo(() => Role, 'roleId')
+  role!: Role;
 
-  public async findOne(filter: { [key: string]: unknown }): Promise<IUser> {
-    try {
-      const queryField = Object.keys(filter)[0];
+  @HasMany(() => User, 'userId')
+  reset!: Reset[];
 
-      const builder = new Query();
-      const sql = builder
-        .table('users')
-        .where(Where.field(queryField).eq(filter[queryField]))
-        .select('*')
-        .build();
+  @HasMany(() => User, 'userId')
+  validations!: Validation[];
 
-      const result = await this.dbConnect.query(this.parseSql(sql));
-      const user = (this.parseResponse(result, {
-        first: true,
-      }) as unknown) as IUser;
-
-      return user;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  public async checkIsAdmin(id: number) {
-    try {
-      const builder = new Query();
-      const sql = builder
-        .table('users')
-        .join(Join.inner('roles').on('roles.id', 'users.roleId'))
-        .where(Where.field('users.id').eq(id))
-        .select('roles.role')
-        .build();
-
-      const result = await this.dbConnect.query(this.parseSql(sql));
-      if (!result.rowCount || result.rowCount === 0) {
-        throw new Error(`User (ID: ${id}) not found!`);
-      }
-      const res = this.parseResponse(result, { first: true }) as {
-        role: string;
-      };
-      const isAdmin = res.role === 'admin';
-
-      // Will log a warning if someone who is not an admin attempts to access admin resource
-      if (isAdmin)
-        this.logger.debug(`Admin (ID: ${id}) accessed admin resources`);
-      else
-        this.logger.warning(
-          `User (ID: ${id}) attempted to access admin resources`
-        );
-      return isAdmin;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  public async checkIsValidated(email: string, token: string) {
-    try {
-      this.logger.debug(`Attempting to validate user (EMAIL: ${email})`);
-
-      const builder = new Query();
-      const sql = builder
-        .table('users')
-        .join(Join.inner('validation').on('users.id', 'validation.userId'))
-        .where(Where.field('users.email').eq(email))
-        .where(Where.field('validation.code').eq(token))
-        .select('users.isValidated', 'users.id')
-        .build();
-
-      // Check if we return any rows, throw error if we don't
-      this.logger.debug(`Checking validation code for user (EMAIL: ${email})`);
-      const result = await this.dbConnect.query(this.parseSql(sql));
-      if (result.rowCount === 0) {
-        throw createError(401, 'Invalid authorization code');
-      }
-
-      // Parse out isValidated field from user table, return false if user is already validated
-      const { isValidated, id } = (this.parseResponse(result, {
-        first: true,
-      }) as unknown) as { isValidated: boolean; id: number };
-
-      return { id, isValidated };
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  public async hashPassword(password: string) {
-    this.logger.debug('Hashing password');
-    const salt = await bcrypt.genSalt(8);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    this.logger.debug('Password hashed');
-    return hashedPassword;
-  }
+  @HasMany(() => User, 'userId')
+  submission!: Submission[];
 }
 
-serviceCollection.addTransient(UserModel);
+serviceCollection.addTransient(User);

@@ -1,6 +1,6 @@
 // deno-lint-ignore-file
 exports.up = function (knex) {
-  return knex.schema.createTable('reset', (t) => {
+  return knex.schema.createTable('resets', (t) => {
     t.increments('id');
     t.boolean('completed').notNullable().defaultTo(false);
     t.string('code').notNullable().index();
@@ -21,5 +21,5 @@ exports.up = function (knex) {
 };
 
 exports.down = function (knex) {
-  return knex.schema.dropTableIfExists('reset');
+  return knex.schema.dropTableIfExists('resets');
 };

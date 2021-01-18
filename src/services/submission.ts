@@ -23,21 +23,19 @@ export default class SubmissionService {
         transcription: 'HERES AN EXAMPLE OF THE THING LETS GO',
       };
 
-      const submission = await this.submissionModel.add(newSub);
-      return submission;
+      // const submission = await this.submissionModel.add(newSub);
+      return await newSub;
     } catch (err) {
       this.logger.error(err);
       throw err;
     }
   }
 
-  public async retrieveImage(id: number) {
+  public retrieveImage(id: number) {
     try {
-      const sub = await this.submissionModel.getOne(id);
-
-      const fromS3 = await this.bucketService.get(sub.s3Label, sub.etag);
-
-      return fromS3;
+      // const sub = await this.submissionModel.getOne(id);
+      // const fromS3 = await this.bucketService.get(sub.s3Label, sub.etag);
+      // return fromS3;
     } catch (err) {
       this.logger.error(err);
       throw err;

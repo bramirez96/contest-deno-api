@@ -34,15 +34,6 @@ export type {
   ValidationResult,
 } from 'https://deno.land/x/validasaur@v0.15.0/mod.ts';
 
-// Postgres v0.4.6
-export {
-  Client,
-  Pool,
-  PostgresError,
-} from 'https://deno.land/x/postgres@v0.4.6/mod.ts';
-export type { ConnectionOptions } from 'https://deno.land/x/postgres@v0.4.6/connection_params.ts';
-export { QueryResult } from 'https://deno.land/x/postgres@v0.4.6/query.ts';
-
 // di v0.1.1 (dependency injector)
 import { ServiceCollection } from 'https://deno.land/x/di@v0.1.1/mod.ts';
 export { Inject, Service } from 'https://deno.land/x/di@v0.1.1/mod.ts';
@@ -51,25 +42,6 @@ export const serviceCollection = new ServiceCollection();
 
 // dotenv v2.0.0
 export { config } from 'https://deno.land/x/dotenv/mod.ts';
-
-// sql_builder v1.8.0
-export {
-  Query,
-  Join,
-  Order,
-  Where,
-} from 'https://deno.land/x/sql_builder@v1.8.0/mod.ts';
-
-// nessie v1.1.3
-export {
-  ClientPostgreSQL,
-  AbstractMigration,
-} from 'https://deno.land/x/nessie@1.1.3/mod.ts';
-export type {
-  ClientOptions,
-  Info,
-  Migration,
-} from 'https://deno.land/x/nessie@1.1.3/mod.ts';
 
 // deno_s3 @0.3.0
 export { S3Bucket } from 'https://deno.land/x/s3@0.3.0/mod.ts';
@@ -121,5 +93,16 @@ export type { HandlebarsConfig } from 'https://deno.land/x/handlebars@v0.6.0/mod
 // media_types v2.7.0
 export { extension } from 'https://deno.land/x/media_types@v2.7.0/mod.ts';
 
-import moment from 'https://deno.land/x/momentjs@2.29.1-deno/mod.ts';
-export { moment };
+// Cotton v0.7.5
+export {
+  connect,
+  Model,
+  Column,
+  Primary,
+  HasMany,
+  BelongsTo,
+  DataType,
+} from 'https://deno.land/x/cotton@v0.7.5/mod.ts';
+export type { Manager } from 'https://deno.land/x/cotton@v0.7.5/mod.ts';
+export type { PostgresAdapter } from 'https://deno.land/x/cotton@v0.7.5/src/adapters/postgres.ts';
+export type { Adapter } from 'https://deno.land/x/cotton@v0.7.5/src/adapters/adapter.ts';

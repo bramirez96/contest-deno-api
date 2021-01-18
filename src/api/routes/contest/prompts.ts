@@ -19,10 +19,10 @@ export default (app: IRouter) => {
 
   route.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const promptModelInstance = serviceCollection.get(PromptModel);
-      const prompt = await promptModelInstance.getCurrent();
-
-      res.setStatus(200).json(prompt);
+      // const promptModelInstance = serviceCollection.get(PromptModel);
+      // const prompt = await promptModelInstance.getCurrent();
+      await null;
+      res.setStatus(200).json({});
     } catch (err) {
       logger.error(err);
       next(err);
