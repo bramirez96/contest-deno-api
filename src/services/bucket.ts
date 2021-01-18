@@ -18,18 +18,16 @@ export default class BucketService {
   public async upload(buffer: Uint8Array, extension?: string) {
     try {
       if (!extension) throw createError(400, `Could not get file extension`);
-      const bucketStorageTag = new URLSearchParams({
+      const s3Label = new URLSearchParams({
         name: Date.now() + '-' + v4.generate() + '.' + extension,
       }).get('name') as string;
-      this.logger.debug(`Bucket tag generated for ${bucketStorageTag}`);
+      this.logger.debug(`Bucket tag generated for ${s3Label}`);
 
-      this.logger.debug(`Beginning upload of ${bucketStorageTag}`);
-      const { etag } = await this.s3.putObject(bucketStorageTag, buffer);
-      this.logger.debug(
-        `Upload file (${bucketStorageTag}) successful (ETAG: ${etag})`
-      );
+      this.logger.debug(`Beginning upload of ${s3Label}`);
+      const { etag } = await this.s3.putObject(s3Label, buffer);
+      this.logger.debug(`Upload file (${s3Label}) successful (ETAG: ${etag})`);
 
-      return { etag, bucketStorageTag };
+      return { etag, s3Label };
     } catch (err) {
       this.logger.error(err);
       throw err;
@@ -39,7 +37,9 @@ export default class BucketService {
   public async get(name: string, etag: string) {
     try {
       this.logger.debug(`Attempting to retrieve bucket item ${name}`);
-      const response = await this.s3.getObject(name, {});
+      const response = await this.s3.getObject(name, {
+        ifMatch: etag,
+      });
 
       if (response) {
         this.logger.debug(`Retrieved ${name} from S3 successfully`);

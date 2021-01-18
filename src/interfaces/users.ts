@@ -1,14 +1,14 @@
-export interface IUserSignup {
+export interface INewUser {
   codename: string;
   email: string;
   parentEmail: string;
   password: string;
   age: number;
-  roleId: number;
+  roleId: UserRoles;
 }
 
 export interface IUser {
-  id: string;
+  id: number;
   codename: string;
   email: string;
   password: string;
@@ -18,4 +18,9 @@ export interface IUser {
   roleId: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export enum UserRoles {
+  user = 1,
+  admin = 2,
 }

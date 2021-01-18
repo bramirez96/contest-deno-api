@@ -3,13 +3,14 @@ import {
   Where,
   Service,
   serviceCollection,
-  Query,
   Client,
   log,
   Inject,
   createError,
+  bcrypt,
+  Query,
 } from '../../deps.ts';
-import { IUser, IUserSignup } from '../interfaces/user.ts';
+import { IUser, INewUser } from '../interfaces/users.ts';
 import PGModel from './pgModel.ts';
 
 @Service()
@@ -20,7 +21,7 @@ export default class UserModel extends PGModel {
   ) {
     super();
   }
-  public async add(body: IUserSignup): Promise<{ id: number }> {
+  public async add(body: INewUser): Promise<{ id: number }> {
     try {
       this.logger.debug(
         `Attempting to add user (EMAIL: ${body.email}) to database`
@@ -38,8 +39,46 @@ export default class UserModel extends PGModel {
         first: true,
       }) as unknown) as { id: number };
 
-      this.logger.debug(`Created new user (ID: ${id}, EMAIL: ${body.email})`);
+      this.logger.debug(`Added new user (ID: ${id}, EMAIL: ${body.email})`);
       return { id };
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async update(id: number, changes: Partial<IUser>) {
+    try {
+      this.logger.debug(
+        `Updating user (ID: ${id}) fields: ${Object.keys(changes).join(', ')}`
+      );
+
+      // Generate query to mark user as validated
+      const builder = new Query();
+      const sql = builder
+        .table('users')
+        .where(Where.field('id').eq(id))
+        .update({
+          ...changes,
+          updatedAt: new Date().toUTCString(),
+        })
+        .build();
+      const sqlWithReturn = sql + ' RETURNING *';
+
+      // Parse and run the query
+      const response = await this.dbConnect.query(this.parseSql(sqlWithReturn));
+      if (response.rowCount === 0) {
+        // If no rows were changed, user was not validated
+        throw createError(409, 'Unable to update user');
+      }
+
+      // Parse the user out of the response
+      const user = (this.parseResponse(response, {
+        first: true,
+      }) as unknown) as IUser;
+      this.logger.debug(`User (ID: ${id}) successfully updated`);
+
+      return user;
     } catch (err) {
       this.logger.error(err);
       throw err;
@@ -69,7 +108,7 @@ export default class UserModel extends PGModel {
     }
   }
 
-  public async isAdmin(id: number) {
+  public async checkIsAdmin(id: number) {
     try {
       const builder = new Query();
       const sql = builder
@@ -102,37 +141,44 @@ export default class UserModel extends PGModel {
     }
   }
 
-  public async setUserHasBeenValidated(id: number) {
+  public async checkIsValidated(email: string, token: string) {
     try {
-      this.logger.debug(`Marking user (ID: ${id}) isValidated as true`);
+      this.logger.debug(`Attempting to validate user (EMAIL: ${email})`);
 
-      // Generate query to mark user as validated
       const builder = new Query();
       const sql = builder
         .table('users')
-        .where(Where.field('id').eq(id))
-        .update({ isValidated: true })
+        .join(Join.inner('validation').on('users.id', 'validation.userId'))
+        .where(Where.field('users.email').eq(email))
+        .where(Where.field('validation.code').eq(token))
+        .select('users.isValidated', 'users.id')
         .build();
-      const sqlWithReturn = sql + ' RETURNING *';
 
-      // Parse and run the query
-      const response = await this.dbConnect.query(this.parseSql(sqlWithReturn));
-      if (response.rowCount === 0) {
-        // If no rows were changed, user was not validated
-        throw createError(409, 'Unable to validate user');
+      // Check if we return any rows, throw error if we don't
+      this.logger.debug(`Checking validation code for user (EMAIL: ${email})`);
+      const result = await this.dbConnect.query(this.parseSql(sql));
+      if (result.rowCount === 0) {
+        throw createError(401, 'Invalid authorization code');
       }
 
-      // Parse the user out of the response
-      const user = (this.parseResponse(response, {
+      // Parse out isValidated field from user table, return false if user is already validated
+      const { isValidated, id } = (this.parseResponse(result, {
         first: true,
-      }) as unknown) as IUser;
-      this.logger.debug(`User (ID: ${id}) has successfully validated`);
+      }) as unknown) as { isValidated: boolean; id: number };
 
-      return user;
+      return { id, isValidated };
     } catch (err) {
       this.logger.error(err);
       throw err;
     }
+  }
+
+  public async hashPassword(password: string) {
+    this.logger.debug('Hashing password');
+    const salt = await bcrypt.genSalt(8);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    this.logger.debug('Password hashed');
+    return hashedPassword;
   }
 }
 

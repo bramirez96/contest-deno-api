@@ -8,8 +8,8 @@ exports.up = function (knex) {
       .unsigned()
       .references('users.id')
       .onUpdate('CASCADE')
-      .onDelete('RESTRICT');
-    t.datetime('createdAt', { precision: 6 }).defaultTo(knex.fn.now(6));
+      .onDelete('CASCADE');
+    t.datetime('createdAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
   });
 };
 

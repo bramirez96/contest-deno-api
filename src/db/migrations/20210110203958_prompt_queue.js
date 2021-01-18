@@ -8,8 +8,7 @@ exports.up = function (knex) {
       .references('prompts.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.datetime('startsOn', { precision: 6 }).notNullable();
-    t.datetime('endsOn', { precision: 6 }).notNullable();
+    t.date('startDate').notNullable().unique();
   });
 };
 

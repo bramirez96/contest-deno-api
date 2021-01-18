@@ -6,12 +6,12 @@ import {
   log,
   bcrypt,
   createError,
-  v5,
 } from '../../deps.ts';
 import env from '../config/env.ts';
-import { IUser, IUserSignup } from '../interfaces/user.ts';
-import UserModel from '../models/user.ts';
-import ValidationModel from '../models/validation.ts';
+import { IUser, INewUser, UserRoles } from '../interfaces/users.ts';
+import UserModel from '../models/users.ts';
+import ValidationModel from '../models/validations.ts';
+import ResetModel from '../models/resets.ts';
 import MailService from './mailer.ts';
 
 @Service()
@@ -19,27 +19,35 @@ export default class AuthService {
   constructor(
     @Inject(UserModel) private userModel: UserModel,
     @Inject(ValidationModel) private validationModel: ValidationModel,
-    @Inject('logger') private logger: log.Logger,
-    @Inject(MailService) private mailer: MailService
+    @Inject(ResetModel) private resetModel: ResetModel,
+    @Inject(MailService) private mailer: MailService,
+    @Inject('logger') private logger: log.Logger
   ) {}
 
-  public async SignUp(body: IUserSignup, config?: { roleId: number }) {
+  public async SignUp(body: INewUser, config?: { roleId: number }) {
     try {
-      // Maybe store salt in ENV or something?
-      this.logger.debug('Hashing password');
-      const salt = await bcrypt.genSalt(8);
-      const hashedPassword = await bcrypt.hash(body.password, salt);
+      // Underage users must have a parent email on file for validation
+      if (
+        body.age < 13 &&
+        (!body.parentEmail || body.email === body.parentEmail)
+      ) {
+        throw createError(
+          400,
+          'Underage users must have a parent email on file'
+        );
+      }
+
+      const hashedPassword = await this.userModel.hashPassword(body.password);
 
       const { id } = await this.userModel.add({
         ...body,
         password: hashedPassword,
-        roleId: config?.roleId || 1,
+        roleId: config?.roleId || UserRoles['user'],
       });
 
-      const { code } = await this.validationModel.generateCode(
-        id,
-        body.codename
-      );
+      const code = this.validationModel.generateCode(id, body.codename);
+
+      await this.validationModel.add({ code, userId: id });
 
       await this.mailer.sendValidationEmail(
         body.parentEmail || body.email,
@@ -75,19 +83,94 @@ export default class AuthService {
   }
 
   public async Validate(email: string, token: string): Promise<IAuthResponse> {
-    // Attempt to validate the user
-    const user = await this.validationModel.validateWithCode(email, token);
+    try {
+      // Attempt to validate the user
+      const { id, isValidated } = await this.userModel.checkIsValidated(
+        email,
+        token
+      );
+      if (isValidated) {
+        // Don't allow them to sign in or re-validate
+        throw createError(
+          409,
+          `User (EMAIL: ${email}) has already been validated`
+        );
+      }
+      const updatedUser = await this.userModel.update(id, {
+        isValidated: true,
+      });
 
-    // Remove password hash from response body
-    Reflect.deleteProperty(user, 'password');
+      // Remove password hash from response body
+      Reflect.deleteProperty(updatedUser, 'password');
 
-    // Generate a JWT for the user to login
-    const jwt = await this.generateToken(user);
+      // Generate a JWT for the user to login
+      const jwt = await this.generateToken(updatedUser);
 
-    return {
-      user,
-      token: jwt,
-    };
+      return {
+        user: updatedUser,
+        token: jwt,
+      };
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async GetResetEmail(email: string) {
+    try {
+      this.logger.debug(`Looking up record for user (EMAIL: ${email})`);
+      const user = await this.userModel.findOne({ email });
+
+      if (!user) throw createError(404, 'Email not found');
+
+      const resetItem = await this.resetModel.getResetItem(user);
+      if (resetItem) {
+        const timeSinceLastRequest = Date.now() - resetItem.createdAt.getTime();
+        if (timeSinceLastRequest < 600000) {
+          throw createError(429, 'Cannot get another code so soon');
+        } else {
+          // Able to generate another code, so delete the old one
+          await this.resetModel.completeUserResets(user);
+        }
+      }
+
+      const { code } = await this.resetModel.generateCode(user);
+
+      await this.mailer.sendPasswordResetEmail(user, code);
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async ResetPasswordWithCode(
+    email: string,
+    password: string,
+    token: string
+  ) {
+    try {
+      this.logger.debug(`Looking up record for user (EMAIL: ${email})`);
+      const user = await this.userModel.findOne({ email });
+      if (!user) throw createError(404, 'Email not found');
+
+      const resetItem = await this.resetModel.getResetItem(user);
+      if (!resetItem) throw createError(409, 'No password resets are active');
+      if (resetItem.code !== token)
+        throw createError(400, 'Invalid password reset code');
+      this.logger.debug(
+        `Password reset code verified for user (ID: ${user.id})`
+      );
+
+      const hashedPassword = await this.userModel.hashPassword(password);
+      await this.userModel.update(user.id, { password: hashedPassword });
+
+      await this.resetModel.completeUserResets(user);
+
+      return user;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 
   private generateToken(user: Omit<IUser, 'password'>) {

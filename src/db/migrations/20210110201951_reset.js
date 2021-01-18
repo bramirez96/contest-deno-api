@@ -9,10 +9,13 @@ exports.up = function (knex) {
       .unsigned()
       .references('users.id')
       .onUpdate('CASCADE')
-      .onDelete('RESTRICT');
-    t.datetime('createdAt', { precision: 6 }).defaultTo(knex.fn.now(6));
-    t.datetime('expiresAt', { precision: 6 }).defaultTo(
-      knex.raw(`? + INTERVAL '? day'`, [knex.fn.now(6), 1])
+      .onDelete('CASCADE');
+    t.datetime('createdAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
+    t.datetime('expiresAt').defaultTo(
+      knex.raw(`? + INTERVAL '? day'`, [
+        knex.raw("(now() at time zone 'utc')"),
+        1,
+      ])
     );
   });
 };

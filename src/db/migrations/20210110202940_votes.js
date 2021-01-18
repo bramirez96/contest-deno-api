@@ -26,7 +26,7 @@ exports.up = function (knex) {
       .references('submissions.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.datetime('createdAt', { precision: 6 }).defaultTo(knex.fn.now(6));
+    t.datetime('createdAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
   });
 };
 
