@@ -8,7 +8,11 @@ import {
   serviceCollection,
   Query,
 } from '../../deps.ts';
-import { IPrompt, IPromptQueueItem } from '../interfaces/prompts.ts';
+import {
+  INewPrompt,
+  IPrompt,
+  IPromptQueueItem,
+} from '../interfaces/prompts.ts';
 import PGModel from './pgModel.ts';
 
 @Service()
@@ -109,6 +113,44 @@ export default class PromptModel extends PGModel {
       this.logger.error(err);
       throw err;
     }
+  }
+
+  public async getAllPrompts() {
+    try {
+      this.logger.debug('Attempting to retrieve all prompts from database');
+
+      const builder = new Query();
+      const sql = builder.table('prompts').select('*').build();
+
+      const response = await this.dbConnect.query(this.parseSql(sql));
+
+      const prompts = (this.parseResponse(response) as unknown) as IPrompt[];
+      this.logger.debug(
+        `${prompts.length} prompt${prompts.length === 1 ? '' : 's'} retrieved`
+      );
+
+      return prompts;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async add(prompt: INewPrompt) {
+    this.logger.debug(`Attempting to add new prompt`);
+
+    const builder = new Query();
+    const sql = builder.table('prompts').insert(prompt).build();
+    const sqlWithReturn = sql + ' RETURNING *';
+
+    const response = await this.dbConnect.query(this.parseSql(sql));
+
+    const newPrompt = ((await this.parseResponse(response, {
+      first: true,
+    })) as unknown) as IPrompt;
+    this.logger.debug(`New prompt added with id ${newPrompt.id}`);
+
+    return newPrompt;
   }
 }
 
