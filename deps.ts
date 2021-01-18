@@ -13,14 +13,26 @@ export type {
   Opine,
 } from 'https://deno.land/x/opine@1.0.2/mod.ts';
 
-// Validator v0.1.1
+// validasaur v0.15.0
 export {
-  object,
-  number,
-  string,
-  array,
-} from 'https://deno.land/x/validator@0.1.1/mod.ts';
-export type { Schema } from 'https://deno.land/x/validator@0.1.1/mod.ts';
+  isString,
+  required,
+  isNumber,
+  isArray,
+  validateArray,
+  validateObject,
+  firstMessages,
+  flattenMessages,
+  validate,
+  minLength,
+  maxLength,
+  match,
+  isEmail,
+} from 'https://deno.land/x/validasaur@v0.15.0/mod.ts';
+export type {
+  ValidationRules,
+  ValidationResult,
+} from 'https://deno.land/x/validasaur@v0.15.0/mod.ts';
 
 // Postgres v0.4.6
 export {
@@ -108,3 +120,6 @@ export type { HandlebarsConfig } from 'https://deno.land/x/handlebars@v0.6.0/mod
 
 // media_types v2.7.0
 export { extension } from 'https://deno.land/x/media_types@v2.7.0/mod.ts';
+
+import moment from 'https://deno.land/x/momentjs@2.29.1-deno/mod.ts';
+export { moment };

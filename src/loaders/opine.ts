@@ -12,9 +12,21 @@ import {
   log,
 } from '../../deps.ts';
 import routes from '../api/index.ts';
+import formParser from './formParser.ts';
 
 export default (app: Opine) => {
   const logger: log.Logger = serviceCollection.get('logger');
+  // Log all API calls to the server
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const now = new Date();
+    const query = new URLSearchParams(req.query).toString();
+    console.log(
+      `[${req.method}] ${req.path}${query.length > 0 ? '?' + query : ''} \
+      (${req.ip})[${now.toISOString()}]`
+    );
+    next();
+  });
+
   // Test Endpoints
   app.get('/status', (req: Request, res: Response) => {
     logger.debug('GET 200 Test hit.');
@@ -33,9 +45,10 @@ export default (app: Opine) => {
     })
   );
   app.use(urlencoded({ extended: false }));
+  app.use(formParser());
 
   // App Routes
-  app.use('/api', routes());
+  app.use(routes());
 
   // Error Handlers
   // Invalid Route

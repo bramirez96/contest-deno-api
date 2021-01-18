@@ -1,13 +1,13 @@
 import { Router } from '../../deps.ts';
 import auth from './routes/auth.ts';
-import submissions from './routes/submissions.ts';
+import contestRoutes from './routes/contest/index.ts';
 
 export default () => {
   console.log('Loading routers...');
   const app = Router();
 
   auth(app);
-  submissions(app);
+  contestRoutes(app);
 
   console.log('Routers loaded.');
   return app;
