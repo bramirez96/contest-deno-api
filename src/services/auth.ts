@@ -68,7 +68,7 @@ export default class AuthService extends BaseService {
 
   public async SignIn(email: string, password: string): Promise<IAuthResponse> {
     try {
-      const user = await this.userModel.getOne({ email });
+      const user = await this.userModel.get({ email }, true);
       if (!user) throw createError(404, 'User not found');
       if (!user.isValidated)
         throw createError(403, 'Account must be validated');
@@ -91,7 +91,7 @@ export default class AuthService extends BaseService {
   public async Validate(email: string, token: string): Promise<IAuthResponse> {
     try {
       // Attempt to validate the user
-      const user = await this.userModel.getOne({ email });
+      const user = await this.userModel.get({ email }, true);
       if (!user) throw createError(404, 'User not found');
       if (user.isValidated) {
         throw createError(409, 'User has already been validated');
@@ -118,10 +118,10 @@ export default class AuthService extends BaseService {
 
   public async GetResetEmail(email: string) {
     try {
-      const user = await this.userModel.getOne({ email });
+      const user = await this.userModel.get({ email }, true);
       if (!user) throw createError(404, 'Email not found');
 
-      const resetItem = await this.resetModel.getOne({ userId: user.id });
+      const resetItem = await this.resetModel.get({ userId: user.id }, true);
 
       await this.db.transaction(async () => {
         if (resetItem) {
@@ -153,10 +153,10 @@ export default class AuthService extends BaseService {
     token: string
   ) {
     try {
-      const user = await this.userModel.getOne({ email });
+      const user = await this.userModel.get({ email }, true);
       if (!user) throw createError(404, 'Email not found');
 
-      const resetItem = await this.resetModel.getOne({ userId: user.id });
+      const resetItem = await this.resetModel.get({ userId: user.id }, true);
       if (!resetItem) throw createError(409, 'No password resets are active');
       if (resetItem.code !== token)
         throw createError(400, 'Invalid password reset code');

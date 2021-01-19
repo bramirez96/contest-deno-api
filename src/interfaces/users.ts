@@ -20,18 +20,6 @@ export interface IUser {
   updatedAt: Date | string;
 }
 
-export type IUserFields =
-  | 'id'
-  | 'codename'
-  | 'email'
-  | 'password'
-  | 'parentEmail'
-  | 'age'
-  | 'isValidated'
-  | 'roleId'
-  | 'createdAt'
-  | 'updatedAt';
-
 export enum UserRoles {
   user = 1,
   admin = 2,

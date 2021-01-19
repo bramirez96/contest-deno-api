@@ -26,8 +26,11 @@ export default class AdminService extends BaseService {
     try {
       const startDate = new Date().toISOString().split('T')[0];
       console.log({ startDate });
-      const currentPrompt = await this.promptModel.getOne({ active: true });
-      const { promptId: newId } = await this.promptQueue.getOne({ startDate });
+      const currentPrompt = await this.promptModel.get({ active: true }, true);
+      const { promptId: newId } = await this.promptQueue.get(
+        { startDate },
+        true
+      );
       if (currentPrompt.id === newId) {
         throw createError(409, 'Prompt is already up-to-date');
       }

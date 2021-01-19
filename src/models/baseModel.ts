@@ -1,4 +1,3 @@
-import { DatabaseValues } from 'https://deno.land/x/cotton@v0.7.5/src/adapters/adapter.ts';
 import {
   log,
   QueryValues,
@@ -8,12 +7,11 @@ import {
 } from '../../deps.ts';
 
 /**
- * When extending this class, T is the 'INewItem' interface,
- * and U is the 'IItem' interface, meaning that the interface
- * for T should include all the fields needed to create a new
- * row, while U should contain all columns on the table.
+ * Type T: new item interface, should be the fields required to
+ * create a new item\
+ * Type U: complete item interface, all fields from the table
  *
- * This is important if you want good linting!
+ * This is important if you want good linting from member functions!
  */
 export default class BaseModel<T, U> {
   constructor(tableName: string) {
@@ -46,29 +44,26 @@ export default class BaseModel<T, U> {
     return first ? response[0] : response;
   }
 
-  public async getOne(filter: Partial<U> & DatabaseResult): Promise<U> {
-    this.logger.debug(`Attempting to retrieve one row from ${this.tableName}`);
-
-    const [response] = ((await this.db
-      .table(this.tableName)
-      .where(...Object.entries(filter)[0])
-      .select('*')
-      .execute()) as unknown) as U[];
-
-    this.logger.debug(`Successfully retrieved row from ${this.tableName}`);
-    return response;
-  }
-
-  public async getAll(): Promise<U[]> {
+  public async get(): Promise<U[]>;
+  public async get(filter?: Partial<U> & DatabaseResult): Promise<U[]>;
+  public async get<B extends boolean>(
+    filter?: Partial<U> & DatabaseResult,
+    first?: B
+  ): Promise<B extends true ? U : U[]>;
+  public async get(
+    filter?: Partial<U> & DatabaseResult,
+    first?: boolean
+  ): Promise<U | U[]> {
     this.logger.debug(`Attempting to retrieve all rows from ${this.tableName}`);
 
-    const response = ((await this.db
-      .table(this.tableName)
-      .select('*')
-      .execute()) as unknown) as U[];
+    const sql = this.db.table(this.tableName).select('*');
 
-    this.logger.debug(`Successfully retrieved rows from ${this.tableName}`);
-    return response;
+    if (filter) {
+      sql.where(...Object.entries(filter)[0]);
+    }
+    const response = (await (sql.execute() as unknown)) as U[];
+
+    return first ? response[0] : response;
   }
 
   public async update(

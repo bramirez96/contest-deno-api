@@ -34,7 +34,7 @@ export default (app: IRouter) => {
     '/',
     authHandler(),
     async (req: Request, res: Response, next: NextFunction) => {
-      const userList = await userModelInstance.getAll();
+      const userList = await userModelInstance.get();
 
       res.setStatus(200).json(userList);
     }
@@ -45,7 +45,7 @@ export default (app: IRouter) => {
     authHandler({ authRequired: true, adminOnly: true }),
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = req.params.id;
-      const user = await userModelInstance.getOne({ id: parseInt(userId) });
+      const user = await userModelInstance.get({ id: parseInt(userId) }, true);
 
       res.setStatus(200).json(user);
     }
