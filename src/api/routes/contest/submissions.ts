@@ -25,7 +25,6 @@ export default (app: IRouter) => {
 
   route.post(
     '/',
-    authHandler({ adminOnly: false }),
     // This will ensure there is only one item in the story field before upload
     validate({
       story: validateArray(
@@ -56,18 +55,13 @@ export default (app: IRouter) => {
     }
   );
 
-  route.get(
-    '/',
-    authHandler({ authRequired: false }),
-    (req: Request, res: Response) => {
-      // I don't know what this one does yet??
-      res.setStatus(200).json({ hit: req.path });
-    }
-  );
+  route.get('/', (req: Request, res: Response) => {
+    // I don't know what this one does yet??
+    res.setStatus(200).json({ hit: req.path });
+  });
 
   route.get(
     '/:submissionId',
-    authHandler({ authRequired: false }),
     async (req: Request, res: Response, next: NextFunction) => {
       // Here is where you get submission data from s3
       const subServiceInstance = serviceCollection.get(SubmissionService);
@@ -79,7 +73,6 @@ export default (app: IRouter) => {
 
   route.post(
     '/test',
-    authHandler({ adminOnly: true, authRequired: true }),
     upload('field1', 'field2'),
     (req: Request, res: Response, next: NextFunction) => {
       res.setStatus(200).json({ hit: 'it' });

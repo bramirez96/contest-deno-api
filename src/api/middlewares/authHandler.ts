@@ -42,7 +42,6 @@ export default (config?: IAuthHandlerConfig) => async (
 
       const id = parseInt(sub || `${sub}`);
       const email = iss;
-      logger.debug(`Token data - { id: ${id}, email: ${email} }`);
 
       logger.debug('Checking token expiration');
       if (!exp || exp < Date.now()) {

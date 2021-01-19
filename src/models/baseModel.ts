@@ -47,23 +47,25 @@ export default class BaseModel<T, U> {
 
   public async get(): Promise<U[]>;
   public async get(filter?: Partial<U> & DatabaseResult): Promise<U[]>;
+  public async get<B extends false, K extends keyof U>(
+    filter?: undefined,
+    config?: IGetResponse<B | undefined, K>
+  ): Promise<U[]>;
+  public async get<B extends boolean, K extends keyof U>(
+    filter?: undefined,
+    config?: IGetResponse<B, K>
+  ): Promise<B extends true ? U : U[]>;
+  public async get<B extends false, K extends keyof U>(
+    filter?: Partial<U> & DatabaseResult,
+    config?: IGetResponse<B, K>
+  ): Promise<U[]>;
   public async get<B extends boolean, K extends keyof U>(
     filter?: Partial<U> & DatabaseResult,
-    config?: {
-      first?: B;
-      limit?: number;
-      orderBy?: K;
-      order?: OrderDirection;
-    }
+    config?: IGetResponse<B, K>
   ): Promise<B extends true ? U : U[]>;
   public async get(
-    filter?: Partial<U> & DatabaseResult,
-    config?: {
-      first?: boolean;
-      limit?: number;
-      orderBy?: string;
-      order?: OrderDirection;
-    }
+    filter?: (Partial<U> & DatabaseResult) | undefined,
+    config?: IGetResponse<boolean, string>
   ): Promise<U | U[]> {
     this.logger.debug(`Attempting to retrieve all rows from ${this.tableName}`);
 
@@ -106,4 +108,11 @@ export default class BaseModel<T, U> {
 
     this.logger.debug(`Successfully deleted row ${id} from ${this.tableName}`);
   }
+}
+
+interface IGetResponse<B, K> {
+  first?: B;
+  limit?: number;
+  orderBy?: K;
+  order?: OrderDirection;
 }

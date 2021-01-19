@@ -30,33 +30,27 @@ export default (app: IRouter) => {
   const userModelInstance = serviceCollection.get(UserModel);
   app.use('/users', route);
 
-  route.get(
-    '/',
-    authHandler(),
-    async (req: Request, res: Response, next: NextFunction) => {
-      const userList = await userModelInstance.get();
+  route.get('/', async (req: Request, res: Response, next: NextFunction) => {
+    const userList = await userModelInstance.get(undefined, {
+      order: 'DESC',
+      orderBy: 'id',
+    });
 
-      res.setStatus(200).json(userList);
-    }
-  );
+    res.setStatus(200).json(userList);
+  });
 
-  route.get(
-    '/:id',
-    authHandler({ authRequired: true, adminOnly: true }),
-    async (req: Request, res: Response, next: NextFunction) => {
-      const userId = req.params.id;
-      const user = await userModelInstance.get(
-        { id: parseInt(userId) },
-        { first: true }
-      );
+  route.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.id;
+    const user = await userModelInstance.get(
+      { id: parseInt(userId) },
+      { first: true }
+    );
 
-      res.setStatus(200).json(user);
-    }
-  );
+    res.setStatus(200).json(user);
+  });
 
   route.post(
     '/',
-    authHandler(),
     validate({
       codename: [
         required,
@@ -80,7 +74,6 @@ export default (app: IRouter) => {
 
   route.put(
     '/:id',
-    authHandler(),
     validate({
       codename: [isString, minLength(1), maxLength(20), match(codenameRegex)],
       email: [isEmail, match(emailRegex)],
@@ -103,7 +96,6 @@ export default (app: IRouter) => {
 
   route.delete(
     '/:id',
-    authHandler(),
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = req.params.id;
       await userModelInstance.delete(parseInt(userId));
@@ -111,4 +103,6 @@ export default (app: IRouter) => {
       return res.setStatus(204).end();
     }
   );
+
+  console.log('User router loaded.');
 };
