@@ -153,7 +153,10 @@ export default class AuthService {
       );
 
       const hashedPassword = await this.hashPassword(password);
-      await this.userModel.update(user.id, { password: hashedPassword });
+      await this.userModel.update(user.id, {
+        password: hashedPassword,
+        updatedAt: new Date().toUTCString(),
+      });
       await this.resetModel.update(resetItem.id, { complete: true });
     } catch (err) {
       this.logger.error(err);

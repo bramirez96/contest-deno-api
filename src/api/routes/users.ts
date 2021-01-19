@@ -89,7 +89,10 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = req.params.id;
-      await userModelInstance.update(parseInt(userId), req.body);
+      await userModelInstance.update(parseInt(userId), {
+        ...req.body,
+        updatedAt: new Date().toUTCString(),
+      });
 
       return res.setStatus(204).end();
     }
