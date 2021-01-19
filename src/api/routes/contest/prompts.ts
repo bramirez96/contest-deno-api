@@ -7,7 +7,7 @@ import {
   serviceCollection,
   log,
 } from '../../../../deps.ts';
-import PromptModel from '../../../models/prompts.ts';
+// import PromptModel from '../../../models/prompts.ts';
 import AdminService from '../../../services/admin.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 

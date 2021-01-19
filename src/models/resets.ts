@@ -1,37 +1,12 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  Model,
-  Primary,
-  Service,
-  serviceCollection,
-} from '../../deps.ts';
-import User from './users.ts';
+import { Service, serviceCollection } from '../../deps.ts';
+import { INewReset, IReset } from '../interfaces/resets.ts';
+import BaseModel from './baseModel.ts';
 
-@Model('resets')
 @Service()
-export default class Reset {
-  @Primary()
-  id!: number;
-
-  @Column({ type: DataType.Boolean })
-  completed!: boolean;
-
-  @Column({ type: DataType.String })
-  code!: string;
-
-  @Column({ type: DataType.Date, default: () => new Date().toUTCString() })
-  createdAt!: Date;
-
-  @Column({ type: DataType.Date })
-  expiresAt!: Date;
-
-  @Column({ type: DataType.Number })
-  userId!: number;
-
-  @BelongsTo(() => User, 'userId')
-  user!: User;
+export default class ResetModel extends BaseModel<INewReset, IReset> {
+  constructor() {
+    super('resets');
+  }
 }
 
-serviceCollection.addTransient(Reset);
+serviceCollection.addTransient(ResetModel);

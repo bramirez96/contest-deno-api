@@ -17,8 +17,20 @@ export interface IUser {
   isValidated: boolean;
   roleId: number;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt: Date | string;
 }
+
+export type IUserFields =
+  | 'id'
+  | 'codename'
+  | 'email'
+  | 'password'
+  | 'parentEmail'
+  | 'age'
+  | 'isValidated'
+  | 'roleId'
+  | 'createdAt'
+  | 'updatedAt';
 
 export enum UserRoles {
   user = 1,

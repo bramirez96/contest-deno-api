@@ -1,3 +1,8 @@
+export interface INewReset {
+  code: string;
+  userId: number;
+}
+
 export interface IReset {
   id: number;
   complete: boolean;

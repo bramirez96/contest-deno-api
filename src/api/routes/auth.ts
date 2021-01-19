@@ -48,9 +48,7 @@ export default (app: IRouter) => {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const authServiceInstance = serviceCollection.get(AuthService);
-        await authServiceInstance.SignUp(req.body, {
-          roleId: 1,
-        });
+        await authServiceInstance.SignUp(req.body);
 
         res.setStatus(201).json({ message: 'User creation successful.' });
       } catch (err) {
@@ -73,7 +71,7 @@ export default (app: IRouter) => {
           req.body.email,
           req.body.password
         );
-        // logger.debug(`User (ID: ${user.id}) successfully signed in`);
+        logger.debug(`User (ID: ${response.user.id}) successfully signed in`);
         res.setStatus(200).json(response);
       } catch (err) {
         logger.error(err);
@@ -94,14 +92,13 @@ export default (app: IRouter) => {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const authServiceInstance = serviceCollection.get(AuthService);
-        const response = await authServiceInstance.Validate(
+        const { token, user } = await authServiceInstance.Validate(
           req.query.email,
           req.query.token
         );
-        // logger.debug(
-        //   `User (ID: ${user.id}) successfully validated and authenticated`
-        // );
-        const token = '';
+        logger.debug(
+          `User (ID: ${user.id}) successfully validated and authenticated`
+        );
 
         const redirectURL = env.REACT_APP_URL + '/activate?authToken=' + token;
         res.redirect(302, redirectURL);

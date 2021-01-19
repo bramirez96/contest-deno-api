@@ -1,31 +1,15 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  Model,
-  Primary,
-  Service,
-  serviceCollection,
-} from '../../deps.ts';
-import User from './users.ts';
+import { Service, serviceCollection } from '../../deps.ts';
+import { INewValidation, IValidation } from '../interfaces/validations.ts';
+import BaseModel from './baseModel.ts';
 
-@Model('validations')
 @Service()
-export default class Validation {
-  @Primary()
-  id!: number;
-
-  @Column({ type: DataType.String })
-  code!: string;
-
-  @Column({ default: () => new Date().toUTCString(), type: DataType.Date })
-  createdAt!: Date;
-
-  @Column({ type: DataType.Number })
-  userId!: number;
-
-  @BelongsTo(() => User, 'id')
-  user!: User;
+export default class ValidationModel extends BaseModel<
+  INewValidation,
+  IValidation
+> {
+  constructor() {
+    super('validations');
+  }
 }
 
-serviceCollection.addTransient(Validation);
+serviceCollection.addTransient(ValidationModel);

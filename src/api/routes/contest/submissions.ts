@@ -25,7 +25,7 @@ export default (app: IRouter) => {
 
   route.post(
     '/',
-    // authHandler({ authRequired: true }),
+    authHandler({ adminOnly: false }),
     // This will ensure there is only one item in the story field before upload
     validate({
       story: validateArray(

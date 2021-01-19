@@ -10,16 +10,20 @@ import {
 import env from '../../config/env.ts';
 import UserModel from '../../models/users.ts';
 
-export default ({
-  authRequired = true,
-  adminOnly = false,
-}: IAuthHandlerConfig) => async (
+/**
+ * Defaults to authReuired and adminOnly being true
+ */
+export default (config?: IAuthHandlerConfig) => async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const token = req.get('Authorization');
+
+  const authRequired = config?.authRequired || true;
+  const adminOnly = config?.adminOnly || true;
+
   if (!token || token === 'null') {
     // If no token, check if auth is even required...
     if (authRequired) throw createError(401, 'You must be logged in');

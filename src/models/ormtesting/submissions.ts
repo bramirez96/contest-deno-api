@@ -37,7 +37,7 @@ export default class Submission {
   @Column({ type: DataType.Number })
   promptId!: number;
 
-  @BelongsTo(() => User, 'userId')
+  @BelongsTo(() => User, 'user_sub')
   user!: User;
 
   @BelongsTo(() => Prompt, 'promptId')

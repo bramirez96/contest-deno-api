@@ -28,6 +28,8 @@ export {
   maxLength,
   match,
   isEmail,
+  isIn,
+  isBool,
 } from 'https://deno.land/x/validasaur@v0.15.0/mod.ts';
 export type {
   ValidationRules,
@@ -102,7 +104,12 @@ export {
   HasMany,
   BelongsTo,
   DataType,
+  Schema,
 } from 'https://deno.land/x/cotton@v0.7.5/mod.ts';
 export type { Manager } from 'https://deno.land/x/cotton@v0.7.5/mod.ts';
 export type { PostgresAdapter } from 'https://deno.land/x/cotton@v0.7.5/src/adapters/postgres.ts';
-export type { Adapter } from 'https://deno.land/x/cotton@v0.7.5/src/adapters/adapter.ts';
+export type {
+  Adapter,
+  DatabaseResult,
+} from 'https://deno.land/x/cotton@v0.7.5/src/adapters/adapter.ts';
+export type { QueryValues } from 'https://deno.land/x/cotton@v0.7.5/src/querybuilder.ts';

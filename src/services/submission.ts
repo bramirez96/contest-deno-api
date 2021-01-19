@@ -1,13 +1,13 @@
 import { Inject, log, Service, serviceCollection } from '../../deps.ts';
 import { INewSubmission, IUploadResponse } from '../interfaces/submissions.ts';
-import SubmissionModel from '../models/submissions.ts';
+// import SubmissionModel from '../models/submissions.ts';
 import BucketService from './bucket.ts';
 
 @Service()
 export default class SubmissionService {
   constructor(
     @Inject(BucketService) protected bucketService: BucketService,
-    @Inject(SubmissionModel) protected submissionModel: SubmissionModel,
+    // @Inject(SubmissionModel) protected submissionModel: SubmissionModel,
     @Inject('logger') protected logger: log.Logger
   ) {}
 
