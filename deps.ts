@@ -39,7 +39,6 @@ export type {
 // di v0.1.1 (dependency injector)
 import { ServiceCollection } from 'https://deno.land/x/di@v0.1.1/mod.ts';
 export { Inject, Service } from 'https://deno.land/x/di@v0.1.1/mod.ts';
-export type { IServiceCollection } from 'https://deno.land/x/di@v0.1.1/mod.ts';
 export const serviceCollection = new ServiceCollection();
 
 // dotenv v2.0.0
@@ -57,10 +56,7 @@ export type {
 
 // djwt @v2.0
 export * as jwt from 'https://deno.land/x/djwt@v2.0/mod.ts';
-export type {
-  AlgorithmInput,
-  Algorithm,
-} from 'https://deno.land/x/djwt@v2.0/algorithm.ts';
+export type { Algorithm } from 'https://deno.land/x/djwt@v2.0/algorithm.ts';
 
 // cors @1.2.1
 export { opineCors } from 'https://deno.land/x/cors@v1.2.1/mod.ts';
@@ -112,4 +108,7 @@ export type {
   Adapter,
   DatabaseResult,
 } from 'https://deno.land/x/cotton@v0.7.5/src/adapters/adapter.ts';
-export type { QueryValues } from 'https://deno.land/x/cotton@v0.7.5/src/querybuilder.ts';
+export type {
+  QueryValues,
+  OrderDirection,
+} from 'https://deno.land/x/cotton@v0.7.5/src/querybuilder.ts';

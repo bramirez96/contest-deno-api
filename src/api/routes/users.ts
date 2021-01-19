@@ -45,7 +45,10 @@ export default (app: IRouter) => {
     authHandler({ authRequired: true, adminOnly: true }),
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = req.params.id;
-      const user = await userModelInstance.get({ id: parseInt(userId) }, true);
+      const user = await userModelInstance.get(
+        { id: parseInt(userId) },
+        { first: true }
+      );
 
       res.setStatus(200).json(user);
     }

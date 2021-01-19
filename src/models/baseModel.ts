@@ -4,6 +4,7 @@ import {
   serviceCollection,
   PostgresAdapter,
   DatabaseResult,
+  OrderDirection,
 } from '../../deps.ts';
 
 /**
@@ -46,24 +47,39 @@ export default class BaseModel<T, U> {
 
   public async get(): Promise<U[]>;
   public async get(filter?: Partial<U> & DatabaseResult): Promise<U[]>;
-  public async get<B extends boolean>(
+  public async get<B extends boolean, K extends keyof U>(
     filter?: Partial<U> & DatabaseResult,
-    first?: B
+    config?: {
+      first?: B;
+      limit?: number;
+      orderBy?: K;
+      order?: OrderDirection;
+    }
   ): Promise<B extends true ? U : U[]>;
   public async get(
     filter?: Partial<U> & DatabaseResult,
-    first?: boolean
+    config?: {
+      first?: boolean;
+      limit?: number;
+      orderBy?: string;
+      order?: OrderDirection;
+    }
   ): Promise<U | U[]> {
     this.logger.debug(`Attempting to retrieve all rows from ${this.tableName}`);
 
     const sql = this.db.table(this.tableName).select('*');
-
     if (filter) {
       sql.where(...Object.entries(filter)[0]);
     }
+    if (config?.limit) {
+      sql.limit(config.limit);
+    }
+    if (config?.orderBy) {
+      sql.order(config.orderBy as string, config?.order || 'ASC');
+    }
     const response = (await (sql.execute() as unknown)) as U[];
 
-    return first ? response[0] : response;
+    return config?.first ? response[0] : response;
   }
 
   public async update(
@@ -86,11 +102,7 @@ export default class BaseModel<T, U> {
   public async delete(id: number): Promise<void> {
     this.logger.debug(`Attempting to delete row ${id} from ${this.tableName}`);
 
-    const res = await this.db
-      .table(this.tableName)
-      .where('id', id)
-      .delete()
-      .execute();
+    await this.db.table(this.tableName).where('id', id).delete().execute();
 
     this.logger.debug(`Successfully deleted row ${id} from ${this.tableName}`);
   }

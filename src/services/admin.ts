@@ -4,13 +4,10 @@ import {
   log,
   serviceCollection,
   createError,
-  Manager,
-  Adapter,
 } from '../../deps.ts';
 import PromptQueueModel from '../models/promptQueue.ts';
 import PromptModel from '../models/prompts.ts';
 import BaseService from './baseService.ts';
-// import PromptModel from '../models/prompts.ts';
 
 @Service()
 export default class AdminService extends BaseService {
@@ -26,10 +23,13 @@ export default class AdminService extends BaseService {
     try {
       const startDate = new Date().toISOString().split('T')[0];
       console.log({ startDate });
-      const currentPrompt = await this.promptModel.get({ active: true }, true);
+      const currentPrompt = await this.promptModel.get(
+        { active: true },
+        { first: true }
+      );
       const { promptId: newId } = await this.promptQueue.get(
         { startDate },
-        true
+        { first: true }
       );
       if (currentPrompt.id === newId) {
         throw createError(409, 'Prompt is already up-to-date');
