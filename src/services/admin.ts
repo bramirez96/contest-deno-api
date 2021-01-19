@@ -7,36 +7,41 @@ import {
   Manager,
   Adapter,
 } from '../../deps.ts';
+import PromptQueueModel from '../models/promptQueue.ts';
+import PromptModel from '../models/prompts.ts';
+import BaseService from './baseService.ts';
 // import PromptModel from '../models/prompts.ts';
 
 @Service()
-export default class AdminService {
-  constructor(@Inject('logger') protected logger: log.Logger) {}
+export default class AdminService extends BaseService {
+  constructor(
+    @Inject(PromptModel) private promptModel: PromptModel,
+    @Inject(PromptQueueModel) private promptQueue: PromptQueueModel,
+    @Inject('logger') protected logger: log.Logger
+  ) {
+    super();
+  }
 
-  public updateActivePrompt() {
+  public async updateActivePrompt() {
     try {
-      // const db = serviceCollection.get('pg') as Adapter;
-      // const currentPrompt = await db
-      //   .getManager()
-      //   .query(PromptModel)
-      //   .where('active', true)
-      //   .first();
-      // console.log(currentPrompt);
-      // const newPromptId = await this.db;
-      // if (currentPrompt.id === newPromptId) {
-      //   throw createError(409, 'Prompt is already up-to-date');
-      // }
-      // const curHour = parseInt(new Date().toISOString().split('T')[1], 10);
-      // if (curHour < 1 || curHour > 22) {
-      //   this.logger.debug('Could not update at this time');
-      //   // throw createError(409, 'Could not update at this time')
-      // }
-      // await Promise.all([
-      //   this.promptModel.update(newPromptId, { active: true }),
-      //   this.promptModel.update(currentPrompt.id, { active: false }),
-      // ]);
-      // this.logger.debug('Successfully updated active prompt');
-      // return newPromptId;
+      const currentPrompt = await this.promptModel.getOne({ active: true });
+      const newPrompt = await this.promptQueue.getOne({
+        startDate: new Date().toISOString().split('T')[0],
+      });
+      if (currentPrompt.id === newPrompt.id) {
+        throw createError(409, 'Prompt is already up-to-date');
+      }
+      const curHour = parseInt(new Date().toISOString().split('T')[1], 10);
+      if (curHour < 1 || curHour > 22) {
+        this.logger.debug('Could not update at this time');
+        throw createError(409, 'Could not update at this time');
+      }
+
+      await this.transaction(async () => {
+        await this.promptModel.update(newPrompt.id, { active: true });
+        await this.promptModel.update(currentPrompt.id, { active: false });
+      });
+      this.logger.debug('Successfully updated active prompt');
     } catch (err) {
       this.logger.error(err);
       throw err;

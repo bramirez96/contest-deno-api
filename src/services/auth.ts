@@ -13,17 +13,20 @@ import { IUser, INewUser, UserRoles } from '../interfaces/users.ts';
 import ResetModel from '../models/resets.ts';
 import UserModel from '../models/users.ts';
 import ValidationModel from '../models/validations.ts';
+import BaseService from './baseService.ts';
 import MailService from './mailer.ts';
 
 @Service()
-export default class AuthService {
+export default class AuthService extends BaseService {
   constructor(
     @Inject(UserModel) private userModel: UserModel,
     @Inject(ResetModel) private resetModel: ResetModel,
     @Inject(ValidationModel) private validationModel: ValidationModel,
     @Inject(MailService) private mailer: MailService,
     @Inject('logger') private logger: log.Logger
-  ) {}
+  ) {
+    super();
+  }
 
   public async SignUp(body: INewUser) {
     try {
@@ -38,23 +41,25 @@ export default class AuthService {
         );
       }
 
-      // Create a new user object
-      const hashedPassword = await this.hashPassword(body.password);
-      const [{ id }] = await this.userModel.add({
-        ...body,
-        password: hashedPassword,
-        roleId: UserRoles['user'],
+      // Start a transaction for data integrity
+      await this.transaction(async () => {
+        // Create a new user object
+        const hashedPassword = await this.hashPassword(body.password);
+        const [{ id }] = await this.userModel.add({
+          ...body,
+          password: hashedPassword,
+          roleId: UserRoles['user'],
+        });
+
+        // Generate Validation for user
+        const code = this.generateValidationCode(id, body.codename);
+        await this.validationModel.add({ code, userId: id });
+        await this.mailer.sendValidationEmail(
+          body.parentEmail || body.email,
+          code
+        );
+        this.logger.debug(`User (ID: ${id}) successfully registered`);
       });
-
-      // Generate Validation for user
-      const code = this.generateValidationCode(id, body.codename);
-      await this.validationModel.add({ code, userId: id });
-      await this.mailer.sendValidationEmail(
-        body.parentEmail || body.email,
-        code
-      );
-
-      this.logger.debug(`User (ID: ${id}) successfully registered`);
     } catch (err) {
       this.logger.error(err);
       throw err;
@@ -117,18 +122,22 @@ export default class AuthService {
       if (!user) throw createError(404, 'Email not found');
 
       const resetItem = await this.resetModel.getOne({ userId: user.id });
-      if (resetItem) {
-        const timeSinceLastRequest = Date.now() - resetItem.createdAt.getTime();
-        if (timeSinceLastRequest < 600000) {
-          throw createError(429, 'Cannot get another code so soon');
-        } else {
-          // Able to generate another code, so delete the old one
-          await this.resetModel.update(resetItem.id, { complete: true });
-        }
-      }
 
-      const code = this.generateResetCode(user);
-      await this.mailer.sendPasswordResetEmail(user, code);
+      await this.transaction(async () => {
+        if (resetItem) {
+          const timeSinceLastRequest =
+            Date.now() - resetItem.createdAt.getTime();
+          if (timeSinceLastRequest < 600000) {
+            throw createError(429, 'Cannot get another code so soon');
+          } else {
+            // Able to generate another code, so delete the old one
+            await this.resetModel.update(resetItem.id, { complete: true });
+          }
+        }
+
+        const code = this.generateResetCode(user);
+        await this.mailer.sendPasswordResetEmail(user, code);
+      });
     } catch (err) {
       this.logger.error(err);
       throw err;
@@ -153,11 +162,14 @@ export default class AuthService {
       );
 
       const hashedPassword = await this.hashPassword(password);
-      await this.userModel.update(user.id, {
-        password: hashedPassword,
-        updatedAt: new Date().toUTCString(),
+
+      await this.transaction(async () => {
+        await this.userModel.update(user.id, {
+          password: hashedPassword,
+          updatedAt: new Date().toUTCString(),
+        });
+        await this.resetModel.update(resetItem.id, { complete: true });
       });
-      await this.resetModel.update(resetItem.id, { complete: true });
     } catch (err) {
       this.logger.error(err);
       throw err;

@@ -12,10 +12,10 @@ export interface INewPrompt {
 export interface IPromptQueueItem {
   id: number;
   promptId: number;
-  startDate: Date;
+  startDate: Date | string;
 }
 
 export interface INewPromptQueueItem {
   promptId: number;
-  startDate: Date;
+  startDate: Date | string;
 }
