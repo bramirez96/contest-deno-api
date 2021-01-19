@@ -2,9 +2,7 @@ import { serviceCollection, PostgresAdapter } from '../../deps.ts';
 
 export default class BaseService {
   constructor() {
-    this.transaction = (serviceCollection.get(
-      'db'
-    ) as PostgresAdapter).transaction;
+    this.db = serviceCollection.get('pg');
   }
-  public transaction: PostgresAdapter['transaction'];
+  public db: PostgresAdapter;
 }

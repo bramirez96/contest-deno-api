@@ -42,7 +42,7 @@ export default class AuthService extends BaseService {
       }
 
       // Start a transaction for data integrity
-      await this.transaction(async () => {
+      await this.db.transaction(async () => {
         // Create a new user object
         const hashedPassword = await this.hashPassword(body.password);
         const [{ id }] = await this.userModel.add({
@@ -123,7 +123,7 @@ export default class AuthService extends BaseService {
 
       const resetItem = await this.resetModel.getOne({ userId: user.id });
 
-      await this.transaction(async () => {
+      await this.db.transaction(async () => {
         if (resetItem) {
           const timeSinceLastRequest =
             Date.now() - resetItem.createdAt.getTime();
@@ -131,12 +131,15 @@ export default class AuthService extends BaseService {
             throw createError(429, 'Cannot get another code so soon');
           } else {
             // Able to generate another code, so delete the old one
-            await this.resetModel.update(resetItem.id, { complete: true });
+            await this.resetModel.update(resetItem.id, { completed: true });
           }
         }
 
         const code = this.generateResetCode(user);
-        await this.mailer.sendPasswordResetEmail(user, code);
+        await this.db.transaction(async () => {
+          await this.resetModel.add({ code, userId: user.id });
+          await this.mailer.sendPasswordResetEmail(user, code);
+        });
       });
     } catch (err) {
       this.logger.error(err);
@@ -163,12 +166,12 @@ export default class AuthService extends BaseService {
 
       const hashedPassword = await this.hashPassword(password);
 
-      await this.transaction(async () => {
+      await this.db.transaction(async () => {
         await this.userModel.update(user.id, {
           password: hashedPassword,
           updatedAt: new Date().toUTCString(),
         });
-        await this.resetModel.update(resetItem.id, { complete: true });
+        await this.resetModel.update(resetItem.id, { completed: true });
       });
     } catch (err) {
       this.logger.error(err);

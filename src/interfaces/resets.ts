@@ -5,7 +5,7 @@ export interface INewReset {
 
 export interface IReset {
   id: number;
-  complete: boolean;
+  completed: boolean;
   code: string;
   userId: number;
   createdAt: Date;
