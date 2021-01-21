@@ -1,11 +1,11 @@
-export interface IValidation {
+export interface IValidation extends INewValidation {
   id: number;
-  code: string;
-  userId: number;
   createdAt: Date;
+  completedAt?: Date;
 }
 
 export interface INewValidation {
-  userId: number;
   code: string;
+  email: string;
+  userId: number;
 }

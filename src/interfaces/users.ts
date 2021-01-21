@@ -1,26 +1,20 @@
-export interface INewUser {
-  codename: string;
-  email: string;
-  parentEmail: string;
-  password: string;
-  age: number;
-  roleId: UserRoles;
-}
+import { Roles } from './roles.ts';
 
-export interface IUser {
+export interface IUser extends Omit<INewUser, 'parentEmail' | 'age'> {
   id: number;
-  codename: string;
-  email: string;
-  password: string;
-  parentEmail: string;
-  age: number;
   isValidated: boolean;
-  roleId: number;
   createdAt: Date;
   updatedAt: Date | string;
 }
 
-export enum UserRoles {
-  user = 1,
-  admin = 2,
+export interface INewUser {
+  codename: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  roleId: Roles;
+  isValidated?: boolean;
+  parentEmail?: string;
+  age?: number;
 }

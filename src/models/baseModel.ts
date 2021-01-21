@@ -14,7 +14,7 @@ import {
  *
  * This is important if you want good linting from member functions!
  */
-export default class BaseModel<T extends QueryValues, U> {
+export default class BaseModel<T, U> {
   constructor(tableName: string) {
     this.tableName = tableName;
     this.db = serviceCollection.get('pg');
@@ -32,7 +32,7 @@ export default class BaseModel<T extends QueryValues, U> {
     body: T,
     first?: B
   ): Promise<B extends true ? U : U[]>;
-  public async add(body: T, first?: boolean): Promise<U | U[]> {
+  public async add(body: T & QueryValues, first?: boolean): Promise<U | U[]> {
     this.logger.debug(`Attempting to add field to table ${this.tableName}`);
 
     const response = ((await this.db

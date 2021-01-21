@@ -9,7 +9,8 @@ import {
   v5,
 } from '../../deps.ts';
 import env from '../config/env.ts';
-import { IUser, INewUser, UserRoles } from '../interfaces/users.ts';
+import { Roles } from '../interfaces/roles.ts';
+import { IUser, INewUser } from '../interfaces/users.ts';
 import ResetModel from '../models/resets.ts';
 import UserModel from '../models/users.ts';
 import ValidationModel from '../models/validations.ts';
@@ -31,6 +32,9 @@ export default class AuthService extends BaseService {
   public async SignUp(body: INewUser) {
     try {
       // Underage users must have a parent email on file for validation
+      if (!body.age) {
+        throw createError(400, 'No age sent');
+      }
       if (
         body.age < 13 &&
         (!body.parentEmail || body.email === body.parentEmail)
@@ -45,19 +49,17 @@ export default class AuthService extends BaseService {
       await this.db.transaction(async () => {
         // Create a new user object
         const hashedPassword = await this.hashPassword(body.password);
-        const [{ id }] = await this.userModel.add({
-          ...body,
-          password: hashedPassword,
-          roleId: UserRoles['user'],
-        });
+        const { id } = await this.userModel.add(
+          { ...body, password: hashedPassword, roleId: Roles['user'] },
+          true
+        );
 
         // Generate Validation for user
-        const code = this.generateValidationCode(id, body.codename);
-        await this.validationModel.add({ code, userId: id });
-        await this.mailer.sendValidationEmail(
-          body.parentEmail || body.email,
-          code
-        );
+        const sendTo = body.parentEmail || body.email;
+        const { url, code } = this.generateValidationURL(body.codename, sendTo);
+        await this.validationModel.add({ code, userId: id, email: sendTo });
+        await this.mailer.sendValidationEmail(sendTo, url);
+
         this.logger.debug(`User (ID: ${id}) successfully registered`);
       });
     } catch (err) {
@@ -200,17 +202,20 @@ export default class AuthService extends BaseService {
     );
   }
 
-  private generateValidationCode(id: number, codename: string) {
+  private generateValidationURL(codename: string, email: string) {
     try {
       this.logger.debug(
-        `Generating email validation token for user (ID: ${id})`
+        `Generating email validation token for user (EMAIL: ${email})`
       );
-      const validationToken = v5.generate({
+      const token = v5.generate({
         namespace: env.UUID_NAMESPACE,
         value: codename,
       }) as string; // Cast as string since we're not passing buffer
 
-      return validationToken;
+      const urlParams = new URLSearchParams({ token, email });
+      const url = env.SERVER_URL + '/auth/activation?' + urlParams.toString();
+
+      return { url, code: token };
     } catch (err) {
       this.logger.error(err);
       throw err;
