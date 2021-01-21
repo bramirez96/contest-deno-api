@@ -14,7 +14,7 @@ export default class AdminService extends BaseService {
   constructor(
     @Inject(PromptModel) private promptModel: PromptModel,
     @Inject(PromptQueueModel) private promptQueue: PromptQueueModel,
-    @Inject('logger') protected logger: log.Logger
+    @Inject('logger') private logger: log.Logger
   ) {
     super();
   }

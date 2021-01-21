@@ -3,6 +3,7 @@ exports.up = function (knex) {
   return knex.schema.createTable('validations', (t) => {
     t.increments('id');
     t.string('code').notNullable().index();
+    t.string('email').notNullable().index();
     t.integer('userId')
       .notNullable()
       .unsigned()
@@ -10,6 +11,7 @@ exports.up = function (knex) {
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
     t.datetime('createdAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
+    t.datetime('completedAt');
   });
 };
 

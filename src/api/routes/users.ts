@@ -14,6 +14,7 @@ import {
   isIn,
   NextFunction,
   isBool,
+  createError,
 } from '../../../deps.ts';
 import {
   codenameRegex,
@@ -31,10 +32,7 @@ export default (app: IRouter) => {
   app.use('/users', route);
 
   route.get('/', async (req: Request, res: Response, next: NextFunction) => {
-    const userList = await userModelInstance.get(undefined, {
-      order: 'DESC',
-      orderBy: 'id',
-    });
+    const userList = await userModelInstance.get();
 
     res.setStatus(200).json(userList);
   });
@@ -45,6 +43,7 @@ export default (app: IRouter) => {
       { id: parseInt(userId) },
       { first: true }
     );
+    if (!user) throw createError(404, 'User not found!');
 
     res.setStatus(200).json(user);
   });

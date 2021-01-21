@@ -34,6 +34,7 @@ export {
 export type {
   ValidationRules,
   ValidationResult,
+  Rule,
 } from 'https://deno.land/x/validasaur@v0.15.0/mod.ts';
 
 // di v0.1.1 (dependency injector)
@@ -46,6 +47,10 @@ export { config } from 'https://deno.land/x/dotenv/mod.ts';
 
 // deno_s3 @0.3.0
 export { S3Bucket } from 'https://deno.land/x/s3@0.3.0/mod.ts';
+export type {
+  GetObjectResponse,
+  PutObjectResponse,
+} from 'https://deno.land/x/s3@0.3.0/mod.ts';
 
 // multiparser @v2.0.3
 export { multiParser } from 'https://deno.land/x/multiparser@v2.0.3/mod.ts';

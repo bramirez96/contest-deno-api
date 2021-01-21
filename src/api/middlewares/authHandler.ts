@@ -63,8 +63,8 @@ export default (config?: IAuthHandlerConfig) => async (
           }
         }
         // Pull the relevant snippets and continue
-        req.body.email = email;
-        req.body.id = id;
+        req.body.userInfo.email = email;
+        req.body.userInfo.id = id;
         next();
       }
     } catch (err) {

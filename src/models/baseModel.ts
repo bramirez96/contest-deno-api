@@ -14,25 +14,25 @@ import {
  *
  * This is important if you want good linting from member functions!
  */
-export default class BaseModel<T, U> {
+export default class BaseModel<T extends QueryValues, U> {
   constructor(tableName: string) {
     this.tableName = tableName;
     this.db = serviceCollection.get('pg');
     this.logger = serviceCollection.get('logger');
   }
-  private tableName: string;
-  private db: PostgresAdapter;
-  private logger: log.Logger;
+  protected tableName: string;
+  protected db: PostgresAdapter;
+  protected logger: log.Logger;
 
   // Putting basic CRUD operations on all Models
 
   // Overloading function call for better linting and usability :)
-  public async add<B extends boolean>(body: T & QueryValues): Promise<U[]>;
+  public async add<B extends boolean>(body: T): Promise<U[]>;
   public async add<B extends boolean>(
-    body: T & QueryValues,
+    body: T,
     first?: B
   ): Promise<B extends true ? U : U[]>;
-  public async add(body: T & QueryValues, first?: boolean): Promise<U | U[]> {
+  public async add(body: T, first?: boolean): Promise<U | U[]> {
     this.logger.debug(`Attempting to add field to table ${this.tableName}`);
 
     const response = ((await this.db
@@ -45,10 +45,8 @@ export default class BaseModel<T, U> {
     return first ? response[0] : response;
   }
 
-  public async get(): Promise<U[]>;
-  public async get(filter?: Partial<U> & DatabaseResult): Promise<U[]>;
   public async get<B extends false, K extends keyof U>(
-    filter?: undefined,
+    filter?: (Partial<U> & DatabaseResult) | undefined,
     config?: IGetResponse<B | undefined, K>
   ): Promise<U[]>;
   public async get<B extends boolean, K extends keyof U>(
@@ -65,7 +63,7 @@ export default class BaseModel<T, U> {
   ): Promise<B extends true ? U : U[]>;
   public async get(
     filter?: (Partial<U> & DatabaseResult) | undefined,
-    config?: IGetResponse<boolean, string>
+    config?: IGetResponse
   ): Promise<U | U[]> {
     this.logger.debug(`Attempting to retrieve all rows from ${this.tableName}`);
 
@@ -110,7 +108,7 @@ export default class BaseModel<T, U> {
   }
 }
 
-interface IGetResponse<B, K> {
+interface IGetResponse<B = boolean, K = string> {
   first?: B;
   limit?: number;
   orderBy?: K;
