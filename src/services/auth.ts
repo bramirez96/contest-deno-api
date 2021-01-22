@@ -23,8 +23,7 @@ export default class AuthService extends BaseService {
     @Inject(UserModel) private userModel: UserModel,
     @Inject(ResetModel) private resetModel: ResetModel,
     @Inject(ValidationModel) private validationModel: ValidationModel,
-    @Inject(MailService) private mailer: MailService,
-    @Inject('logger') private logger: log.Logger
+    @Inject(MailService) private mailer: MailService
   ) {
     super();
   }
