@@ -9,6 +9,9 @@ export default async () => {
     ...env.DB_CONFIG,
   });
 
+  console.log('Testing DB connection...');
+  const res = await db.query('SELECT * FROM users');
+
   console.log('DB connected!');
 
   return db;

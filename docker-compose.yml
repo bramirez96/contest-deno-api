@@ -9,11 +9,10 @@ services:
     environment:
       - POSTGRES_USER=docker
       - POSTGRES_PASSWORD=docker
-      - POSTGRES_DB=ss-deno-be
+      - PGPORT=5932
+      - POSTGRES_MULTIPLE_DATABASES="ss-deno-be","ss-deno-test"
     volumes:
-      - ./docker/pg/postgres.conf:/etc/postgresql/postgresql.conf
-      - ./docker/pg:/var/lib/postgresql/data2
-    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+      - ./docker/pg_scripts:/docker-entrypoint-initdb.d
     networks:
       - postgres
     restart: always
