@@ -13,7 +13,7 @@ export interface INewUser {
   lastname: string;
   email: string;
   password: string;
-  roleId: Roles;
+  roleId?: Roles;
   isValidated?: boolean;
   parentEmail?: string;
   age?: number;

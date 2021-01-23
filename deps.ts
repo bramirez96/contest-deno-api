@@ -106,6 +106,7 @@ export {
   BelongsTo,
   DataType,
   Schema,
+  Q,
 } from 'https://deno.land/x/cotton@v0.7.5/mod.ts';
 export type { Manager } from 'https://deno.land/x/cotton@v0.7.5/mod.ts';
 export type { PostgresAdapter } from 'https://deno.land/x/cotton@v0.7.5/src/adapters/postgres.ts';
