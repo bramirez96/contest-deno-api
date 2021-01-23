@@ -4,9 +4,9 @@ import logger from './logger.ts';
 import mailer from './mailer.ts';
 import bucket from './bucket.ts';
 
-export default async () => {
+export default async (loggerName?: string) => {
   try {
-    const log = await logger();
+    const log = await logger(loggerName);
     serviceCollection.addStatic('logger', log);
 
     const pg = await pgConnect();

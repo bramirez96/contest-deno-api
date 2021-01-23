@@ -13,8 +13,7 @@ import BaseService from './baseService.ts';
 export default class AdminService extends BaseService {
   constructor(
     @Inject(PromptModel) private promptModel: PromptModel,
-    @Inject(PromptQueueModel) private promptQueue: PromptQueueModel,
-    @Inject('logger') private logger: log.Logger
+    @Inject(PromptQueueModel) private promptQueue: PromptQueueModel
   ) {
     super();
   }

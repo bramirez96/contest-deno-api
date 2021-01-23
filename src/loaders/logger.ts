@@ -1,6 +1,6 @@
 import { log } from '../../deps.ts';
 
-export default async () => {
+export default async (name?: string) => {
   console.log('Initializing logger...');
   await log.setup({
     handlers: {
@@ -13,9 +13,13 @@ export default async () => {
         level: 'DEBUG',
         handlers: ['console'],
       },
+      testing: {
+        level: 'WARNING',
+        handlers: ['console'],
+      },
     },
   });
   console.log('Logger initialized!');
 
-  return log.getLogger();
+  return log.getLogger(name);
 };

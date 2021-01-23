@@ -14,8 +14,7 @@ export default class SubmissionService extends BaseService {
   constructor(
     @Inject(BucketService) private bucketService: BucketService,
     @Inject(SubmissionModel) private submissionModel: SubmissionModel,
-    @Inject(DSService) private dsService: DSService,
-    @Inject('logger') private logger: log.Logger
+    @Inject(DSService) private dsService: DSService
   ) {
     super();
   }
