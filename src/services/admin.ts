@@ -21,7 +21,6 @@ export default class AdminService extends BaseService {
   public async updateActivePrompt() {
     try {
       const startDate = new Date().toISOString().split('T')[0];
-      console.log({ startDate });
       const currentPrompt = await this.promptModel.get(
         { active: true },
         { first: true }

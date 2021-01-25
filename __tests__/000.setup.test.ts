@@ -1,4 +1,10 @@
-import { superdeno, assertEquals, TestSuite, test } from '../testDeps.ts';
+import {
+  superdeno,
+  assertEquals,
+  TestSuite,
+  test,
+  SuperDeno,
+} from '../testDeps.ts';
 import { serviceCollection, PostgresAdapter } from '../deps.ts';
 import serverInit from '../src/app.ts';
 import enumData from './testData/enum.ts';
@@ -30,7 +36,11 @@ try {
   console.log({ err });
 }
 
-export const MainSuite = new TestSuite({
+export interface IMainSuiteContext {
+  app: SuperDeno;
+  db: PostgresAdapter;
+}
+export const MainSuite = new TestSuite<IMainSuiteContext>({
   name: '->',
   context: { app, db },
 });

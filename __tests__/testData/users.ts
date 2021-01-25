@@ -1,4 +1,5 @@
 import { INewUser } from '../../src/interfaces/users.ts';
+import { v5 } from '../../testDeps.ts';
 
 const valid: INewUser[] = [
   {
@@ -35,4 +36,10 @@ const tooYoung: INewUser = {
   age: 10,
 };
 
-export default { valid, incomplete, tooYoung };
+const newPass = 'newPassword123';
+const wrongCode = v5.generate({
+  namespace: '6d16c1e3-753f-4909-8d37-d7a84aaba291',
+  value: 'someValue',
+});
+
+export default { valid, incomplete, tooYoung, newPass, wrongCode };

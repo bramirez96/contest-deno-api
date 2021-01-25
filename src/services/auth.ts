@@ -83,7 +83,7 @@ export default class AuthService extends BaseService {
       const token = await this.generateToken(user);
       return { user, token };
     } catch (err) {
-      console.log(err);
+      this.logger.error(err);
       throw err;
     }
   }
@@ -178,7 +178,7 @@ export default class AuthService extends BaseService {
       );
       if (!resetItem) throw createError(409, 'No password resets are active');
       if (resetItem.code !== token)
-        throw createError(400, 'Invalid password reset code');
+        throw createError(401, 'Invalid password reset code');
       this.logger.debug(
         `Password reset code verified for user (ID: ${user.id})`
       );
