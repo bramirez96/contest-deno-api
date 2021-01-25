@@ -10,7 +10,7 @@ export default async () => {
   });
 
   console.log('Testing DB connection...');
-  const res = await db.query('SELECT * FROM users');
+  await db.query('SELECT * FROM users');
 
   console.log('DB connected!');
 

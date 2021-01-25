@@ -43,7 +43,7 @@ export { Inject, Service } from 'https://deno.land/x/di@v0.1.1/mod.ts';
 export const serviceCollection = new ServiceCollection();
 
 // dotenv v2.0.0
-export { config } from 'https://deno.land/x/dotenv/mod.ts';
+export { config } from 'https://deno.land/x/dotenv@v2.0.0/mod.ts';
 
 // deno_s3 @0.3.0
 export { S3Bucket } from 'https://deno.land/x/s3@0.3.0/mod.ts';
