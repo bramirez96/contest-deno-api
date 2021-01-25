@@ -1,4 +1,5 @@
 import { log } from '../../deps.ts';
+import env from '../config/env.ts';
 
 export default async () => {
   console.log('Initializing logger...');
@@ -13,9 +14,21 @@ export default async () => {
         level: 'DEBUG',
         handlers: ['console'],
       },
+      development: {
+        level: 'DEBUG',
+        handlers: ['console'],
+      },
+      production: {
+        level: 'DEBUG',
+        handlers: ['console'],
+      },
+      testing: {
+        level: 'CRITICAL',
+        handlers: ['console'],
+      },
     },
   });
   console.log('Logger initialized!');
 
-  return log.getLogger();
+  return log.getLogger(env.DENO_ENV);
 };

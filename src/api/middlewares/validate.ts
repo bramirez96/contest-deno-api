@@ -7,11 +7,12 @@ import {
   createError,
   log,
   serviceCollection,
+  Rule,
 } from '../../../deps.ts';
 
-export default (
-  schema: ValidationRules,
-  toValidate: 'query' | 'body' = 'body'
+export default <T = undefined>(
+  schema: IRulesFromType<T>,
+  toValidate: 'query' | 'body' | 'params' = 'body'
 ) => async (req: Request, res: Response, next: NextFunction) => {
   const logger: log.Logger = serviceCollection.get('logger');
   try {
@@ -35,3 +36,8 @@ export default (
     return next(err);
   }
 };
+
+type IRulesFromType<T> = {
+  [P in keyof T]?: Rule | Rule[];
+} &
+  ValidationRules;

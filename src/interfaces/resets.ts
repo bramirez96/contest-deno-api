@@ -1,8 +1,11 @@
-export interface IReset {
+export interface IReset extends INewReset {
   id: number;
-  complete: boolean;
-  code: string;
-  userId: number;
+  completed: boolean;
   createdAt: Date;
   expiresAt: Date;
+}
+
+export interface INewReset {
+  code: string;
+  userId: number;
 }

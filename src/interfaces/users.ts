@@ -1,26 +1,29 @@
+import { DatabaseResult } from '../../deps.ts';
+import { Roles } from './roles.ts';
+
+export interface IUser extends Omit<INewUser, 'parentEmail' | 'age'> {
+  id: number;
+  isValidated: boolean;
+  createdAt: Date;
+  updatedAt: Date | string;
+}
+
 export interface INewUser {
   codename: string;
+  firstname: string;
+  lastname: string;
   email: string;
-  parentEmail: string;
   password: string;
-  age: number;
-  roleId: UserRoles;
+  roleId?: Roles;
+  isValidated?: boolean;
+  parentEmail?: string;
+  age?: number;
 }
 
-export interface IUser {
-  id: number;
-  codename: string;
-  email: string;
-  password: string;
-  parentEmail: string;
-  age: number;
+export interface IValidationByUser extends DatabaseResult {
+  validationEmail: string;
+  validationId: number;
   isValidated: boolean;
-  roleId: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export enum UserRoles {
-  user = 1,
-  admin = 2,
+  id: number;
+  code: string;
 }

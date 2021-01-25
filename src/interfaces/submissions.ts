@@ -1,28 +1,24 @@
-export interface ISubmission {
+import { PutObjectResponse } from '../../deps.ts';
+
+export interface ISubmission extends INewSubmission {
   id: number;
-  s3Label: string;
-  etag: string;
-  transcription: string;
-  confidence: number;
-  dsScore: number;
-  rotation: number;
-  userId: number;
-  promptId: number;
   createdAt: Date;
 }
 
-export interface INewSubmission {
+export interface INewSubmission extends IDSResponse {
   s3Label: string;
   etag: string;
-  transcription: string;
-  confidence: number;
-  dsScore: number;
-  rotation: number;
   userId: number;
   promptId: number;
 }
 
-export interface IUploadResponse {
-  etag: string;
+export interface IUploadResponse extends PutObjectResponse {
   s3Label: string;
+}
+
+export interface IDSResponse {
+  transcription: string;
+  confidence: number;
+  dsScore: number;
+  rotation: number;
 }

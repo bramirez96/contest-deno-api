@@ -20,7 +20,7 @@ export default (app: Opine) => {
   app.use((req: Request, res: Response, next: NextFunction) => {
     const now = new Date();
     const query = new URLSearchParams(req.query).toString();
-    console.log(
+    logger.debug(
       `[${req.method}] ${req.path}${query.length > 0 ? '?' + query : ''} \
       (${req.ip})[${now.toISOString()}]`
     );
@@ -30,11 +30,11 @@ export default (app: Opine) => {
   // Test Endpoints
   app.get('/status', (req: Request, res: Response) => {
     logger.debug('GET 200 Test hit.');
-    res.setStatus(200).end();
+    res.setStatus(200).json({ message: 'API up!' });
   });
   app.head('/status', (req: Request, res: Response) => {
     logger.debug('HEAD 200 Test hit.');
-    res.setStatus(200).end();
+    res.setStatus(200).json({ message: 'API up!' });
   });
 
   // Middleware

@@ -7,6 +7,7 @@ import {
   createError,
   v4,
 } from '../../deps.ts';
+import { IUploadResponse } from '../interfaces/submissions.ts';
 
 @Service()
 export default class BucketService {
@@ -15,7 +16,10 @@ export default class BucketService {
     @Inject('logger') private logger: log.Logger
   ) {}
 
-  public async upload(buffer: Uint8Array, extension?: string) {
+  public async upload(
+    buffer: Uint8Array,
+    extension?: string
+  ): Promise<IUploadResponse> {
     try {
       if (!extension) throw createError(400, `Could not get file extension`);
       const s3Label = new URLSearchParams({
@@ -24,10 +28,12 @@ export default class BucketService {
       this.logger.debug(`Bucket tag generated for ${s3Label}`);
 
       this.logger.debug(`Beginning upload of ${s3Label}`);
-      const { etag } = await this.s3.putObject(s3Label, buffer);
-      this.logger.debug(`Upload file (${s3Label}) successful (ETAG: ${etag})`);
+      const response = await this.s3.putObject(s3Label, buffer);
+      this.logger.debug(
+        `Upload file (${s3Label}) successful (ETAG: ${response.etag})`
+      );
 
-      return { etag, s3Label };
+      return { ...response, s3Label };
     } catch (err) {
       this.logger.error(err);
       throw err;

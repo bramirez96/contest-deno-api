@@ -2,19 +2,23 @@ import { config, Algorithm } from '../../deps.ts';
 
 config();
 
+export type envTypes = 'development' | 'production' | 'testing';
 const PORT = Deno.env.get('PORT') || '8000';
+const DENO_ENV = (Deno.env.get('DENO_ENV') || 'development') as envTypes;
 
 export default {
+  DENO_ENV,
   PORT: parseInt(PORT, 10),
   UUID_NAMESPACE: Deno.env.get('UUID_NAMESPACE') || '',
   SERVER_URL: Deno.env.get('SERVER_URL') || 'http://localhost:' + PORT,
-  DB_URL: Deno.env.get('DB_URL'),
+  DB_URL: Deno.env.get((DENO_ENV === 'testing' ? 'TEST_' : '') + 'DB_URL'),
   REACT_APP_URL: Deno.env.get('REACT_APP_URL') || 'http://localhost:3000',
   DB_CONFIG: {
-    database: Deno.env.get('DB_NAME') || '',
+    database:
+      Deno.env.get((DENO_ENV === 'testing' ? 'TEST_' : '') + 'DB_NAME') || '',
     hostname: Deno.env.get('DB_HOST') || '',
     port: parseInt(Deno.env.get('DB_PORT') || '0', 10),
-    user: Deno.env.get('DB_USER') || '',
+    username: Deno.env.get('DB_USER') || '',
     password: Deno.env.get('DB_PASS') || '',
   },
   SES_CONFIG: {

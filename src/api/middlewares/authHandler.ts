@@ -10,16 +10,20 @@ import {
 import env from '../../config/env.ts';
 import UserModel from '../../models/users.ts';
 
-export default ({
-  authRequired = true,
-  adminOnly = false,
-}: IAuthHandlerConfig) => async (
+/**
+ * Defaults to authReuired and adminOnly being true
+ */
+export default (config?: IAuthHandlerConfig) => async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const token = req.get('Authorization');
+
+  const authRequired = config?.authRequired || true;
+  const adminOnly = config?.adminOnly || true;
+
   if (!token || token === 'null') {
     // If no token, check if auth is even required...
     if (authRequired) throw createError(401, 'You must be logged in');
@@ -38,7 +42,6 @@ export default ({
 
       const id = parseInt(sub || `${sub}`);
       const email = iss;
-      logger.debug(`Token data - { id: ${id}, email: ${email} }`);
 
       logger.debug('Checking token expiration');
       if (!exp || exp < Date.now()) {
@@ -53,14 +56,15 @@ export default ({
           // Get an instance of the UserModel if we need to admin check
           const userModelInstance = serviceCollection.get(UserModel);
           // If user is not an admin
-          const userIsAdmin = await userModelInstance.checkIsAdmin(id);
+          // const userIsAdmin = await userModelInstance.checkIsAdmin(id);
+          const userIsAdmin = true;
           if (!userIsAdmin) {
             throw createError(401, 'Must be admin');
           }
         }
         // Pull the relevant snippets and continue
-        req.body.email = email;
-        req.body.id = id;
+        req.body.userInfo.email = email;
+        req.body.userInfo.id = id;
         next();
       }
     } catch (err) {

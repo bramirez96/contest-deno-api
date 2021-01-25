@@ -23,6 +23,7 @@ import {
 import validate from '../middlewares/validate.ts';
 import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
+import { INewUser } from '../../interfaces/users.ts';
 
 const route = Router();
 
@@ -32,7 +33,7 @@ export default (app: IRouter) => {
 
   route.post(
     '/register',
-    validate({
+    validate<INewUser>({
       codename: [
         required,
         isString,
@@ -44,13 +45,13 @@ export default (app: IRouter) => {
       parentEmail: [required, isEmail, match(emailRegex)],
       password: [required, isString, match(passwordRegex)],
       age: [required, isNumber],
+      firstname: [required, isString],
+      lastname: [required, isString],
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const authServiceInstance = serviceCollection.get(AuthService);
-        await authServiceInstance.SignUp(req.body, {
-          roleId: 1,
-        });
+        await authServiceInstance.SignUp(req.body);
 
         res.setStatus(201).json({ message: 'User creation successful.' });
       } catch (err) {
@@ -69,12 +70,12 @@ export default (app: IRouter) => {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const authServiceInstance = serviceCollection.get(AuthService);
-        const { user, token } = await authServiceInstance.SignIn(
+        const response = await authServiceInstance.SignIn(
           req.body.email,
           req.body.password
         );
-        logger.debug(`User (ID: ${user.id}) successfully signed in`);
-        res.setStatus(200).json({ user, token });
+        logger.debug(`User (ID: ${response.user.id}) successfully signed in`);
+        res.setStatus(201).json(response);
       } catch (err) {
         logger.error(err);
         next(err);
@@ -94,7 +95,7 @@ export default (app: IRouter) => {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const authServiceInstance = serviceCollection.get(AuthService);
-        const { user, token } = await authServiceInstance.Validate(
+        const { token, user } = await authServiceInstance.Validate(
           req.query.email,
           req.query.token
         );
