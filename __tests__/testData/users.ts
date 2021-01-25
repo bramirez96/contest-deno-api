@@ -38,7 +38,7 @@ const tooYoung: INewUser = {
 
 const newPass = 'newPassword123';
 const wrongCode = v5.generate({
-  namespace: '6d16c1e3-753f-4909-8d37-d7a84aaba291',
+  namespace: '6d16c1e3-753f-4909-8d37-d7a84aaba291', // DONT MAKE THE SAME AS ENV NAMESPACE
   value: 'someValue',
 });
 

@@ -46,7 +46,7 @@ export default {
     region: Deno.env.get('S3_REGION') || '',
   },
   JWT: {
-    SECRET: Deno.env.get('JWT_SECRET') || '',
+    SECRET: Deno.env.get('JWT_SECRET') || 'somefakesecret',
     ALGO: (Deno.env.get('JWT_ALGORITHM') as Algorithm) || 'HS512',
   },
 };
