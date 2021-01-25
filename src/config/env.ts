@@ -2,24 +2,34 @@ import { config, Algorithm } from '../../deps.ts';
 
 config();
 
-export type envTypes = 'development' | 'production' | 'testing';
+export type envTypes = 'development' | 'production' | 'testing' | 'ci';
 const PORT = Deno.env.get('PORT') || '8000';
 const DENO_ENV = (Deno.env.get('DENO_ENV') || 'development') as envTypes;
 
+const envPrefix = () => {
+  switch (DENO_ENV) {
+    case 'testing':
+      return 'TEST_';
+    case 'ci':
+      return 'CI_';
+    default:
+      return '';
+  }
+};
+
 export default {
-  DENO_ENV,
+  DENO_ENV: DENO_ENV === 'ci' ? 'testing' : DENO_ENV,
   PORT: parseInt(PORT, 10),
   UUID_NAMESPACE: Deno.env.get('UUID_NAMESPACE') || '',
   SERVER_URL: Deno.env.get('SERVER_URL') || 'http://localhost:' + PORT,
-  DB_URL: Deno.env.get((DENO_ENV === 'testing' ? 'TEST_' : '') + 'DB_URL'),
+  DB_URL: Deno.env.get(envPrefix() + 'DB_URL'),
   REACT_APP_URL: Deno.env.get('REACT_APP_URL') || 'http://localhost:3000',
   DB_CONFIG: {
-    database:
-      Deno.env.get((DENO_ENV === 'testing' ? 'TEST_' : '') + 'DB_NAME') || '',
-    hostname: Deno.env.get('DB_HOST') || '',
-    port: parseInt(Deno.env.get('DB_PORT') || '0', 10),
-    username: Deno.env.get('DB_USER') || '',
-    password: Deno.env.get('DB_PASS') || '',
+    database: Deno.env.get(envPrefix() + 'DB_NAME') || '',
+    hostname: Deno.env.get(envPrefix() + 'DB_HOST') || '',
+    port: parseInt(Deno.env.get(envPrefix() + 'DB_PORT') || '0', 10),
+    username: Deno.env.get(envPrefix() + 'DB_USER') || '',
+    password: Deno.env.get(envPrefix() + 'DB_PASS') || '',
   },
   SES_CONFIG: {
     credentials: {

@@ -31,4 +31,18 @@ module.exports = {
       directory: './src/db/seeds',
     },
   },
+  ci: {
+    client: 'pg',
+    connection: process.env.CI_DB_URL,
+    pool: {
+      min: 2,
+      max: 10,
+    },
+    migrations: {
+      directory: './src/db/migrations',
+    },
+    seeds: {
+      directory: './src/db/seeds',
+    },
+  },
 };
