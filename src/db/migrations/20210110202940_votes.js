@@ -8,19 +8,19 @@ exports.up = function (knex) {
       .references('users.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.integer('firstPlace')
+    t.integer('firstPlaceId')
       .notNullable()
       .unsigned()
       .references('submissions.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.integer('secondPlace')
+    t.integer('secondPlaceId')
       .notNullable()
       .unsigned()
       .references('submissions.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.integer('thirdPlace')
+    t.integer('thirdPlaceId')
       .notNullable()
       .unsigned()
       .references('submissions.id')

@@ -1,12 +1,18 @@
-import { Client } from '../../deps.ts';
+import { connect } from '../../deps.ts';
 import env from '../config/env.ts';
 
 export default async () => {
-  const client = new Client(env.DB_CONFIG);
-
   console.log('Connecting to DB...');
-  await client.connect();
+
+  const db = await connect({
+    type: 'postgres',
+    ...env.DB_CONFIG,
+  });
+
+  console.log('Testing DB connection...');
+  const res = await db.query('SELECT * FROM users');
+
   console.log('DB connected!');
 
-  return client;
+  return db;
 };

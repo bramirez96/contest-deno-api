@@ -3,17 +3,17 @@ const seedUsers = [
   {
     codename: 'A Codename',
     email: 'anemail@email.com',
-    parentEmail: 'anEmail@email.com',
+    firstname: 'Firstname',
+    lastname: 'Lastname',
     password: 'thisisastringyoucanteverlogin',
-    age: 24,
     roleId: 1,
   },
   {
     codename: 'CodenameTwo',
     email: 'anemawwww@email.com',
-    parentEmail: 'anEmawwww@email.com',
+    firstname: 'Firstname',
+    lastname: 'Lastname',
     password: 'thisisastringyoucanteverloginuhoh',
-    age: 22,
     roleId: 2,
   },
 ];

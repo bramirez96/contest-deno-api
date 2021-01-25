@@ -18,21 +18,14 @@ export default class MailService {
     @Inject('logger') private logger: log.Logger
   ) {}
 
-  public async sendValidationEmail(
-    email: string,
-    token: string,
-    parentEmail?: string
-  ) {
-    const urlParams = new URLSearchParams({ token, email });
-    const url = env.SERVER_URL + '/auth/activation?' + urlParams.toString();
-
+  public async sendValidationEmail(email: string, url: string) {
     try {
       this.logger.debug(`Sending activation email for user (EMAIL: ${email})`);
       const handle = new Handlebars(hbsConfig());
       const result = await handle.renderView('activation', { url });
       const emailContent = new SendEmailCommand({
         Destination: {
-          ToAddresses: [parentEmail || email],
+          ToAddresses: [email],
         },
         FromEmailAddress: env.SES_CONFIG.email,
         Content: {

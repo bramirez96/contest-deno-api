@@ -17,9 +17,9 @@ module.exports = {
       directory: './src/db/seeds',
     },
   },
-  production: {
+  testing: {
     client: 'pg',
-    connection: process.env.DB_URL,
+    connection: process.env.TEST_DB_URL,
     pool: {
       min: 2,
       max: 10,
