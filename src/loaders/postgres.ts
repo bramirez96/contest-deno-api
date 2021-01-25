@@ -4,13 +4,14 @@ import env from '../config/env.ts';
 export default async () => {
   console.log('Connecting to DB...');
 
+  console.log(env.DB_CONFIG);
   const db = await connect({
     type: 'postgres',
     ...env.DB_CONFIG,
   });
 
   console.log('Testing DB connection...');
-  const res = await db.query('SELECT * FROM users');
+  await db.query('SELECT * FROM users');
 
   console.log('DB connected!');
 
