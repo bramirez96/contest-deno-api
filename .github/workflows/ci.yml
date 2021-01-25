@@ -15,9 +15,6 @@ jobs:
         with:
           deno-version: 1.6.3
 
-      - name: Check formatting
-        run: deno fmt --check
-
       - name: Run tests
         env:
           DENO_ENV: ci
