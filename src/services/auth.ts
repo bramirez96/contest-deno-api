@@ -29,23 +29,24 @@ export default class AuthService extends BaseService {
   }
 
   public async SignUp(body: INewUser) {
+    // Underage users must have a parent email on file for validation
+    if (!body.age) {
+      throw createError(400, 'No age sent');
+    }
+    if (
+      body.age < 13 &&
+      (!body.parentEmail || body.email === body.parentEmail)
+    ) {
+      throw createError(400, 'Underage users must have a parent email on file');
+    }
     try {
-      // Underage users must have a parent email on file for validation
-      if (!body.age) {
-        throw createError(400, 'No age sent');
-      }
-      if (
-        body.age < 13 &&
-        (!body.parentEmail || body.email === body.parentEmail)
-      ) {
-        throw createError(
-          400,
-          'Underage users must have a parent email on file'
-        );
-      }
-
       // Start a transaction for data integrity
       await this.db.transaction(async () => {
+        // Further sanitize data
+        const sendTo = body.parentEmail || body.email;
+        Reflect.deleteProperty(body, 'age');
+        Reflect.deleteProperty(body, 'parentEmail');
+
         // Create a new user object
         const hashedPassword = await this.hashPassword(body.password);
         const { id } = await this.userModel.add(
@@ -54,7 +55,6 @@ export default class AuthService extends BaseService {
         );
 
         // Generate Validation for user
-        const sendTo = body.parentEmail || body.email;
         const { url, code } = this.generateValidationURL(body.codename, sendTo);
         await this.validationModel.add({ code, userId: id, email: sendTo });
         await this.mailer.sendValidationEmail(sendTo, url);
@@ -92,16 +92,26 @@ export default class AuthService extends BaseService {
   public async Validate(email: string, token: string): Promise<IAuthResponse> {
     try {
       // Attempt to validate the user
-      const user = await this.userModel.get({ email }, { first: true });
-      if (!user) throw createError(404, 'User not found');
-      if (user.isValidated) {
+      const userValidation = await this.userModel.getUserByResetEmail(email);
+      if (!userValidation) throw createError(404, 'User not found');
+      if (userValidation.isValidated) {
         throw createError(409, 'User has already been validated');
       }
 
-      const updatedUser = await this.userModel.update(user.id, {
-        isValidated: true,
-        updatedAt: new Date().toUTCString(),
+      let updatedUser: IUser | undefined;
+
+      await this.db.transaction(async () => {
+        const now = new Date().toUTCString();
+        updatedUser = await this.userModel.update(userValidation.id, {
+          isValidated: true,
+          updatedAt: now,
+        });
+        await this.validationModel.update(userValidation.validationId, {
+          completedAt: now,
+        });
       });
+
+      if (!updatedUser) throw createError(409, 'Could not create user');
 
       // Remove password hash from response body
       Reflect.deleteProperty(updatedUser, 'password');

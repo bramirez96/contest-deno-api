@@ -1,15 +1,16 @@
 import { superdeno, assertEquals, TestSuite, test } from '../testDeps.ts';
 import { serviceCollection, PostgresAdapter } from '../deps.ts';
 import serverInit from '../src/app.ts';
+import enumData from './testData/enum.ts';
 
 console.log('Initializing server for Deno test suite.');
-const server = await serverInit('testing');
+const server = await serverInit();
 const app = superdeno(server);
 console.log('Initialized server instance.');
 
-console.log('Truncating tables for referential integrity...');
 const db: PostgresAdapter = serviceCollection.get('pg');
 try {
+  console.log('Truncating tables for referential integrity...');
   await db.query(
     'TRUNCATE \
   roles, enum_grades, enum_subjects, users, prompts, submissions, \
@@ -18,15 +19,20 @@ try {
   clever_students, clever_teachers, rumbles, rumble_sections \
   RESTART IDENTITY CASCADE'
   );
+
+  console.log('Inserting enumerated table data...');
+  await db.table('roles').insert(enumData.roles).execute();
+  console.log('Successfully truncated!');
 } catch (err) {
   // This always throws an error, there's an unhandled switch case in PG.
   // Despite the error, the truncate seems to work! Ignore it!
   console.log("Possible error on truncate. If tests pass it's all good.");
+  console.log({ err });
 }
 
 export const MainSuite = new TestSuite({
-  name: 'main ->',
-  context: { app },
+  name: '->',
+  context: { app, db },
 });
 
 test(MainSuite, 'test suite initialized', () => {

@@ -3,14 +3,8 @@ import { Opine } from '../../deps.ts';
 import opineLoader from './opine.ts';
 import dependencyInjector from './dependencyInjector.ts';
 
-export default async ({
-  opineApp,
-  loggerName,
-}: {
-  opineApp: Opine;
-  loggerName?: string;
-}) => {
+export default async ({ opineApp }: { opineApp: Opine }) => {
   console.log('Running loaders...');
-  await dependencyInjector(loggerName);
+  await dependencyInjector();
   opineLoader(opineApp);
 };

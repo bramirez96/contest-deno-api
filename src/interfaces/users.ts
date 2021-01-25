@@ -1,3 +1,4 @@
+import { DatabaseResult } from '../../deps.ts';
 import { Roles } from './roles.ts';
 
 export interface IUser extends Omit<INewUser, 'parentEmail' | 'age'> {
@@ -17,4 +18,11 @@ export interface INewUser {
   isValidated?: boolean;
   parentEmail?: string;
   age?: number;
+}
+
+export interface IValidationByUser extends DatabaseResult {
+  validationEmail: string;
+  validationId: number;
+  isValidated: boolean;
+  id: number;
 }

@@ -1,7 +1,7 @@
 export interface IValidation extends INewValidation {
   id: number;
-  createdAt: Date;
-  completedAt?: Date;
+  createdAt: Date | string;
+  completedAt?: Date | string;
 }
 
 export interface INewValidation {

@@ -23,6 +23,7 @@ import {
 import validate from '../middlewares/validate.ts';
 import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
+import { INewUser } from '../../interfaces/users.ts';
 
 const route = Router();
 
@@ -32,7 +33,7 @@ export default (app: IRouter) => {
 
   route.post(
     '/register',
-    validate({
+    validate<INewUser>({
       codename: [
         required,
         isString,
@@ -44,6 +45,8 @@ export default (app: IRouter) => {
       parentEmail: [required, isEmail, match(emailRegex)],
       password: [required, isString, match(passwordRegex)],
       age: [required, isNumber],
+      firstname: [required, isString],
+      lastname: [required, isString],
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {

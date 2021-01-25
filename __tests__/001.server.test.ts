@@ -7,7 +7,7 @@ import {
 import { MainSuite } from './000.setup.test.ts';
 
 const ServerSuite = new TestSuite({
-  name: 'server ->',
+  name: '/status',
   suite: MainSuite,
 });
 
