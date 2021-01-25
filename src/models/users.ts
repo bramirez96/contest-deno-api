@@ -15,12 +15,14 @@ export default class UserModel extends BaseModel<INewUser, IUser> {
       .table('users')
       .innerJoin('validations', 'users.id', 'validations.userId')
       .where('validations.email', resetEmail)
+      .order('validations.id', 'DESC')
       .first()
       .select(
         ['validations.email', 'validationEmail'],
         ['validations.id', 'validationId'],
         'users.isValidated',
-        'users.id'
+        'users.id',
+        'validations.code'
       )
       .execute()) as IValidationByUser[];
 

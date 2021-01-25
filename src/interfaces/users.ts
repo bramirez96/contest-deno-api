@@ -25,4 +25,5 @@ export interface IValidationByUser extends DatabaseResult {
   validationId: number;
   isValidated: boolean;
   id: number;
+  code: string;
 }

@@ -3,7 +3,6 @@ import {
   Inject,
   serviceCollection,
   jwt,
-  log,
   bcrypt,
   createError,
   v5,
@@ -96,6 +95,9 @@ export default class AuthService extends BaseService {
       if (!userValidation) throw createError(404, 'User not found');
       if (userValidation.isValidated) {
         throw createError(409, 'User has already been validated');
+      }
+      if (token !== userValidation.code) {
+        throw createError(401, 'Invalid activation code');
       }
 
       let updatedUser: IUser | undefined;

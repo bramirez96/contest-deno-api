@@ -75,7 +75,7 @@ export default (app: IRouter) => {
           req.body.password
         );
         logger.debug(`User (ID: ${response.user.id}) successfully signed in`);
-        res.setStatus(200).json(response);
+        res.setStatus(201).json(response);
       } catch (err) {
         logger.error(err);
         next(err);

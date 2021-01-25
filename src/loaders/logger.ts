@@ -23,7 +23,7 @@ export default async () => {
         handlers: ['console'],
       },
       testing: {
-        level: 'WARNING',
+        level: 'CRITICAL',
         handlers: ['console'],
       },
     },

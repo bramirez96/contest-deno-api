@@ -3,6 +3,7 @@ export {
   assertObjectMatch,
   assertStringIncludes,
   assertArrayIncludes,
+  assertExists,
 } from 'https://deno.land/std@0.80.0/testing/asserts.ts';
 
 export { superdeno } from 'https://x.nest.land/superdeno@3.0.0/mod.ts';
