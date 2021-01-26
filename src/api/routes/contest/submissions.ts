@@ -64,6 +64,7 @@ export default (app: IRouter) => {
         );
         res.setStatus(201).json({ message: 'Upload successful!' });
       } catch (err) {
+        console.log(err);
         logger.error(err);
         throw err;
       }

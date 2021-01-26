@@ -32,6 +32,7 @@ export default <T = undefined>(
       );
     }
   } catch (err) {
+    console.log(err);
     logger.error(err);
     return next(err);
   }

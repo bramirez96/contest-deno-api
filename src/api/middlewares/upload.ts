@@ -48,6 +48,7 @@ export default (...fileNames: string[]) => async (
 
     next();
   } catch (err) {
+    console.log(err);
     logger.error(err);
     throw err;
   }
