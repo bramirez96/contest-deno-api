@@ -24,4 +24,4 @@ jobs:
           CI_DB_PASS: ${{ secrets.CI_DB_PASS }}
           CI_DB_USER: ${{ secrets.CI_DB_USER }}
           UUID_NAMESPACE: ${{ secrets.UUID_NAMESPACE }}
-        run: deno test -c tsconfig.json --allow-read --allow-net --allow-write --allow-env --unstable __tests__/
+        run: deno test -c tsconfig.json --allow-read --allow-net --allow-write --allow-env --unstable __tests__/index.test.ts
