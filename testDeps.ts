@@ -16,3 +16,5 @@ export { isFreePort } from 'https://deno.land/x/free_port@v1.2.0/mod.ts';
 export type { DatabaseResult } from 'https://deno.land/x/cotton@v0.7.5/src/adapters/adapter.ts';
 
 export { v5 } from 'https://deno.land/std@0.83.0/uuid/mod.ts';
+
+export type { FormFile } from 'https://deno.land/x/multiparser@v2.0.3/mod.ts';

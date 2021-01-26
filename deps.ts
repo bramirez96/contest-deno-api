@@ -49,7 +49,11 @@ export { config } from 'https://deno.land/x/dotenv@v2.0.0/mod.ts';
 export { S3Bucket } from 'https://deno.land/x/s3@0.3.0/mod.ts';
 export type {
   GetObjectResponse,
+  GetObjectOptions,
   PutObjectResponse,
+  PutObjectOptions,
+  DeleteObjectOptions,
+  DeleteObjectResponse,
 } from 'https://deno.land/x/s3@0.3.0/mod.ts';
 
 // multiparser @v2.0.3

@@ -38,7 +38,7 @@ export default (app: IRouter) => {
         }),
         { minLength: 1, maxLength: 1 }
       ),
-      promptId: [required, isNumber],
+      promptId: [required, isString],
     }),
     upload('story'),
     // Make sure upload was processed correctly
@@ -57,9 +57,9 @@ export default (app: IRouter) => {
         const submissionModelInstance = serviceCollection.get(
           SubmissionService
         );
-        await submissionModelInstance.sendToDSAndStore(
+        await submissionModelInstance.processSubmission(
           req.body.story[0],
-          req.body.promptId,
+          parseInt(req.body.promptId, 10),
           req.body.userInfo.id
         );
         res.setStatus(201).json({ message: 'Upload successful!' });
@@ -77,12 +77,12 @@ export default (app: IRouter) => {
 
   route.get(
     '/:submissionId',
-    async (req: Request, res: Response, next: NextFunction) => {
+    (req: Request, res: Response, next: NextFunction) => {
       // Here is where you get submission data from s3
       const subServiceInstance = serviceCollection.get(SubmissionService);
-      const sub = await subServiceInstance.retrieveImage(1);
-      console.log(sub);
-      res.setStatus(200).json(sub);
+      // const sub = await subServiceInstance.retrieveImage(1);
+      // console.log(sub);
+      res.setStatus(200).json({});
     }
   );
 

@@ -54,7 +54,7 @@ export default (config?: IAuthHandlerConfig) => async (
         if (adminOnly) {
           logger.debug('Successfully authenticated, checking admin status');
           // Get an instance of the UserModel if we need to admin check
-          const userModelInstance = serviceCollection.get(UserModel);
+          // const userModelInstance = serviceCollection.get(UserModel);
           // If user is not an admin
           // const userIsAdmin = await userModelInstance.checkIsAdmin(id);
           const userIsAdmin = true;
@@ -63,6 +63,7 @@ export default (config?: IAuthHandlerConfig) => async (
           }
         }
         // Pull the relevant snippets and continue
+        req.body.userInfo = {};
         req.body.userInfo.email = email;
         req.body.userInfo.id = id;
         next();
