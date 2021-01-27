@@ -70,29 +70,5 @@ export default (app: IRouter) => {
     }
   );
 
-  route.get('/', (req: Request, res: Response) => {
-    // I don't know what this one does yet??
-    res.setStatus(200).json({ hit: req.path });
-  });
-
-  route.get(
-    '/:submissionId',
-    (req: Request, res: Response, next: NextFunction) => {
-      // Here is where you get submission data from s3
-      const subServiceInstance = serviceCollection.get(SubmissionService);
-      // const sub = await subServiceInstance.retrieveImage(1);
-      // console.log(sub);
-      res.setStatus(200).json({});
-    }
-  );
-
-  route.post(
-    '/test',
-    upload('field1', 'field2'),
-    (req: Request, res: Response, next: NextFunction) => {
-      res.setStatus(200).json({ hit: 'it' });
-    }
-  );
-
   console.log('Submission router loaded.');
 };

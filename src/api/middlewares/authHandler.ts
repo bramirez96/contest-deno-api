@@ -13,16 +13,16 @@ import UserModel from '../../models/users.ts';
 /**
  * Defaults to authReuired and adminOnly being true
  */
-export default (config?: IAuthHandlerConfig) => async (
+export default ({
+  adminOnly = true,
+  authRequired = true,
+}: IAuthHandlerConfig) => async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const token = req.get('Authorization');
-
-  const authRequired = config?.authRequired || true;
-  const adminOnly = config?.adminOnly || true;
 
   if (!token || token === 'null') {
     // If no token, check if auth is even required...

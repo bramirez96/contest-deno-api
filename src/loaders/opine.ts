@@ -64,25 +64,9 @@ export default (app: Opine) => {
   app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
     logger.debug(`${err.status} ${err.message}`);
     if (err.message.includes('violates unique constraint')) {
-      const dataName = err.message.match(/_([^_]+)/);
-      return next(
-        createError(
-          409,
-          dataName && dataName[1]
-            ? dataName[1] + ' already in use'
-            : 'Could not create duplicate'
-        )
-      );
+      return next(createError(409, 'Could not create duplicate'));
     } else if (err.message.includes('violates foreign key constraint')) {
-      const dataName = err.message.match(/_([^_]+)/);
-      return next(
-        createError(
-          409,
-          dataName && dataName[1]
-            ? dataName[1] + ' not found'
-            : 'Invalid foreign key'
-        )
-      );
+      return next(createError(409, 'Invalid foreign key'));
     } else if (!err.status || err.status === 500) {
       logger.warning(`${err.message} - NEEDS CUSTOM ERROR HANDLING`);
     }

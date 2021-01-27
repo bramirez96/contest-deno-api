@@ -4,4 +4,5 @@ export default {
     { active: true, prompt: 'Here is a test prompt' },
     { active: false, prompt: 'Here is another test prompt' },
   ],
+  flags: [{ flag: 'Content' }],
 };

@@ -3,6 +3,7 @@ import {
   TestSuite,
   assertEquals,
   assertStringIncludes,
+  assertExists,
 } from '../testDeps.ts';
 import { MainSuite } from './000.setup.test.ts';
 import _enum from './testData/enum.ts';
@@ -12,6 +13,11 @@ import users from './testData/users.ts';
 const SubSuite = new TestSuite({
   name: '/contest/submit',
   suite: MainSuite,
+});
+
+const UploadSubSuite = new TestSuite({
+  name: '-> POST',
+  suite: SubSuite,
   beforeAll: async (context) => {
     const res = await context.app.post('/auth/login').send({
       email: users.valid[0].email,
@@ -21,11 +27,6 @@ const SubSuite = new TestSuite({
 
     await context.db.table('prompts').insert(_enum.prompts).execute();
   },
-});
-
-const UploadSubSuite = new TestSuite({
-  name: '-> POST',
-  suite: SubSuite,
 });
 
 test(UploadSubSuite, 'returns a 401 on missing token', async (context) => {
@@ -81,7 +82,7 @@ test(
       .send(submissions.invalidPrompt);
 
     assertEquals(res.status, 409);
-    assertStringIncludes(res.body.message, 'not found');
+    assertEquals(res.body.message, 'Invalid foreign key');
   }
 );
 
@@ -92,9 +93,57 @@ test(
     const res = await context.app
       .post('/contest/submit')
       .set('Authorization', context.token)
-      .send(submissions.validFile);
+      .send(submissions.validFile[0]);
 
     assertEquals(res.status, 201);
     assertStringIncludes(res.body.message, 'Upload successful!');
+  }
+);
+
+test(UploadSubSuite, 'successfully uploads sub for user 2', async (context) => {
+  const { status, body } = await context.app.post('/auth/login').send({
+    email: users.valid[1].email,
+    password: users.valid[1].password,
+  });
+  assertEquals(status, 201);
+  assertExists(body.token);
+  assertExists(body.user);
+
+  const res = await context.app
+    .post('/contest/submit')
+    .set('Authorization', body.token)
+    .send(submissions.validFile[1]);
+  assertEquals(res.status, 201);
+  assertStringIncludes(res.body.message, 'Upload successful!');
+});
+
+test(UploadSubSuite, 'successfully uploads sub for user 3', async (context) => {
+  const { status, body } = await context.app.post('/auth/login').send({
+    email: users.valid[2].email,
+    password: users.valid[2].password,
+  });
+  assertEquals(status, 201);
+  assertExists(body.token);
+  assertExists(body.user);
+
+  const res = await context.app
+    .post('/contest/submit')
+    .set('Authorization', body.token)
+    .send(submissions.validFile[2]);
+  assertEquals(res.status, 201);
+  assertStringIncludes(res.body.message, 'Upload successful!');
+});
+
+const UploadSubSuiteCheck = new TestSuite({
+  name: 'check ->',
+  suite: SubSuite,
+});
+
+test(
+  UploadSubSuiteCheck,
+  'there should be 3 submissions in the database',
+  async (context) => {
+    const subs = await context.db.table('submissions').select('*').execute();
+    assertEquals(subs.length, 3);
   }
 );
