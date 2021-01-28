@@ -12,6 +12,7 @@ const config: DenonConfig = {
     },
     dev: {
       cmd: 'yarn reset && deno run src/mod.ts start',
+      watch: false,
     },
     test: {
       cmd: 'deno test __tests__/index.test.ts',

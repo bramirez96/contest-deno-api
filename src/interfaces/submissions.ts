@@ -2,7 +2,7 @@ import { PutObjectResponse } from '../../deps.ts';
 
 export interface ISubmission extends INewSubmission {
   id: number;
-  createdAt: Date;
+  created_at: Date | string;
 }
 
 export interface INewSubmission extends IDSResponse {

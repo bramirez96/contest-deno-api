@@ -1,6 +1,6 @@
 export interface ITop3 extends INewTop3 {
   id: number;
-  createdAt: Date;
+  created_at: Date | string;
 }
 
 export interface INewTop3 {

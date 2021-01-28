@@ -20,7 +20,7 @@ exports.up = (knex) => {
       .references('users.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.datetime('createdAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
+    t.datetime('created_at').defaultTo(knex.raw("(now() at time zone 'utc')"));
   });
 };
 

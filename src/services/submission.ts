@@ -79,8 +79,8 @@ export default class SubmissionService extends BaseService {
       rotation: d.rotation,
       etag: u.etag,
       s3Label: u.s3Label,
-      userId,
-      promptId,
+      userId: userId,
+      promptId: promptId,
     };
   }
 }

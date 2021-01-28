@@ -86,7 +86,7 @@ export default (app: IRouter) => {
       const userId = req.params.id;
       await userModelInstance.update(parseInt(userId), {
         ...req.body,
-        updatedAt: new Date().toUTCString(),
+        updated_at: new Date().toUTCString(),
       });
 
       return res.setStatus(204).end();

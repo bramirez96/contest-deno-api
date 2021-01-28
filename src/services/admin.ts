@@ -52,7 +52,9 @@ export default class AdminService extends BaseService {
 
   public async setTop3(ids: number[]) {
     try {
-      const formattedTop3: INewTop3[] = ids.map((id) => ({ submissionId: id }));
+      const formattedTop3: INewTop3[] = ids.map((id) => ({
+        submissionId: id,
+      }));
       const top3 = await this.top3Model.add(formattedTop3);
       return top3;
     } catch (err) {
@@ -74,7 +76,10 @@ export default class AdminService extends BaseService {
 
   public async flagSubmission(submissionId: number, flagIds: number[]) {
     try {
-      const flagItems = flagIds.map((flagId) => ({ flagId, submissionId }));
+      const flagItems = flagIds.map((flagId) => ({
+        flagId,
+        submissionId: submissionId,
+      }));
       const flags = await this.flagModel.addFlagsToSub(flagItems);
       return flags;
     } catch (err) {

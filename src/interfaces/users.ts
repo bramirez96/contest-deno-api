@@ -4,8 +4,8 @@ import { Roles } from './roles.ts';
 export interface IUser extends Omit<INewUser, 'parentEmail' | 'age'> {
   id: number;
   isValidated: boolean;
-  createdAt: Date;
-  updatedAt: Date | string;
+  created_at: Date | string;
+  updated_at: Date | string;
 }
 
 export interface INewUser {

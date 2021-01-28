@@ -113,10 +113,10 @@ export default class AuthService extends BaseService {
         const now = new Date().toUTCString();
         updatedUser = await this.userModel.update(userValidation.id, {
           isValidated: true,
-          updatedAt: now,
+          updated_at: now,
         });
         await this.validationModel.update(userValidation.validationId, {
-          completedAt: now,
+          completed_at: now,
         });
       });
 
@@ -149,7 +149,7 @@ export default class AuthService extends BaseService {
       await this.db.transaction(async () => {
         if (resetItem) {
           const timeSinceLastRequest =
-            Date.now() - resetItem.createdAt.getTime();
+            Date.now() - resetItem.created_at.getTime();
           if (timeSinceLastRequest < 600000) {
             throw createError(429, 'Cannot get another code so soon');
           } else {
@@ -195,7 +195,7 @@ export default class AuthService extends BaseService {
       await this.db.transaction(async () => {
         await this.userModel.update(user.id, {
           password: hashedPassword,
-          updatedAt: new Date().toUTCString(),
+          updated_at: new Date().toUTCString(),
         });
         await this.resetModel.update(resetItem.id, { completed: true });
       });

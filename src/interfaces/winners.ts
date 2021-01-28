@@ -1,6 +1,6 @@
 export interface IWinner extends INewWinner {
   id: number;
-  createdAt: Date;
+  created_at: Date | string;
 }
 
 export interface INewWinner {

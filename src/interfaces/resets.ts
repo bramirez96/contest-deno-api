@@ -1,8 +1,8 @@
 export interface IReset extends INewReset {
   id: number;
   completed: boolean;
-  createdAt: Date;
-  expiresAt: Date;
+  created_at: Date | string;
+  expires_at: Date | string;
 }
 
 export interface INewReset {
