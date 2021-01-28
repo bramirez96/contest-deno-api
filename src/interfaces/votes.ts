@@ -1,6 +1,6 @@
 export interface IVote extends INewVote {
   id: number;
-  created_at: Date | string;
+  created_at: Date;
 }
 
 export interface INewVote {

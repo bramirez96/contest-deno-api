@@ -11,7 +11,9 @@ import env from '../../config/env.ts';
 import UserModel from '../../models/users.ts';
 
 /**
- * Defaults to authReuired and adminOnly being true
+ * Defaults to authReuired and adminOnly being true.
+ *
+ * Adds to body: { userInfo: { id, email, codename } };
  */
 export default ({
   adminOnly = true,
@@ -34,14 +36,11 @@ export default ({
     // If it's there, we'll try to
     try {
       logger.debug('Attempting to verify token');
-      const { iss, sub, exp } = await jwt.verify(
+      const { id, email, codename, exp } = (await jwt.verify(
         token,
         env.JWT.SECRET,
         env.JWT.ALGO
-      );
-
-      const id = parseInt(sub || `${sub}`);
-      const email = iss;
+      )) as jwt.Payload & { email: string; id: string; codename: string };
 
       logger.debug('Checking token expiration');
       if (!exp || exp < Date.now()) {
@@ -66,6 +65,7 @@ export default ({
         req.body.userInfo = {};
         req.body.userInfo.email = email;
         req.body.userInfo.id = id;
+        req.body.userInfo.codename = codename;
         next();
       }
     } catch (err) {

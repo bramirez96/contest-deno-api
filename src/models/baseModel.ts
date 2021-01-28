@@ -67,7 +67,7 @@ export default class BaseModel<T, U> {
     filter?: (Partial<U> & DatabaseResult) | undefined,
     config?: IGetResponse
   ): Promise<U | U[]> {
-    this.logger.debug(`Attempting to retrieve all rows from ${this.tableName}`);
+    this.logger.debug(`Attempting to retrieve rows from ${this.tableName}`);
 
     const sql = this.db.table(this.tableName).select('*');
     if (filter) {

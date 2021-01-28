@@ -13,6 +13,7 @@ import {
   isNumber,
 } from '../../../../deps.ts';
 import { INewSubmission } from '../../../interfaces/submissions.ts';
+import SubmissionModel from '../../../models/submissions.ts';
 import SubmissionService from '../../../services/submission.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 import upload from '../../middlewares/upload.ts';
@@ -22,6 +23,8 @@ const route = Router();
 
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
+  const subServiceInstance = serviceCollection.get(SubmissionService);
+  const subModelInstance = serviceCollection.get(SubmissionModel);
   app.use(['/submit', '/submission', '/submissions'], route);
 
   route.post(
@@ -54,15 +57,40 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const submissionModelInstance = serviceCollection.get(
-          SubmissionService
-        );
-        await submissionModelInstance.processSubmission(
+        await subServiceInstance.processSubmission(
           req.body.story[0],
           parseInt(req.body.promptId, 10),
           req.body.userInfo.id
         );
         res.setStatus(201).json({ message: 'Upload successful!' });
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  route.get(
+    '/recent',
+    authHandler({ authRequired: true, adminOnly: false }),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const subs = await subModelInstance.get(
+          { userId: req.body.userInfo.id },
+          {
+            limit: 6,
+            orderBy: 'created_at',
+            order: 'DESC',
+          }
+        );
+
+        const subItems = await Promise.all(
+          subs.map((s) =>
+            subServiceInstance.retrieveSubItem(s, req.body.userInfo.codename)
+          )
+        );
+
+        res.setStatus(200).json(subItems);
       } catch (err) {
         logger.error(err);
         throw err;

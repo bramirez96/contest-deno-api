@@ -1,8 +1,18 @@
 import { PutObjectResponse } from '../../deps.ts';
 
+export interface ISubItem {
+  id: number;
+  userId: number;
+  codename: string;
+  src: string;
+  rotation: number;
+  prompt: string;
+  score: number;
+}
+
 export interface ISubmission extends INewSubmission {
   id: number;
-  created_at: Date | string;
+  created_at: Date;
 }
 
 export interface INewSubmission extends IDSResponse {

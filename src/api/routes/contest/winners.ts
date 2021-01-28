@@ -29,11 +29,7 @@ export default (app: IRouter) => {
 
   route.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const winner = await winnerModelInstance.get(undefined, {
-        first: true,
-        orderBy: 'created_at',
-        order: 'DESC',
-      });
+      const winner = await winnerModelInstance.get();
 
       res.setStatus(200).json(winner);
     } catch (err) {

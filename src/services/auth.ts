@@ -113,10 +113,10 @@ export default class AuthService extends BaseService {
         const now = new Date().toUTCString();
         updatedUser = await this.userModel.update(userValidation.id, {
           isValidated: true,
-          updated_at: now,
+          updated_at: (now as unknown) as Date,
         });
         await this.validationModel.update(userValidation.validationId, {
-          completed_at: now,
+          completed_at: (now as unknown) as Date,
         });
       });
 
@@ -195,7 +195,7 @@ export default class AuthService extends BaseService {
       await this.db.transaction(async () => {
         await this.userModel.update(user.id, {
           password: hashedPassword,
-          updated_at: new Date().toUTCString(),
+          updated_at: (new Date().toUTCString() as unknown) as Date,
         });
         await this.resetModel.update(resetItem.id, { completed: true });
       });
@@ -215,7 +215,12 @@ export default class AuthService extends BaseService {
     this.logger.debug(`Signing JWT for user (ID: ${user.id})`);
     return jwt.create(
       { alg: env.JWT.ALGO },
-      { exp: exp.getTime(), sub: user.id.toString(), iss: user.email },
+      {
+        exp: exp.getTime(),
+        id: user.id.toString(),
+        email: user.email,
+        codename: user.codename,
+      },
       env.JWT.SECRET
     );
   }

@@ -3,7 +3,7 @@ import { INewTop3 } from '../interfaces/top3.ts';
 import FlagModel from '../models/flagModel.ts';
 import PromptQueueModel from '../models/promptQueue.ts';
 import PromptModel from '../models/prompts.ts';
-import Top3Model from '../models/top3Model.ts';
+import Top3Model from '../models/top3.ts';
 import BaseService from './baseService.ts';
 
 @Service()
@@ -25,7 +25,7 @@ export default class AdminService extends BaseService {
         { first: true }
       );
       const { promptId: newId } = await this.promptQueue.get(
-        { startDate },
+        { startDate: (startDate as unknown) as Date },
         { first: true }
       );
       if (currentPrompt.id === newId) {
@@ -55,7 +55,7 @@ export default class AdminService extends BaseService {
       const formattedTop3: INewTop3[] = ids.map((id) => ({
         submissionId: id,
       }));
-      const top3 = await this.top3Model.add(formattedTop3);
+      const top3 = await this.top3Model.get();
       return top3;
     } catch (err) {
       this.logger.error(err);
