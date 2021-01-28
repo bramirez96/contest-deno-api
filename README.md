@@ -8,7 +8,7 @@ This is a refactor of the existing Story Squad API built in Deno.
 
 ## Running the Server Locally
 
-There are three options for running the server.
+There are three options for running the server. There are almost certainly other options, but these are the easiest and most practical that I've found.
 
 ### Option 1: `Denon`
 
@@ -24,6 +24,18 @@ deno install -qAf --unstable https://x.nest.land/denon/denon.ts
 
 # Step 2: Add the denon alias to your Bash config
 echo 'alias denon="~/.deno/bin/denon.cmd"' >> ~/.bashrc
+```
+
+### Option 2: The Heroku CLI
+
+The Heroku CLI is a decent solution to run your application locally. The [Procfile](./Procfile) contains a list of scripts used to run various aspects of the project. Follow the [documentation from Heroku](https://devcenter.heroku.com/articles/heroku-cli) to install the CLI.
+
+To run the [Procfile](./Procfile) scripts, simply use the `heroku local` command, followed by the name of the script you'd like to run:
+
+```bash
+heroku local web # runs the server
+heroku local test # runs the tests
+heroku local dev # resets and seeds the database, then runs the server
 ```
 
 ### Option 3: Running Deno Directly
