@@ -3,7 +3,6 @@ import {
   TestSuite,
   assertEquals,
   assertStringIncludes,
-  assertExists,
   DatabaseResult,
 } from '../testDeps.ts';
 import { IMainSuiteContext, MainSuite } from './000.setup.test.ts';
@@ -118,6 +117,15 @@ test(AdminPostFlags, 'adds a flag to subId 2', async (context) => {
 
   assertEquals(res.status, 201);
   assertEquals(res.body.message, 'Successfully flagged submission');
+});
+
+test(AdminPostFlags, 'returns a 409 on duplicate flag', async (context) => {
+  const res = await context.app
+    .post('/contest/admin/flags?submissionId=2')
+    .send({ flags: [1] });
+
+  assertEquals(res.status, 409);
+  assertEquals(res.body.message, 'Could not create duplicate');
 });
 
 const AdminGetFlags = new TestSuite({

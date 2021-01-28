@@ -1,10 +1,4 @@
-import {
-  Service,
-  Inject,
-  log,
-  serviceCollection,
-  createError,
-} from '../../deps.ts';
+import { Service, Inject, serviceCollection, createError } from '../../deps.ts';
 import { INewTop3 } from '../interfaces/top3.ts';
 import FlagModel from '../models/flagModel.ts';
 import PromptQueueModel from '../models/promptQueue.ts';
