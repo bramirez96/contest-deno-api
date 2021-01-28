@@ -27,14 +27,16 @@ export default class BaseModel<T, U> {
   // Putting basic CRUD operations on all Models
 
   // Overloading function call for better linting and usability :)
-  public async add<B extends boolean>(body: T): Promise<U[]>;
+  public async add<B extends boolean>(body: T | T[]): Promise<U[]>;
   public async add<B extends boolean>(
-    body: T,
+    body: T | T[],
     first?: B
   ): Promise<B extends true ? U : U[]>;
-  public async add(body: T & QueryValues, first?: boolean): Promise<U | U[]> {
+  public async add(
+    body: (T & QueryValues) | (T & QueryValues)[],
+    first?: boolean
+  ): Promise<U | U[]> {
     this.logger.debug(`Attempting to add field to table ${this.tableName}`);
-
     const response = ((await this.db
       .table(this.tableName)
       .insert(body)

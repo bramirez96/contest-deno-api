@@ -3,7 +3,6 @@ import {
   TestSuite,
   assertExists,
   assertEquals,
-  assertObjectMatch,
   assertArrayIncludes,
   assertStringIncludes,
   DatabaseResult,
@@ -46,13 +45,13 @@ test(
 test(RegistrationSuite, 'returns 201 on success', async (context) => {
   const res = await context.app.post('/auth/register').send(users.valid[0]);
   assertEquals(res.status, 201);
-  assertObjectMatch(res.body, { message: 'User creation successful.' });
+  assertEquals(res.body.message, 'User creation successful.');
 });
 
 test(RegistrationSuite, 'returns 201 on second user', async (context) => {
   const res = await context.app.post('/auth/register').send(users.valid[1]);
   assertEquals(res.status, 201);
-  assertObjectMatch(res.body, { message: 'User creation successful.' });
+  assertEquals(res.body.message, 'User creation successful.');
 });
 
 const ActivationSuite = new TestSuite<
@@ -64,7 +63,7 @@ const ActivationSuite = new TestSuite<
     const [val] = await context.db
       .table('validations')
       .select('*')
-      .first()
+      .where('userId', 1)
       .execute();
     context.val = val;
   },
@@ -76,7 +75,10 @@ test(
   async (context) => {
     const res = await context.app.get(`/auth/activation`);
     assertEquals(res.status, 400);
-    assertStringIncludes(res.body.message, 'missing fields: token, email');
+    assertStringIncludes(
+      res.body.message,
+      'missing fields in query: token, email'
+    );
   }
 );
 
@@ -88,7 +90,7 @@ test(
       `/auth/activation?email=someemail@email.co`
     );
     assertEquals(res.status, 400);
-    assertStringIncludes(res.body.message, 'missing fields: token');
+    assertStringIncludes(res.body.message, 'missing fields in query: token');
   }
 );
 
@@ -102,7 +104,7 @@ test(ActivationSuite, 'returns 404 on invalid email', async (context) => {
 
 test(ActivationSuite, 'returns 409 on invalid token', async (context) => {
   const res = await context.app.get(
-    `/auth/activation?email=${users.valid[0].parentEmail}&token=bananas`
+    `/auth/activation?email=${users.valid[0].email}&token=bananas`
   );
   assertEquals(res.status, 401);
   assertEquals(res.body.message, 'Invalid activation code');
@@ -128,7 +130,32 @@ test(
       `/auth/activation?token=${code}&email=${email}`
     );
     assertEquals(res.status, 409);
-    assertObjectMatch(res.body, { message: 'User has already been validated' });
+    assertEquals(res.body.message, 'User has already been validated');
+  }
+);
+
+test(
+  ActivationSuite,
+  'successfully registers and validates an underage user with parent email',
+  async (context) => {
+    const u = users.valid[2];
+    let res = await context.app.post('/auth/register').send(u);
+    assertEquals(res.status, 201);
+    assertEquals(res.body.message, 'User creation successful.');
+
+    const [val] = await context.db
+      .table('validations')
+      .where('userId', 3)
+      .execute();
+    assertArrayIncludes(Object.keys(val), ['code', 'email']);
+    const { code } = val;
+
+    // Validate the user
+    res = await context.app.get(
+      `/auth/activation?token=${code}&email=${u.parentEmail}`
+    );
+    assertEquals(res.status, 302);
+    assertStringIncludes(res.headers.location as string, 'authToken');
   }
 );
 
@@ -160,6 +187,30 @@ test(LoginSuite, 'returns 403 if not validated', async (context) => {
 
   assertEquals(res.status, 403);
   assertEquals(res.body.message, 'Account must be validated');
+});
+
+test(LoginSuite, 'returns 201 and token after validation', async (context) => {
+  // Get validation code
+  const [val] = await context.db
+    .table('validations')
+    .where('userId', 2)
+    .execute();
+  assertArrayIncludes(Object.keys(val), ['code', 'email']);
+  const { code } = val;
+
+  // Validate the user
+  const { email, password } = users.valid[1];
+  let res = await context.app.get(
+    `/auth/activation?token=${code}&email=${email}`
+  );
+  assertEquals(res.status, 302);
+  assertStringIncludes(res.headers.location as string, 'authToken');
+
+  // Log them in
+  res = await context.app.post('/auth/login').send({ email, password });
+  assertEquals(res.status, 201);
+  assertExists(res.body.user);
+  assertExists(res.body.token);
 });
 
 test(LoginSuite, 'returns 401 on invalid password', async (context) => {
@@ -298,5 +349,23 @@ test(
     });
     assertEquals(res.status, 204);
     assertEquals(res.body, null);
+  }
+);
+
+const AuthCheckSuite = new TestSuite({
+  name: 'check ->',
+  suite: AuthSuite,
+});
+
+test(
+  AuthCheckSuite,
+  'there should be 3 users validated in the database',
+  async (context) => {
+    const userRows = await context.db.table('users').execute();
+    assertEquals(userRows.length, 3);
+    assertEquals(
+      userRows.every((x) => x.isValidated),
+      true
+    );
   }
 );

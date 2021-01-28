@@ -12,6 +12,7 @@ import {
   log,
 } from '../../deps.ts';
 import routes from '../api/index.ts';
+import env from '../config/env.ts';
 import formParser from './formParser.ts';
 
 export default (app: Opine) => {
@@ -45,7 +46,11 @@ export default (app: Opine) => {
     })
   );
   app.use(urlencoded({ extended: false }));
-  app.use(formParser());
+
+  if (env.DENO_ENV !== 'testing') {
+    app.use(formParser());
+    console.log('Form parser loaded.');
+  }
 
   // App Routes
   app.use(routes());
@@ -59,15 +64,9 @@ export default (app: Opine) => {
   app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
     logger.debug(`${err.status} ${err.message}`);
     if (err.message.includes('violates unique constraint')) {
-      const dataName = err.message.match(/_([^_]+)/);
-      return next(
-        createError(
-          409,
-          dataName && dataName[1]
-            ? '"' + dataName[1] + '" already in use'
-            : 'Could not create duplicate'
-        )
-      );
+      return next(createError(409, 'Could not create duplicate'));
+    } else if (err.message.includes('violates foreign key constraint')) {
+      return next(createError(409, 'Invalid foreign key'));
     } else if (!err.status || err.status === 500) {
       logger.warning(`${err.message} - NEEDS CUSTOM ERROR HANDLING`);
     }

@@ -20,6 +20,15 @@ const valid: INewUser[] = [
     age: 24,
     parentEmail: 'parentEmail2@email.com',
   },
+  {
+    codename: 'TestCodename3',
+    email: 'someemail3@email.com',
+    firstname: 'Firstname3',
+    lastname: 'Lastname3',
+    password: 'somepass123A',
+    age: 12,
+    parentEmail: 'parentEmail3@email.com',
+  },
 ];
 
 const incomplete: Partial<INewUser> = {

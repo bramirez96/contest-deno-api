@@ -1,7 +1,8 @@
-import { Inject, log, Service, serviceCollection } from '../../deps.ts';
+import { createError, Inject, Service, serviceCollection } from '../../deps.ts';
 import {
   IDSResponse,
   INewSubmission,
+  ISubmission,
   IUploadResponse,
 } from '../interfaces/submissions.ts';
 import SubmissionModel from '../models/submissions.ts';
@@ -19,7 +20,7 @@ export default class SubmissionService extends BaseService {
     super();
   }
 
-  public async sendToDSAndStore(
+  public async processSubmission(
     uploadResponse: IUploadResponse,
     promptId: number,
     userId: number
@@ -34,19 +35,31 @@ export default class SubmissionService extends BaseService {
         userId
       );
 
-      const submission = await this.submissionModel.add(newSub, true);
+      let submission: ISubmission | undefined;
+      await this.db.transaction(async () => {
+        submission = await this.submissionModel.add(newSub, true);
+      });
+      if (!submission) throw createError(409, 'File upload failed');
+
       return submission;
     } catch (err) {
+      // If any part of upload fails, attempt to remove the item from the bucket for data integrity
+      try {
+        await this.bucketService.remove(uploadResponse.s3Label);
+      } catch (err) {
+        this.logger.critical(
+          `S3 object ${uploadResponse.s3Label} is untracked!`
+        );
+      }
       this.logger.error(err);
       throw err;
     }
   }
 
-  public retrieveImage(id: number) {
+  public async retrieveImage(s3Label: string, etag: string) {
     try {
-      // const sub = await this.submissionModel.getOne(id);
-      // const fromS3 = await this.bucketService.get(sub.s3Label, sub.etag);
-      // return fromS3;
+      const fromS3 = await this.bucketService.get(s3Label, etag);
+      return fromS3;
     } catch (err) {
       this.logger.error(err);
       throw err;

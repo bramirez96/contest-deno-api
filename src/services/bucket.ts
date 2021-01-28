@@ -22,6 +22,8 @@ export default class BucketService {
   ): Promise<IUploadResponse> {
     try {
       if (!extension) throw createError(400, `Could not get file extension`);
+      if (!this.isValidFileType(extension))
+        throw createError(422, 'Unsupported file type');
       const s3Label = new URLSearchParams({
         name: Date.now() + '-' + v4.generate() + '.' + extension,
       }).get('name') as string;
@@ -41,22 +43,39 @@ export default class BucketService {
   }
 
   public async get(name: string, etag: string) {
-    try {
-      this.logger.debug(`Attempting to retrieve bucket item ${name}`);
-      const response = await this.s3.getObject(name, {
-        ifMatch: etag,
-      });
+    this.logger.debug(`Attempting to retrieve bucket item ${name}`);
+    const response = await this.s3.getObject(name, {
+      ifMatch: etag,
+    });
 
-      if (response) {
-        this.logger.debug(`Retrieved ${name} from S3 successfully`);
-        return response;
+    if (response) {
+      this.logger.debug(`Retrieved ${name} from S3 successfully`);
+      return response;
+    } else {
+      throw createError(404, `Could not find ${name} in S3 bucket`);
+    }
+  }
+
+  public async remove(name: string) {
+    try {
+      this.logger.debug(`Attempting to remove ${name} from the bucket`);
+
+      const response = await this.s3.deleteObject(name);
+      if (!response.deleteMarker) {
+        this.logger.critical(`File with name ${name} is untracked`);
       } else {
-        throw createError(404, `Could not find ${name} in S3 bucket`);
+        this.logger.debug(`File ${name} successfully deleted`);
       }
     } catch (err) {
-      this.logger.error(err);
+      this.logger.critical(err);
       throw err;
     }
+  }
+
+  private isValidFileType(extension: string) {
+    const allowedExtensions = ['jpg', 'png', 'jpeg'];
+    // console.log({ extension }, allowedExtensions.includes(extension));
+    return allowedExtensions.includes(extension);
   }
 }
 serviceCollection.addTransient(BucketService);

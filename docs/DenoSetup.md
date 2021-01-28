@@ -4,6 +4,8 @@ This guide is for installing Deno in Git Bash on Windows.
 
 ## Install Deno
 
+View the online installation guide [here](https://deno.land/manual/getting_started/installation), or run the following script:
+
 ```bash
 curl -fsSL https://deno.land/x/install/install.sh | sh
 ```
@@ -12,25 +14,31 @@ curl -fsSL https://deno.land/x/install/install.sh | sh
 
 After installation, run the following commands.
 
-> This command will generate a file structure to allow you to add autocompletion for different bash scripts
+This command will generate a file structure to allow you to add autocompletion for different bash scripts
 
 ```bash
 mkdir ~/.etc && mkdir ~/.etc/bash_completion.d
 ```
 
-> This command generates a file for Deno autocompletion
+This command generates a file for Deno autocompletion
 
 ```bash
 deno completions bash > ~/.etc/bash_completion.d/deno.bash
 ```
 
-> This command will create a bash configuration file that allows you to easily add Deno onto your path (giving you the option to run the `deno` command straight from bash) as well as adding the Deno autocomplete scripts to your configuration
+This command adds the newly-generated completions script to your Bash configuration
 
 ```bash
-echo $'export DENO_INSTALL="/$HOME/.deno"\nexport PATH="$DENO_INSTALL/bin:$PATH"\nsource ~/.etc/bash_completion.d/deno.bash' > ~/.bashrc
+echo "source ~/.etc/bash_completion.d/deno.bash" >> ~/.bashrc
 ```
 
-At this point, you will likely have to restart your machine for your bash configuration to take effect.
+This command will create a bash configuration file that allows you to easily add Deno onto your path (giving you the option to run the `deno` command straight from bash) as well as adding Deno to your path.
+
+```bash
+echo 'export PATH="$HOME/.deno/bin:$PATH"' >> ~/.bashrc
+```
+
+At this point, you will likely have to restart your machine or at least your Bash instance for your new configuration to take effect.
 
 ### Test Your Deno Install
 

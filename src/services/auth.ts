@@ -28,21 +28,28 @@ export default class AuthService extends BaseService {
   }
 
   public async SignUp(body: INewUser) {
+    // Initialize variable to store sendTo email for validation
+    let sendTo: string;
     // Underage users must have a parent email on file for validation
     if (!body.age) {
       throw createError(400, 'No age sent');
     }
-    if (
-      body.age < 13 &&
-      (!body.parentEmail || body.email === body.parentEmail)
-    ) {
-      throw createError(400, 'Underage users must have a parent email on file');
+    if (body.age < 13) {
+      if (!body.parentEmail || body.email === body.parentEmail) {
+        throw createError(
+          400,
+          'Underage users must have a parent email on file'
+        );
+      } else {
+        sendTo = body.parentEmail;
+      }
+    } else {
+      sendTo = body.email;
     }
     try {
       // Start a transaction for data integrity
       await this.db.transaction(async () => {
         // Further sanitize data
-        const sendTo = body.parentEmail || body.email;
         Reflect.deleteProperty(body, 'age');
         Reflect.deleteProperty(body, 'parentEmail');
 
