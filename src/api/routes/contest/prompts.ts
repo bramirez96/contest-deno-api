@@ -13,7 +13,9 @@ import {
   createError,
 } from '../../../../deps.ts';
 import { INewPrompt, IPrompt } from '../../../interfaces/prompts.ts';
+import PromptQueueModel from '../../../models/promptQueue.ts';
 import PromptModel from '../../../models/prompts.ts';
+import AdminService from '../../../services/admin.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 import validate from '../../middlewares/validate.ts';
 
@@ -25,6 +27,7 @@ export default (app: IRouter) => {
 
   app.use(['/prompt', '/prompts'], route);
 
+  // GET /
   route.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const prompts = await promptModelInstance.get();
@@ -36,6 +39,7 @@ export default (app: IRouter) => {
     }
   });
 
+  // GET /active
   route.get(
     '/active',
     async (req: Request, res: Response, next: NextFunction) => {
@@ -54,6 +58,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // GET /:id
   route.get(
     '/:id',
     validate({ id: [required, isNumber] }, 'params'),
@@ -73,6 +78,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // POST /
   route.post(
     '/',
     validate<INewPrompt>({ prompt: [required, isString] }, 'params'),
@@ -88,6 +94,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // PUT /:id
   route.put(
     '/:id',
     validate({ id: [required, isNumber] }, 'params'),
@@ -104,6 +111,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // DELETE /:id
   route.delete(
     '/:id',
     validate({ id: [required, isNumber] }, 'params'),
@@ -112,6 +120,42 @@ export default (app: IRouter) => {
         await promptModelInstance.delete(parseInt(req.params.id));
 
         res.setStatus(204).end();
+      } catch (err) {
+        logger.error(err);
+        next(err);
+      }
+    }
+  );
+
+  // GET /queue
+  route.get(
+    '/queue',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const queueModelInstance = serviceCollection.get(PromptQueueModel);
+        const promptQueue = await queueModelInstance.get(undefined, {
+          orderBy: 'startDate',
+          order: 'ASC',
+        });
+        res.setStatus(200).json(promptQueue);
+      } catch (err) {
+        logger.error(err);
+        next(err);
+      }
+    }
+  );
+
+  // PUT /queue/update <- this runs the service that updates current prompt
+  route.put(
+    '/queue/update',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const adminServiceInstance = serviceCollection.get(AdminService);
+        const newId = await adminServiceInstance.updateActivePrompt();
+
+        res
+          .setStatus(200)
+          .json({ message: `Successfully marked prompt ${newId} as active` });
       } catch (err) {
         logger.error(err);
         next(err);

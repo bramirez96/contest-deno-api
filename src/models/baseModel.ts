@@ -79,6 +79,9 @@ export default class BaseModel<T, U> {
     if (config?.orderBy) {
       sql.order(config.orderBy as string, config?.order || 'ASC');
     }
+    if (config?.offset) {
+      sql.offset(config.offset);
+    }
     const response = (await (sql.execute() as unknown)) as U[];
 
     return config?.first ? response[0] : response;
@@ -113,6 +116,7 @@ export default class BaseModel<T, U> {
 interface IGetResponse<B = boolean, K = string> {
   first?: B;
   limit?: number;
+  offset?: number;
   orderBy?: K;
   order?: OrderDirection;
 }

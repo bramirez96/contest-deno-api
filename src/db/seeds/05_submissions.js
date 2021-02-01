@@ -7,7 +7,7 @@ const testSubs = [
     promptId: 1,
     transcription: 'Here is a transcription',
     confidence: 50,
-    dsScore: 25,
+    score: 25,
     rotation: 0,
   },
   {
@@ -17,7 +17,7 @@ const testSubs = [
     promptId: 1,
     transcription: 'Here is a different transcription',
     confidence: 70,
-    dsScore: 40,
+    score: 40,
     rotation: 0,
   },
   {
@@ -27,7 +27,7 @@ const testSubs = [
     promptId: 1,
     transcription: 'Here is a teacher transcription',
     confidence: 100,
-    dsScore: 50,
+    score: 50,
     rotation: 0,
   },
   {
@@ -37,7 +37,7 @@ const testSubs = [
     promptId: 2,
     transcription: 'Here is a third transcription',
     confidence: 80,
-    dsScore: 45,
+    score: 45,
     rotation: 0,
   },
   {
@@ -47,7 +47,7 @@ const testSubs = [
     promptId: 2,
     transcription: 'Here is a fourth transcription',
     confidence: 60,
-    dsScore: 25,
+    score: 25,
     rotation: 0,
   },
   {
@@ -57,7 +57,7 @@ const testSubs = [
     promptId: 2,
     transcription: 'Here is another teacher transcription',
     confidence: 100,
-    dsScore: 50,
+    score: 50,
     rotation: 0,
   },
 ];

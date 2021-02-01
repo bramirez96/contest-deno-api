@@ -6,6 +6,7 @@ import {
   ISubmission,
   IUploadResponse,
 } from '../interfaces/submissions.ts';
+import { IUser } from '../interfaces/users.ts';
 import PromptModel from '../models/prompts.ts';
 import SubmissionModel from '../models/submissions.ts';
 import UserModel from '../models/users.ts';
@@ -23,6 +24,29 @@ export default class SubmissionService extends BaseService {
     @Inject(DSService) private dsService: DSService
   ) {
     super();
+  }
+
+  public async getUserSubs(
+    userId: number,
+    config: { limit: number; offset: number }
+  ) {
+    const subs = await this.submissionModel.get(
+      { userId },
+      {
+        limit: config.limit,
+        offset: config.offset,
+        orderBy: 'created_at',
+        order: 'DESC',
+      }
+    );
+
+    const { codename } = await this.userModel.get({ userId }, { first: true });
+
+    const subItems = await Promise.all(
+      subs.map((s) => this.retrieveSubItem(s, codename))
+    );
+
+    return subItems;
   }
 
   public async processSubmission(
@@ -90,7 +114,7 @@ export default class SubmissionService extends BaseService {
       return {
         id: sub.id,
         src,
-        score: sub.dsScore,
+        score: sub.score,
         prompt,
         rotation: sub.rotation,
         codename,
@@ -110,7 +134,7 @@ export default class SubmissionService extends BaseService {
   ): INewSubmission {
     return {
       confidence: d.confidence,
-      dsScore: d.dsScore,
+      score: d.score,
       transcription: d.transcription,
       rotation: d.rotation,
       etag: u.etag,

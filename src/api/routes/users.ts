@@ -15,28 +15,34 @@ import {
   NextFunction,
   isBool,
   createError,
+  log,
 } from '../../../deps.ts';
 import {
   codenameRegex,
   emailRegex,
   passwordRegex,
 } from '../../config/dataConstraints.ts';
+import SubmissionModel from '../../models/submissions.ts';
 import UserModel from '../../models/users.ts';
+import SubmissionService from '../../services/submission.ts';
 import authHandler from '../middlewares/authHandler.ts';
 import validate from '../middlewares/validate.ts';
 
 const route = Router();
 
 export default (app: IRouter) => {
+  const logger: log.Logger = serviceCollection.get('logger');
   const userModelInstance = serviceCollection.get(UserModel);
   app.use('/users', route);
 
+  // GET /
   route.get('/', async (req: Request, res: Response, next: NextFunction) => {
     const userList = await userModelInstance.get();
 
     res.setStatus(200).json(userList);
   });
 
+  // GET /:id
   route.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.id;
     const user = await userModelInstance.get(
@@ -48,6 +54,28 @@ export default (app: IRouter) => {
     res.setStatus(200).json(user);
   });
 
+  // GET /:id/submissions
+  route.get(
+    '/:id/submissions',
+    async (req: Request, res: Response, next: NextFunction) => {
+      const subServiceInstance = serviceCollection.get(SubmissionService);
+      try {
+        const subs = await subServiceInstance.getUserSubs(
+          parseInt(req.params.id, 10),
+          {
+            limit: parseInt(req.query.limit, 10) || 6,
+            offset: parseInt(req.query.offset, 10) || 0,
+          }
+        );
+        res.setStatus(200).json(subs);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  // POST /
   route.post(
     '/',
     validate({
@@ -71,6 +99,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // PUT /:id
   route.put(
     '/:id',
     validate({
@@ -93,6 +122,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // DELETE /:id
   route.delete(
     '/:id',
     async (req: Request, res: Response, next: NextFunction) => {

@@ -22,7 +22,7 @@ export default class SubmissionModel extends BaseModel<
       )
       .leftJoin('enum_flags', 'enum_flags.id', 'submission_flags.flagId')
       .where('prompts.active', true)
-      .order('submissions."dsScore"', 'DESC')
+      .order('submissions."score"', 'DESC')
       .groupBy('submissions.id', 'prompts.prompt')
       .count('submission_flags.id', 'numFlags')
       .select('submissions.*', 'prompts.prompt', 'enum_flags.flag')

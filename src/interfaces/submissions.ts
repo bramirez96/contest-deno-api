@@ -29,6 +29,6 @@ export interface IUploadResponse extends PutObjectResponse {
 export interface IDSResponse {
   transcription: string;
   confidence: number;
-  dsScore: number;
+  score: number;
   rotation: number;
 }

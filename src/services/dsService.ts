@@ -17,7 +17,7 @@ export default class DSService {
     const res = await Promise.resolve<IDSResponse>({
       transcription: 'asdaksfmnasdlkcfmnasdlfkasmfdlkasdf',
       confidence: 50,
-      dsScore: 50,
+      score: 50,
       rotation: 0,
     });
 

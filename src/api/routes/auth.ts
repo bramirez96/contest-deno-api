@@ -31,6 +31,7 @@ export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
   app.use('/auth', route);
 
+  // POST /register
   route.post(
     '/register',
     validate<INewUser>({
@@ -61,6 +62,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // POST /login
   route.post(
     '/login',
     validate({
@@ -83,6 +85,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // GET /activation
   route.get(
     '/activation',
     validate(
@@ -112,6 +115,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // GET /reset
   route.get(
     '/reset',
     validate(
@@ -133,6 +137,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // POST /reset
   route.post(
     '/reset',
     validate({

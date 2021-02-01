@@ -6,7 +6,7 @@ exports.up = (knex) => {
     t.string('etag').notNullable().index();
     t.string('transcription');
     t.integer('confidence');
-    t.integer('dsScore');
+    t.integer('score');
     t.integer('rotation').defaultTo(0);
     t.integer('promptId')
       .notNullable()
