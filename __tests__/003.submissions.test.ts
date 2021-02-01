@@ -3,9 +3,10 @@ import {
   TestSuite,
   assertEquals,
   assertStringIncludes,
+  DatabaseResult,
   assertExists,
 } from '../testDeps.ts';
-import { MainSuite } from './000.setup.test.ts';
+import { IMainSuiteContext, MainSuite } from './000.setup.test.ts';
 import _enum from './testData/enum.ts';
 import submissions from './testData/submissions.ts';
 import users from './testData/users.ts';
@@ -134,16 +135,131 @@ test(UploadSubSuite, 'successfully uploads sub for user 3', async (context) => {
   assertStringIncludes(res.body.message, 'Upload successful!');
 });
 
-const UploadSubSuiteCheck = new TestSuite({
-  name: 'check ->',
+const GetSubsSuite = new TestSuite({
+  name: '-> GET',
   suite: SubSuite,
 });
 
+test(GetSubsSuite, 'returns a list of submissions', async (context) => {
+  const res = await context.app.get('/contest/submissions');
+
+  assertEquals(res.status, 200);
+  assertEquals(res.body.length, 3);
+});
+
+const PostTop3Suite = new TestSuite<
+  IMainSuiteContext & { top10: DatabaseResult[] }
+>({
+  name: '/top -> POST',
+  suite: SubSuite,
+  beforeAll: async (context) => {
+    const res = await context.app.get('/contest/submissions');
+    context.top10 = res.body;
+  },
+});
+
+test(PostTop3Suite, 'returns a 400 on empty body', async (context) => {
+  const res = await context.app.post('/contest/submissions/top');
+
+  assertEquals(res.status, 400);
+  assertStringIncludes(res.body.message, 'ids');
+});
+
+test(PostTop3Suite, 'returns a 400 with less than 3 subs', async (context) => {
+  const res = await context.app
+    .post('/contest/submissions/top')
+    .send({ ids: [2, 3] });
+
+  assertEquals(res.status, 400);
+  assertStringIncludes(res.body.message, 'ids');
+});
+
+test(PostTop3Suite, 'returns a 400 with more than 3 subs', async (context) => {
+  const res = await context.app
+    .post('/contest/submissions/top')
+    .send({ ids: [2, 3, 4, 5] });
+
+  assertEquals(res.status, 400);
+  assertStringIncludes(res.body.message, 'ids');
+});
+
+test(PostTop3Suite, 'throw a 409 on invalid subIds', async (context) => {
+  const res = await context.app
+    .post('/contest/submissions/top')
+    .send({ ids: [2, 8, 10] });
+
+  assertEquals(res.status, 409);
+  assertEquals(res.body.message, 'Invalid foreign key');
+});
+
+test(PostTop3Suite, 'returns a 201 on success', async (context) => {
+  const ids = context.top10.map((x) => x.id).slice(0, 3);
+  const res = await context.app.post('/contest/submissions/top').send({ ids });
+
+  assertEquals(res.status, 201);
+  assertEquals(res.body.message, 'Top 3 successfully set!');
+  assertEquals(res.body.top3.length, 3);
+});
+
+const PostFlagsSuite = new TestSuite({
+  name: '/flags -> POST',
+  suite: SubSuite,
+  beforeAll: async (context) => {
+    await context.db.table('enum_flags').insert(_enum.flags).execute();
+  },
+});
+
 test(
-  UploadSubSuiteCheck,
-  'there should be 3 submissions in the database',
+  PostFlagsSuite,
+  'returns a 409 on invalid submissionId',
   async (context) => {
-    const subs = await context.db.table('submissions').select('*').execute();
-    assertEquals(subs.length, 3);
+    const res = await context.app
+      .post('/contest/submissions/flags?submissionId=20')
+      .send({ flags: [1] });
+
+    assertEquals(res.status, 409);
+    assertEquals(res.body.message, 'Invalid foreign key');
   }
 );
+
+test(PostFlagsSuite, 'returns a 404 on invalid flagId', async (context) => {
+  const res = await context.app
+    .post('/contest/submissions/flags?submissionId=2')
+    .send({ flags: [20] });
+
+  assertEquals(res.status, 409);
+  assertEquals(res.body.message, 'Invalid foreign key');
+});
+
+test(PostFlagsSuite, 'adds a flag to subId 2', async (context) => {
+  const res = await context.app
+    .post('/contest/submissions/flags?submissionId=2')
+    .send({ flags: [1] });
+
+  assertEquals(res.status, 201);
+  assertEquals(res.body.message, 'Successfully flagged submission');
+});
+
+test(PostFlagsSuite, 'returns a 409 on duplicate flag', async (context) => {
+  const res = await context.app
+    .post('/contest/submissions/flags?submissionId=2')
+    .send({ flags: [1] });
+
+  assertEquals(res.status, 409);
+  assertEquals(res.body.message, 'Could not create duplicate');
+});
+
+const GetFlagsSuite = new TestSuite({
+  name: '/flags -> GET',
+  suite: SubSuite,
+});
+
+test(GetFlagsSuite, 'returns a 201 with a list of flags', async (context) => {
+  const res = await context.app.get(
+    '/contest/submissions/flags?submissionId=2'
+  );
+
+  assertEquals(res.status, 200);
+  assertEquals(res.body.message, 'Received flags');
+  assertEquals(res.body.flags.length, 1);
+});

@@ -55,7 +55,7 @@ export default class AdminService extends BaseService {
       const formattedTop3: INewTop3[] = ids.map((id) => ({
         submissionId: id,
       }));
-      const top3 = await this.top3Model.get();
+      const top3 = await this.top3Model.add(formattedTop3);
       return top3;
     } catch (err) {
       this.logger.error(err);

@@ -29,6 +29,7 @@ const route = Router();
 
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
+  const authServiceInstance = serviceCollection.get(AuthService);
   app.use('/auth', route);
 
   // POST /register
@@ -51,7 +52,6 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         await authServiceInstance.SignUp(req.body);
 
         res.setStatus(201).json({ message: 'User creation successful.' });
@@ -71,7 +71,6 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         const response = await authServiceInstance.SignIn(
           req.body.email,
           req.body.password
@@ -97,7 +96,6 @@ export default (app: IRouter) => {
     ),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         const { token, user } = await authServiceInstance.Validate(
           req.query.email,
           req.query.token
@@ -118,15 +116,9 @@ export default (app: IRouter) => {
   // GET /reset
   route.get(
     '/reset',
-    validate(
-      {
-        email: [required, isEmail, match(emailRegex)],
-      },
-      'query'
-    ),
+    validate({ email: [required, isEmail, match(emailRegex)] }, 'query'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         await authServiceInstance.GetResetEmail(req.query.email);
 
         res.setStatus(200).json({ message: 'Password reset email sent!' });
@@ -147,7 +139,6 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         await authServiceInstance.ResetPasswordWithCode(
           req.body.email,
           req.body.password,

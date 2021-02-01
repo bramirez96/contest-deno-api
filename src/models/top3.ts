@@ -2,10 +2,12 @@ import {
   Inject,
   log,
   PostgresAdapter,
+  QueryValues,
   Service,
   serviceCollection,
 } from '../../deps.ts';
 import { ISubItem, ISubmission } from '../interfaces/submissions.ts';
+import { INewTop3, ITop3 } from '../interfaces/top3.ts';
 import SubmissionService from '../services/submission.ts';
 import UserModel from './users.ts';
 
@@ -32,6 +34,16 @@ export default class Top3Model {
     )) as ISubItem[];
 
     return subs;
+  }
+
+  public async add(subIds: INewTop3[]) {
+    const top3 = ((await this.db
+      .table('top3')
+      .insert((subIds as unknown) as QueryValues[])
+      .returning('*')
+      .execute()) as unknown) as ITop3;
+
+    return top3;
   }
 }
 

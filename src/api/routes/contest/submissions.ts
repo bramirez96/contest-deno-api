@@ -119,7 +119,7 @@ export default (app: IRouter) => {
     async (req: Request, res: Response, next: NextFunction) => {
       // TODO - move this into submission service!
       const top3 = await adminServiceInstance.setTop3(req.body.ids);
-
+      console.log(req.body, { top3 });
       res.setStatus(201).json({ top3, message: 'Top 3 successfully set!' });
     }
   );
