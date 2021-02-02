@@ -5,9 +5,7 @@ import {
   json,
   opineCors,
   urlencoded,
-  createError,
   NextFunction,
-  IError,
   serviceCollection,
   log,
 } from '../../deps.ts';
@@ -20,10 +18,8 @@ export default (app: Opine) => {
   // Log all API calls to the server
   app.use((req: Request, res: Response, next: NextFunction) => {
     const now = new Date();
-    const query = new URLSearchParams(req.query).toString();
     logger.debug(
-      `[${req.method}] ${req.path}${query.length > 0 ? '?' + query : ''} \
-      (${req.ip})[${now.toISOString()}]`
+      `[${req.method}] ${req.path} (${req.ip})[${now.toISOString()}]`
     );
     next();
   });
@@ -53,30 +49,5 @@ export default (app: Opine) => {
   }
 
   // App Routes
-  app.use(routes());
-
-  // Error Handlers
-  // Invalid Route
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    next(createError(404, 'Route Not Found'));
-  });
-  // Parsing DB Errors/Catching Unhandled Errors
-  app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
-    logger.debug(`${err.status} ${err.message}`);
-    if (err.message.includes('violates unique constraint')) {
-      return next(createError(409, 'Could not create duplicate'));
-    } else if (err.message.includes('violates foreign key constraint')) {
-      return next(createError(409, 'Invalid foreign key'));
-    } else if (!err.status || err.status === 500) {
-      logger.warning(`${err.message} - NEEDS CUSTOM ERROR HANDLING`);
-    }
-    next(err);
-  });
-  // Fallback Error
-  app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
-    logger.debug(`${err.status} - { error: '${err.message}' }`);
-    res
-      .setStatus(err.status || 500)
-      .json({ message: err.message || 'Something went wrong.' });
-  });
+  app.use('/api', routes());
 };
