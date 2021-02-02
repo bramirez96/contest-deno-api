@@ -22,6 +22,7 @@ import {
   emailRegex,
   passwordRegex,
 } from '../../config/dataConstraints.ts';
+import { IUser } from '../../interfaces/users.ts';
 import UserModel from '../../models/users.ts';
 import SubmissionService from '../../services/submission.ts';
 import validate from '../middlewares/validate.ts';
@@ -35,7 +36,13 @@ export default (app: IRouter) => {
 
   // GET /
   route.get('/', async (req: Request, res: Response, next: NextFunction) => {
-    const userList = await userModelInstance.get();
+    const userList = await userModelInstance.get(undefined, {
+      limit: parseInt(req.params.limit, 10) || 10,
+      offset: parseInt(req.params.offset, 10) || 0,
+      orderBy: (req.params.orderBy as keyof IUser) || 'id',
+      order: (req.params.order as 'ASC' | 'DESC') || 'ASC',
+      first: req.params.first === 'true',
+    });
 
     res.setStatus(200).json(userList);
   });
