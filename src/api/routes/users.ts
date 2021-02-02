@@ -22,10 +22,8 @@ import {
   emailRegex,
   passwordRegex,
 } from '../../config/dataConstraints.ts';
-import SubmissionModel from '../../models/submissions.ts';
 import UserModel from '../../models/users.ts';
 import SubmissionService from '../../services/submission.ts';
-import authHandler from '../middlewares/authHandler.ts';
 import validate from '../middlewares/validate.ts';
 
 const route = Router();

@@ -49,23 +49,23 @@ export default class BaseModel<T, U> {
 
   public async get<B extends false, K extends keyof U>(
     filter?: (Partial<U> & DatabaseResult) | undefined,
-    config?: IGetResponse<B | undefined, K>
+    config?: IGetQuery<B | undefined, K>
   ): Promise<U[]>;
   public async get<B extends boolean, K extends keyof U>(
     filter?: undefined,
-    config?: IGetResponse<B, K>
+    config?: IGetQuery<B, K>
   ): Promise<B extends true ? U : U[]>;
   public async get<B extends false, K extends keyof U>(
     filter?: Partial<U> & DatabaseResult,
-    config?: IGetResponse<B, K>
+    config?: IGetQuery<B, K>
   ): Promise<U[]>;
   public async get<B extends boolean, K extends keyof U>(
     filter?: Partial<U> & DatabaseResult,
-    config?: IGetResponse<B, K>
+    config?: IGetQuery<B, K>
   ): Promise<B extends true ? U : U[]>;
   public async get(
     filter?: (Partial<U> & DatabaseResult) | undefined,
-    config?: IGetResponse
+    config?: IGetQuery
   ): Promise<U | U[]> {
     this.logger.debug(`Attempting to retrieve rows from ${this.tableName}`);
 
@@ -113,7 +113,7 @@ export default class BaseModel<T, U> {
   }
 }
 
-interface IGetResponse<B = boolean, K = string> {
+export interface IGetQuery<B = boolean, K = string> {
   first?: B;
   limit?: number;
   offset?: number;

@@ -15,9 +15,6 @@ import {
   isArray,
 } from '../../../../deps.ts';
 import { INewSubmission } from '../../../interfaces/submissions.ts';
-import SubmissionModel from '../../../models/submissions.ts';
-import Top3Model from '../../../models/top3.ts';
-import WinnerModel from '../../../models/winners.ts';
 import AdminService from '../../../services/admin.ts';
 import SubmissionService from '../../../services/submission.ts';
 import authHandler from '../../middlewares/authHandler.ts';
@@ -76,17 +73,21 @@ export default (app: IRouter) => {
     }
   );
 
-  // GET / <- can be filtered - TODO - admin only!
+  // GET /
   route.get(
     '/',
     authHandler({ adminOnly: false, authRequired: false }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         // TODO read query params into a generic query!
-        const submissionModelInstance = serviceCollection.get(SubmissionModel);
-        const top10 = await submissionModelInstance.getTodaysTop10();
+        const subs = await subServiceInstance.getSubs({
+          limit: parseInt(req.query.limit, 10) || 10,
+          offset: parseInt(req.query.offset, 10) || 0,
+          orderBy: req.query.orderBy || 'id',
+          order: req.query.order || 'ASC',
+        });
 
-        res.setStatus(200).json(top10);
+        res.setStatus(200).json(subs);
       } catch (err) {
         logger.error(err);
         throw err;
@@ -97,9 +98,7 @@ export default (app: IRouter) => {
   // GET /top
   route.get('/top', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const top3ModelInstance = serviceCollection.get(Top3Model);
-      const subs = await top3ModelInstance.get();
-
+      const subs = await subServiceInstance.getTop3Subs();
       res.setStatus(200).json(subs);
     } catch (err) {
       logger.error(err);
@@ -117,9 +116,7 @@ export default (app: IRouter) => {
       }),
     }),
     async (req: Request, res: Response, next: NextFunction) => {
-      // TODO - move this into submission service!
-      const top3 = await adminServiceInstance.setTop3(req.body.ids);
-      console.log(req.body, { top3 });
+      const top3 = await subServiceInstance.setTop3(req.body.ids);
       res.setStatus(201).json({ top3, message: 'Top 3 successfully set!' });
     }
   );
@@ -129,9 +126,7 @@ export default (app: IRouter) => {
     '/winner',
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const winnerModelInstance = serviceCollection.get(WinnerModel);
-        const winner = await winnerModelInstance.get();
-
+        const winner = await subServiceInstance.getRecentWinner();
         res.setStatus(200).json(winner);
       } catch (err) {
         logger.error(err);
@@ -142,24 +137,22 @@ export default (app: IRouter) => {
 
   // GET /flags
   route.get(
-    '/flags',
-    validate({ submissionId: [required] }, 'query'),
+    '/:id/flags',
     async (req: Request, res: Response, next: NextFunction) => {
-      const flags = await adminServiceInstance.getFlagsBySubId(
-        parseInt(req.query.submissionId)
+      const flags = await subServiceInstance.getFlagsBySubId(
+        parseInt(req.params.id, 10)
       );
-      res.setStatus(200).json({ flags, message: 'Received flags' });
+      res.setStatus(200).json(flags);
     }
   );
 
   // POST /flags
   route.post(
-    '/flags',
-    validate({ submissionId: [required] }, 'query'),
+    '/:id/flags',
     validate({ flags: [isArray] }, 'body'),
     async (req: Request, res: Response, next: NextFunction) => {
-      const flags = await adminServiceInstance.flagSubmission(
-        req.query.submissionId,
+      const flags = await subServiceInstance.flagSubmission(
+        parseInt(req.params.id, 10),
         req.body.flags
       );
 

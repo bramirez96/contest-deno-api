@@ -1,12 +1,12 @@
+import { Flags } from '../src/interfaces/enumFlags.ts';
 import {
   test,
   TestSuite,
   assertEquals,
   assertStringIncludes,
-  DatabaseResult,
   assertExists,
 } from '../testDeps.ts';
-import { IMainSuiteContext, MainSuite } from './000.setup.test.ts';
+import { MainSuite } from './000.setup.test.ts';
 import _enum from './testData/enum.ts';
 import submissions from './testData/submissions.ts';
 import users from './testData/users.ts';
@@ -45,61 +45,45 @@ test(UploadSubSuite, 'returns a 400 on empty body', async (context) => {
   assertStringIncludes(res.body.message, 'story, promptId');
 });
 
-test(
-  UploadSubSuite,
-  'should return 400 on invalid file field name',
-  async (context) => {
-    const res = await context.app
-      .post('/contest/submit')
-      .set('Authorization', context.token)
-      .send(submissions.invalidField);
+test(UploadSubSuite, 'return 400 on invalid field name', async (context) => {
+  const res = await context.app
+    .post('/contest/submit')
+    .set('Authorization', context.token)
+    .send(submissions.invalidField);
 
-    assertEquals(res.status, 400);
-    assertStringIncludes(res.body.message, ': story');
-  }
-);
+  assertEquals(res.status, 400);
+  assertStringIncludes(res.body.message, ': story');
+});
 
-test(
-  UploadSubSuite,
-  'should return 422 on invalid file type',
-  async (context) => {
-    const res = await context.app
-      .post('/contest/submit')
-      .set('Authorization', context.token)
-      .send(submissions.invalidFile);
+test(UploadSubSuite, 'returns 422 on invalid file type', async (context) => {
+  const res = await context.app
+    .post('/contest/submit')
+    .set('Authorization', context.token)
+    .send(submissions.invalidFile);
 
-    assertEquals(res.status, 422);
-    assertEquals(res.body.message, 'Unsupported file type');
-  }
-);
+  assertEquals(res.status, 422);
+  assertEquals(res.body.message, 'Unsupported file type');
+});
 
-test(
-  UploadSubSuite,
-  'should return 409 on invalid prompt id',
-  async (context) => {
-    const res = await context.app
-      .post('/contest/submit')
-      .set('Authorization', context.token)
-      .send(submissions.invalidPrompt);
+test(UploadSubSuite, 'returns 409 on invalid prompt id', async (context) => {
+  const res = await context.app
+    .post('/contest/submit')
+    .set('Authorization', context.token)
+    .send(submissions.invalidPrompt);
 
-    assertEquals(res.status, 409);
-    assertEquals(res.body.message, 'Invalid foreign key');
-  }
-);
+  assertEquals(res.status, 409);
+  assertEquals(res.body.message, 'Invalid foreign key');
+});
 
-test(
-  UploadSubSuite,
-  'returns a 201 on successful jpeg upload',
-  async (context) => {
-    const res = await context.app
-      .post('/contest/submit')
-      .set('Authorization', context.token)
-      .send(submissions.validFile[0]);
+test(UploadSubSuite, 'returns a 201 on jpeg upload', async (context) => {
+  const res = await context.app
+    .post('/contest/submit')
+    .set('Authorization', context.token)
+    .send(submissions.validFile[0]);
 
-    assertEquals(res.status, 201);
-    assertStringIncludes(res.body.message, 'Upload successful!');
-  }
-);
+  assertEquals(res.status, 201);
+  assertStringIncludes(res.body.message, 'Upload successful!');
+});
 
 test(UploadSubSuite, 'successfully uploads sub for user 2', async (context) => {
   const { status, body } = await context.app.post('/auth/login').send({
@@ -147,15 +131,30 @@ test(GetSubsSuite, 'returns a list of submissions', async (context) => {
   assertEquals(res.body.length, 3);
 });
 
-const PostTop3Suite = new TestSuite<
-  IMainSuiteContext & { top10: DatabaseResult[] }
->({
+test(GetSubsSuite, 'correctly limits responses', async (context) => {
+  const res = await context.app.get('/contest/submissions?limit=1');
+
+  assertEquals(res.status, 200);
+  assertEquals(res.body.length, 1);
+});
+
+test(GetSubsSuite, 'correctly orders submissions', async (context) => {
+  const res = await context.app.get(
+    '/contest/submissions?orderBy=score&order=DESC&limit=10'
+  );
+  const isSortedByScore = (arr: { score: number }[]) => {
+    let isSorted = true;
+    arr.slice(1).forEach((i, ind) => {
+      if (arr[ind].score < i.score) isSorted = false;
+    });
+    return isSorted;
+  };
+  assertEquals(isSortedByScore(res.body), true);
+});
+
+const PostTop3Suite = new TestSuite({
   name: '/top -> POST',
   suite: SubSuite,
-  beforeAll: async (context) => {
-    const res = await context.app.get('/contest/submissions');
-    context.top10 = res.body;
-  },
 });
 
 test(PostTop3Suite, 'returns a 400 on empty body', async (context) => {
@@ -193,7 +192,10 @@ test(PostTop3Suite, 'throw a 409 on invalid subIds', async (context) => {
 });
 
 test(PostTop3Suite, 'returns a 201 on success', async (context) => {
-  const ids = context.top10.map((x) => x.id).slice(0, 3);
+  const { body } = await context.app.get(
+    '/contest/submissions?orderBy=score&order=DESC&limit=10'
+  );
+  const ids = (body as { id: number }[]).map((x) => x.id).slice(0, 3);
   const res = await context.app.post('/contest/submissions/top').send({ ids });
 
   assertEquals(res.status, 201);
@@ -202,29 +204,25 @@ test(PostTop3Suite, 'returns a 201 on success', async (context) => {
 });
 
 const PostFlagsSuite = new TestSuite({
-  name: '/flags -> POST',
+  name: '/:id/flags -> POST',
   suite: SubSuite,
   beforeAll: async (context) => {
     await context.db.table('enum_flags').insert(_enum.flags).execute();
   },
 });
 
-test(
-  PostFlagsSuite,
-  'returns a 409 on invalid submissionId',
-  async (context) => {
-    const res = await context.app
-      .post('/contest/submissions/flags?submissionId=20')
-      .send({ flags: [1] });
+test(PostFlagsSuite, 'returns 409 on invalid submissionId', async (context) => {
+  const res = await context.app
+    .post('/contest/submissions/0/flags')
+    .send({ flags: [1] });
 
-    assertEquals(res.status, 409);
-    assertEquals(res.body.message, 'Invalid foreign key');
-  }
-);
+  assertEquals(res.status, 409);
+  assertEquals(res.body.message, 'Invalid foreign key');
+});
 
 test(PostFlagsSuite, 'returns a 404 on invalid flagId', async (context) => {
   const res = await context.app
-    .post('/contest/submissions/flags?submissionId=2')
+    .post('/contest/submissions/2/flags')
     .send({ flags: [20] });
 
   assertEquals(res.status, 409);
@@ -233,7 +231,7 @@ test(PostFlagsSuite, 'returns a 404 on invalid flagId', async (context) => {
 
 test(PostFlagsSuite, 'adds a flag to subId 2', async (context) => {
   const res = await context.app
-    .post('/contest/submissions/flags?submissionId=2')
+    .post('/contest/submissions/2/flags')
     .send({ flags: [1] });
 
   assertEquals(res.status, 201);
@@ -242,7 +240,7 @@ test(PostFlagsSuite, 'adds a flag to subId 2', async (context) => {
 
 test(PostFlagsSuite, 'returns a 409 on duplicate flag', async (context) => {
   const res = await context.app
-    .post('/contest/submissions/flags?submissionId=2')
+    .post('/contest/submissions/2/flags')
     .send({ flags: [1] });
 
   assertEquals(res.status, 409);
@@ -250,16 +248,21 @@ test(PostFlagsSuite, 'returns a 409 on duplicate flag', async (context) => {
 });
 
 const GetFlagsSuite = new TestSuite({
-  name: '/flags -> GET',
+  name: '/:id/flags -> GET',
   suite: SubSuite,
 });
 
 test(GetFlagsSuite, 'returns a 201 with a list of flags', async (context) => {
-  const res = await context.app.get(
-    '/contest/submissions/flags?submissionId=2'
-  );
+  const res = await context.app.get('/contest/submissions/2/flags');
 
   assertEquals(res.status, 200);
-  assertEquals(res.body.message, 'Received flags');
-  assertEquals(res.body.flags.length, 1);
+  assertEquals(res.body.length, 1);
+  assertEquals(res.body[0], Flags[1]);
+});
+
+test(GetFlagsSuite, 'returns empty 200 on invalid subId', async (context) => {
+  const res = await context.app.get('/contest/submissions/20/flags');
+
+  assertEquals(res.status, 200);
+  assertEquals(res.body.length, 0);
 });
