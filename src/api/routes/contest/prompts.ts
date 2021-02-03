@@ -30,7 +30,13 @@ export default (app: IRouter) => {
   // GET /
   route.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const prompts = await promptModelInstance.get();
+      const prompts = await promptModelInstance.get(undefined, {
+        limit: parseInt(req.params.limit, 10) || 10,
+        offset: parseInt(req.params.offset, 10) || 0,
+        orderBy: (req.params.orderBy as keyof IPrompt) || 'id',
+        order: (req.params.order as 'ASC' | 'DESC') || 'ASC',
+        first: req.params.first === 'true',
+      });
 
       res.setStatus(200).json(prompts);
     } catch (err) {
@@ -51,6 +57,24 @@ export default (app: IRouter) => {
         if (!currentPrompt) throw createError(404, 'No prompt currently set!');
 
         res.setStatus(200).json(currentPrompt);
+      } catch (err) {
+        logger.error(err);
+        next(err);
+      }
+    }
+  );
+
+  // PUT /active <- this runs the service that updates current prompt
+  route.put(
+    '/active',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const adminServiceInstance = serviceCollection.get(AdminService);
+        const newId = await adminServiceInstance.updateActivePrompt();
+
+        res
+          .setStatus(200)
+          .json({ message: `Successfully marked prompt ${newId} as active` });
       } catch (err) {
         logger.error(err);
         next(err);
@@ -134,28 +158,10 @@ export default (app: IRouter) => {
       try {
         const queueModelInstance = serviceCollection.get(PromptQueueModel);
         const promptQueue = await queueModelInstance.get(undefined, {
-          orderBy: 'startDate',
+          orderBy: 'starts_at',
           order: 'ASC',
         });
         res.setStatus(200).json(promptQueue);
-      } catch (err) {
-        logger.error(err);
-        next(err);
-      }
-    }
-  );
-
-  // PUT /queue/update <- this runs the service that updates current prompt
-  route.put(
-    '/queue/update',
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const adminServiceInstance = serviceCollection.get(AdminService);
-        const newId = await adminServiceInstance.updateActivePrompt();
-
-        res
-          .setStatus(200)
-          .json({ message: `Successfully marked prompt ${newId} as active` });
       } catch (err) {
         logger.error(err);
         next(err);

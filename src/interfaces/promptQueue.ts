@@ -4,5 +4,5 @@ export interface IPromptQueueItem extends INewPromptQueueItem {
 
 export interface INewPromptQueueItem {
   promptId: number;
-  startDate: Date;
+  starts_at: Date;
 }

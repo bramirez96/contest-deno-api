@@ -13,19 +13,19 @@ twoDaysAgo.setDate(today.getDate() - 2);
 const testPromptQueue = [
   {
     promptId: 1,
-    startDate: twoDaysAgo.toUTCString(),
+    starts_at: twoDaysAgo.toUTCString(),
   },
   {
     promptId: 2,
-    startDate: yesterday.toUTCString(),
+    starts_at: yesterday.toUTCString(),
   },
   {
     promptId: 3,
-    startDate: today.toUTCString(),
+    starts_at: today.toUTCString(),
   },
   {
     promptId: 4,
-    startDate: tomorrow.toUTCString(),
+    starts_at: tomorrow.toUTCString(),
   },
 ];
 
