@@ -23,6 +23,7 @@ export default (app: IRouter) => {
   // POST /
   route.post(
     '/',
+    // Auth not required, but userID is being pulled to track voting
     authHandler({ authRequired: false }),
     validate({
       votes: validateArray(true, [minNumber(1)], {

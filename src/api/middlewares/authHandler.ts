@@ -14,14 +14,15 @@ import UserModel from '../../models/users.ts';
  * Defaults to requiring any authenticated user.
  * Adds to body: { userInfo: { id, email, codename } };
  */
-export default ({
-  roles = [1, 2, 3],
-  authRequired = true,
-}: IAuthHandlerConfig) => async (
+export default (config?: IAuthHandlerConfig) => async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  // Set defaults for these config values
+  const roles = config?.roles ?? [1, 2, 3];
+  const authRequired = config?.authRequired ?? true;
+
   const logger: log.Logger = serviceCollection.get('logger');
   const token = req.get('Authorization');
 

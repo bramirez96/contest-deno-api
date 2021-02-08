@@ -13,6 +13,7 @@ import {
   createError,
 } from '../../../../deps.ts';
 import { INewPrompt, IPrompt } from '../../../interfaces/prompts.ts';
+import { Roles } from '../../../interfaces/roles.ts';
 import PromptQueueModel from '../../../models/promptQueue.ts';
 import PromptModel from '../../../models/prompts.ts';
 import AdminService from '../../../services/admin.ts';
@@ -28,22 +29,26 @@ export default (app: IRouter) => {
   app.use(['/prompt', '/prompts'], route);
 
   // GET /
-  route.get('/', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const prompts = await promptModelInstance.get(undefined, {
-        limit: parseInt(req.params.limit, 10) || 10,
-        offset: parseInt(req.params.offset, 10) || 0,
-        orderBy: (req.params.orderBy as keyof IPrompt) || 'id',
-        order: (req.params.order as 'ASC' | 'DESC') || 'ASC',
-        first: req.params.first === 'true',
-      });
+  route.get(
+    '/',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const prompts = await promptModelInstance.get(undefined, {
+          limit: parseInt(req.params.limit, 10) || 10,
+          offset: parseInt(req.params.offset, 10) || 0,
+          orderBy: (req.params.orderBy as keyof IPrompt) || 'id',
+          order: (req.params.order as 'ASC' | 'DESC') || 'ASC',
+          first: req.params.first === 'true',
+        });
 
-      res.setStatus(200).json(prompts);
-    } catch (err) {
-      logger.error(err);
-      next(err);
+        res.setStatus(200).json(prompts);
+      } catch (err) {
+        logger.error(err);
+        next(err);
+      }
     }
-  });
+  );
 
   // GET /active
   route.get(
@@ -67,6 +72,7 @@ export default (app: IRouter) => {
   // PUT /active <- this runs the service that updates current prompt
   route.put(
     '/active',
+    authHandler({ roles: [Roles.admin] }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const adminServiceInstance = serviceCollection.get(AdminService);
@@ -85,6 +91,7 @@ export default (app: IRouter) => {
   // GET /:id
   route.get(
     '/:id',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
     validate({ id: [required, isNumber] }, 'params'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
@@ -105,6 +112,7 @@ export default (app: IRouter) => {
   // POST /
   route.post(
     '/',
+    authHandler({ roles: [Roles.admin] }),
     validate<INewPrompt>({ prompt: [required, isString] }, 'params'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
@@ -121,7 +129,7 @@ export default (app: IRouter) => {
   // PUT /:id
   route.put(
     '/:id',
-    validate({ id: [required, isNumber] }, 'params'),
+    authHandler({ roles: [Roles.admin] }),
     validate<IPrompt>({ active: [isBool], prompt: [isString] }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
@@ -138,6 +146,7 @@ export default (app: IRouter) => {
   // DELETE /:id
   route.delete(
     '/:id',
+    authHandler({ roles: [Roles.admin] }),
     validate({ id: [required, isNumber] }, 'params'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
@@ -154,6 +163,7 @@ export default (app: IRouter) => {
   // GET /queue
   route.get(
     '/queue',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const queueModelInstance = serviceCollection.get(PromptQueueModel);

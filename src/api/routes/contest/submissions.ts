@@ -14,9 +14,9 @@ import {
   minNumber,
   isArray,
 } from '../../../../deps.ts';
+import { Roles } from '../../../interfaces/roles.ts';
 import { INewSubmission } from '../../../interfaces/submissions.ts';
 import SubmissionModel from '../../../models/submissions.ts';
-import AdminService from '../../../services/admin.ts';
 import SubmissionService from '../../../services/submission.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 import upload from '../../middlewares/upload.ts';
@@ -32,32 +32,22 @@ export default (app: IRouter) => {
   // POST /
   route.post(
     '/',
-    authHandler({ authRequired: true }),
+    authHandler(),
     // This will ensure there is only one item in the story field before upload
     validate<INewSubmission>({
       story: validateArray(
         true,
         validateObject(true, {
+          // Check these fields to make sure the field is a file
           name: [required, isString],
           filename: [required, isString],
           size: [required, isNumber],
         }),
-        { minLength: 1, maxLength: 1 }
+        { minLength: 1, maxLength: 1 } // Only one page per sub allowed
       ),
       promptId: [required, isString],
     }),
     upload('story'),
-    // Make sure upload was processed correctly
-    validate({
-      story: validateArray(
-        true,
-        validateObject(true, {
-          etag: [required, isString],
-          s3Label: [required, isString],
-        }),
-        { minLength: 1, maxLength: 1 }
-      ),
-    }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         await subServiceInstance.processSubmission(
@@ -76,7 +66,7 @@ export default (app: IRouter) => {
   // GET /
   route.get(
     '/',
-    authHandler({ authRequired: false }),
+    authHandler({ roles: [Roles.admin] }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         // TODO read query params into a generic query!
@@ -123,6 +113,7 @@ export default (app: IRouter) => {
   // POST /top
   route.post(
     '/top',
+    authHandler({ roles: [Roles.admin] }),
     validate({
       ids: validateArray(true, [minNumber(1)], {
         minLength: 3,
@@ -135,7 +126,7 @@ export default (app: IRouter) => {
     }
   );
 
-  // GET /:id
+  // GET /:id - This is good for shareability! Public
   route.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const sub = await subServiceInstance.getById(parseInt(req.params.id, 10));
@@ -145,8 +136,10 @@ export default (app: IRouter) => {
     }
   });
 
+  // DELETE /:id
   route.delete(
     '/:id',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const subModelInstance = serviceCollection.get(SubmissionModel);
@@ -161,6 +154,7 @@ export default (app: IRouter) => {
   // GET /:id/flags
   route.get(
     '/:id/flags',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
     async (req: Request, res: Response, next: NextFunction) => {
       const flags = await subServiceInstance.getFlagsBySubId(
         parseInt(req.params.id, 10)
@@ -172,6 +166,7 @@ export default (app: IRouter) => {
   // POST /:id/flags
   route.post(
     '/:id/flags',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
     validate({ flags: [isArray] }, 'body'),
     async (req: Request, res: Response, next: NextFunction) => {
       const flags = await subServiceInstance.flagSubmission(
@@ -185,9 +180,10 @@ export default (app: IRouter) => {
     }
   );
 
-  // DELETE /:id/flags/:flagId
+  // DELETE /:id/flags/:flagId - Only admin can unflag? Not teachers?
   route.delete(
     '/:id/flags/:flagId',
+    authHandler({ roles: [Roles.admin] }),
     async (req: Request, res: Response, next: NextFunction) => {
       await subServiceInstance.removeFlag(
         parseInt(req.params.id, 10),
