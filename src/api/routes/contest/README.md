@@ -10,6 +10,7 @@ These routes are likely specific to the FDSC/Classroom Rumble ecosystem and will
 | ------------ | ------ | ----------------------------- | ------------ | ------------------ | -------------- |
 | `/`          | POST   | Post an image submission      | `SubmitBody` | none               | `{ message }`  |
 | `/`          | GET    | Get an array of submissions   | none         | `PaginationParams` | `ISubItem[]`   |
+| `/:id`       | GET    | Get a submission by `id`      | none         | none               | `ISubItem`     |
 | `/top`       | GET    | Get today's top 3 submissions | none         | none               | `ISubItem[]`   |
 | `/top`       | POST   | Set today's top 3 (admin)     | `SetTop3`    | none               | `Top3Response` |
 | `/winner`    | GET    | Get the most recent winner    | none         | none               | `ISubItem`     |

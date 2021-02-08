@@ -24,6 +24,8 @@ export default (app: Opine) => {
       return next(createError(409, 'Could not create duplicate'));
     } else if (err.message.includes('violates foreign key constraint')) {
       return next(createError(409, 'Invalid foreign key'));
+    } else if (err.message.includes('invalid input syntax')) {
+      return next(createError(400, 'Invalid data provided'));
     } else if (!err.status || err.status === 500) {
       logger.warning(`${err.message} - NEEDS CUSTOM ERROR HANDLING`);
     }

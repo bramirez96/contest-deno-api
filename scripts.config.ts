@@ -19,6 +19,13 @@ const config: DenonConfig = {
         DENO_ENV: 'testing', // Set the testing environment
       },
     },
+    'test:once': {
+      cmd: 'deno test __tests__/index.test.ts',
+      env: {
+        DENO_ENV: 'testing', // Set the testing environment
+      },
+      watch: false,
+    },
   },
 };
 

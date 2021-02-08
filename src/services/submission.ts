@@ -44,7 +44,10 @@ export default class SubmissionService extends BaseService {
     );
 
     // Pull codename for use in the retrieve subs, this reduces queries to db
-    const { codename } = await this.userModel.get({ userId }, { first: true });
+    const { codename } = await this.userModel.get(
+      { id: userId },
+      { first: true }
+    );
     // Query the S3 bucket/database for submission info
     const subItems = await Promise.all(
       subs.map((s) => this.retrieveSubItem(s, codename))
@@ -61,6 +64,19 @@ export default class SubmissionService extends BaseService {
       subs.map((s) => this.retrieveSubItem(s))
     );
     return subItems;
+  }
+
+  public async getById(id: number) {
+    try {
+      const sub = await this.submissionModel.get({ id }, { first: true });
+      if (!sub) throw createError(404, 'Submission not found');
+
+      const subItem = await this.retrieveSubItem(sub);
+      return subItem;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 
   public async getTop3Subs() {
@@ -170,6 +186,20 @@ export default class SubmissionService extends BaseService {
         .returning('*')
         .execute();
       return flags;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async removeFlag(submissionId: number, flagId: number) {
+    try {
+      await this.db
+        .table('submission_flags')
+        .where('submissionId', submissionId)
+        .where('flagId', flagId)
+        .delete()
+        .execute();
     } catch (err) {
       this.logger.error(err);
       throw err;

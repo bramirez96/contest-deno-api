@@ -15,6 +15,7 @@ import {
   isArray,
 } from '../../../../deps.ts';
 import { INewSubmission } from '../../../interfaces/submissions.ts';
+import SubmissionModel from '../../../models/submissions.ts';
 import AdminService from '../../../services/admin.ts';
 import SubmissionService from '../../../services/submission.ts';
 import authHandler from '../../middlewares/authHandler.ts';
@@ -26,13 +27,12 @@ const route = Router();
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const subServiceInstance = serviceCollection.get(SubmissionService);
-  const adminServiceInstance = serviceCollection.get(AdminService);
   app.use(['/submit', '/submission', '/submissions'], route);
 
   // POST /
   route.post(
     '/',
-    authHandler({ adminOnly: false, authRequired: true }),
+    authHandler({ authRequired: true }),
     // This will ensure there is only one item in the story field before upload
     validate<INewSubmission>({
       story: validateArray(
@@ -76,7 +76,7 @@ export default (app: IRouter) => {
   // GET /
   route.get(
     '/',
-    authHandler({ adminOnly: false, authRequired: false }),
+    authHandler({ authRequired: false }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         // TODO read query params into a generic query!
@@ -88,6 +88,20 @@ export default (app: IRouter) => {
         });
 
         res.setStatus(200).json(subs);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  // GET /winner
+  route.get(
+    '/winner',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const winner = await subServiceInstance.getRecentWinner();
+        res.setStatus(200).json(winner);
       } catch (err) {
         logger.error(err);
         throw err;
@@ -121,13 +135,22 @@ export default (app: IRouter) => {
     }
   );
 
-  // GET /winner
-  route.get(
-    '/winner',
+  // GET /:id
+  route.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const sub = await subServiceInstance.getById(parseInt(req.params.id, 10));
+      res.setStatus(200).json(sub);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  route.delete(
+    '/:id',
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const winner = await subServiceInstance.getRecentWinner();
-        res.setStatus(200).json(winner);
+        const subModelInstance = serviceCollection.get(SubmissionModel);
+        await subModelInstance.delete(parseInt(req.params.id, 10));
       } catch (err) {
         logger.error(err);
         throw err;
@@ -135,7 +158,7 @@ export default (app: IRouter) => {
     }
   );
 
-  // GET /flags
+  // GET /:id/flags
   route.get(
     '/:id/flags',
     async (req: Request, res: Response, next: NextFunction) => {
@@ -146,7 +169,7 @@ export default (app: IRouter) => {
     }
   );
 
-  // POST /flags
+  // POST /:id/flags
   route.post(
     '/:id/flags',
     validate({ flags: [isArray] }, 'body'),
@@ -159,6 +182,18 @@ export default (app: IRouter) => {
       res
         .setStatus(201)
         .json({ flags, message: 'Successfully flagged submission' });
+    }
+  );
+
+  // DELETE /:id/flags/:flagId
+  route.delete(
+    '/:id/flags/:flagId',
+    async (req: Request, res: Response, next: NextFunction) => {
+      await subServiceInstance.removeFlag(
+        parseInt(req.params.id, 10),
+        parseInt(req.params.flagId, 10)
+      );
+      res.setStatus(204).end();
     }
   );
 

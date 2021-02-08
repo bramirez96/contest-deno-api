@@ -4,7 +4,7 @@ export interface IVote extends INewVote {
 }
 
 export interface INewVote {
-  userId: number;
+  userId?: number;
   firstPlaceId: number;
   secondPlaceId: number;
   thirdPlaceId: number;

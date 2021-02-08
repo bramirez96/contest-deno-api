@@ -236,7 +236,8 @@ export default class AuthService extends BaseService {
       }) as string; // Cast as string since we're not passing buffer
 
       const urlParams = new URLSearchParams({ token, email });
-      const url = env.SERVER_URL + '/auth/activation?' + urlParams.toString();
+      const url =
+        env.SERVER_URL + '/api/auth/activation?' + urlParams.toString();
 
       return { url, code: token };
     } catch (err) {

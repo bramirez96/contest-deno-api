@@ -3,6 +3,7 @@ import {
   test,
   TestSuite,
   assertEquals,
+  assertNotEquals,
   assertStringIncludes,
   assertExists,
 } from '../testDeps.ts';
@@ -152,6 +153,39 @@ test(GetSubsSuite, 'correctly orders submissions', async (context) => {
   assertEquals(isSortedByScore(res.body), true);
 });
 
+test(GetSubsSuite, 'correctly offsets responses', async (context) => {
+  const res1 = await context.app.get('/api/contest/submissions?limit=1');
+  assertEquals(res1.status, 200);
+  assertEquals(res1.body.length, 1);
+
+  const res2 = await context.app.get(
+    '/api/contest/submissions?limit=1&offset=1'
+  );
+  assertEquals(res2.status, 200);
+  assertEquals(res2.body.length, 1);
+
+  assertNotEquals(res1.body[0].id, res2.body[0].id);
+});
+
+const GetSubById = new TestSuite({
+  name: '/:id -> GET',
+  suite: SubSuite,
+});
+
+test(GetSubById, 'returns the correct sub', async (context) => {
+  const res = await context.app.get('/api/contest/submissions/2');
+
+  assertEquals(res.status, 200);
+  assertEquals(res.body.id, 2);
+});
+
+test(GetSubById, 'throws error on bad id', async (context) => {
+  const res = await context.app.get('/api/contest/submissions/20');
+
+  assertEquals(res.status, 404);
+  assertEquals(res.body.message, 'Submission not found');
+});
+
 const PostTop3Suite = new TestSuite({
   name: '/top -> POST',
   suite: SubSuite,
@@ -267,4 +301,22 @@ test(GetFlagsSuite, 'returns empty 200 on invalid subId', async (context) => {
 
   assertEquals(res.status, 200);
   assertEquals(res.body.length, 0);
+});
+
+const RemoveFlagSuite = new TestSuite({
+  name: '/:id/flags/:flagId -> DELETE',
+  suite: SubSuite,
+});
+
+test(RemoveFlagSuite, 'returns 204 on success', async (context) => {
+  const res = await context.app.delete('/api/contest/submissions/20/flags/1');
+  assertEquals(res.status, 204);
+});
+
+test(RemoveFlagSuite, 'throws error on NaN params', async (context) => {
+  const res = await context.app.delete(
+    '/api/contest/submissions/whoa/flags/there'
+  );
+  assertEquals(res.status, 400);
+  assertEquals(res.body.message, 'Invalid data provided');
 });

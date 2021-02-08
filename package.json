@@ -16,8 +16,9 @@
     "seed:test": "yarn cross-env NODE_ENV=testing knex seed:run",
     "seed:ci": "yarn cross-env NODE_ENV=ci knex seed:run",
     "reset": "yarn rollback && yarn latest && yarn seed",
-    "reset:test": "yarn rollback:test && yarn latest:test && yarn seed:test",
-    "reset:ci": "yarn rollback:ci && yarn latest:ci && yarn seed:ci",
+    "reset:test": "yarn rollback:test && yarn latest:test",
+    "reset:ci": "yarn rollback:ci && yarn latest:ci",
+    "reset:all": "yarn reset && yarn reset:test && yarn reset:ci",
     "make": "yarn knex migrate:make",
     "makeseed": "yarn knex seed:make"
   },
