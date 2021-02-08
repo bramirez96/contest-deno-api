@@ -1,4 +1,8 @@
 // deno-lint-ignore-file
+const today = new Date();
+const yesterday = new Date(today);
+yesterday.setDate(today.getDate() - 1);
+
 const testSubs = [
   {
     s3Label: 'seedItem1.jpeg',
@@ -9,6 +13,7 @@ const testSubs = [
     confidence: 50,
     score: 25,
     rotation: 0,
+    created_at: yesterday.toUTCString(),
   },
   {
     s3Label: 'seedItem1.jpeg',
@@ -19,6 +24,7 @@ const testSubs = [
     confidence: 70,
     score: 40,
     rotation: 0,
+    created_at: yesterday.toUTCString(),
   },
   {
     s3Label: 'seedItem1.jpeg',
@@ -29,6 +35,7 @@ const testSubs = [
     confidence: 100,
     score: 50,
     rotation: 0,
+    created_at: yesterday.toUTCString(),
   },
   {
     s3Label: 'seedItem1.jpeg',

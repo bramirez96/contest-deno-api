@@ -7,21 +7,10 @@ import {
   log,
   serviceCollection,
   validateArray,
-  validateObject,
-  isString,
-  required,
-  isNumber,
   minNumber,
-  isArray,
 } from '../../../../deps.ts';
-import { INewSubmission } from '../../../interfaces/submissions.ts';
-import { INewVote } from '../../../interfaces/votes.ts';
-import SubmissionModel from '../../../models/submissions.ts';
-import AdminService from '../../../services/admin.ts';
 import ContestService from '../../../services/contest.ts';
-import SubmissionService from '../../../services/submission.ts';
 import authHandler from '../../middlewares/authHandler.ts';
-import upload from '../../middlewares/upload.ts';
 import validate from '../../middlewares/validate.ts';
 
 const route = Router();
@@ -42,11 +31,16 @@ export default (app: IRouter) => {
       }),
     }),
     async (req: Request, res: Response, next: NextFunction) => {
-      await contestInstance.submitVote(
-        req.body.votes,
-        parseInt(req.body.userInfo.id, 10) || undefined
-      );
-      res.setStatus(201).json({ ERR: 'ERR' });
+      try {
+        await contestInstance.submitVote(
+          req.body.votes,
+          parseInt(req.body.userInfo.id, 10) || undefined
+        );
+        res.setStatus(201).json({ ERR: 'ERR' });
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
     }
   );
 
