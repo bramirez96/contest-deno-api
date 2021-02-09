@@ -156,10 +156,15 @@ export default (app: IRouter) => {
     '/:id/flags',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
     async (req: Request, res: Response, next: NextFunction) => {
-      const flags = await subServiceInstance.getFlagsBySubId(
-        parseInt(req.params.id, 10)
-      );
-      res.setStatus(200).json(flags);
+      try {
+        const flags = await subServiceInstance.getFlagsBySubId(
+          parseInt(req.params.id, 10)
+        );
+        res.setStatus(200).json(flags);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
     }
   );
 
@@ -169,14 +174,19 @@ export default (app: IRouter) => {
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
     validate({ flags: [isArray] }, 'body'),
     async (req: Request, res: Response, next: NextFunction) => {
-      const flags = await subServiceInstance.flagSubmission(
-        parseInt(req.params.id, 10),
-        req.body.flags
-      );
+      try {
+        const flags = await subServiceInstance.flagSubmission(
+          parseInt(req.params.id, 10),
+          req.body.flags
+        );
 
-      res
-        .setStatus(201)
-        .json({ flags, message: 'Successfully flagged submission' });
+        res
+          .setStatus(201)
+          .json({ flags, message: 'Successfully flagged submission' });
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
     }
   );
 
@@ -185,11 +195,16 @@ export default (app: IRouter) => {
     '/:id/flags/:flagId',
     authHandler({ roles: [Roles.admin] }),
     async (req: Request, res: Response, next: NextFunction) => {
-      await subServiceInstance.removeFlag(
-        parseInt(req.params.id, 10),
-        parseInt(req.params.flagId, 10)
-      );
-      res.setStatus(204).end();
+      try {
+        await subServiceInstance.removeFlag(
+          parseInt(req.params.id, 10),
+          parseInt(req.params.flagId, 10)
+        );
+        res.setStatus(204).end();
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
     }
   );
 
