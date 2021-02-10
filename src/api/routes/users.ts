@@ -16,6 +16,7 @@ import {
   isBool,
   createError,
   log,
+  moment,
 } from '../../../deps.ts';
 import {
   codenameRegex,
@@ -136,7 +137,7 @@ export default (app: IRouter) => {
         const userId = req.params.id;
         await userModelInstance.update(parseInt(userId), {
           ...req.body,
-          updated_at: new Date().toUTCString(),
+          updated_at: moment.utc(),
         });
 
         return res.setStatus(204).end();

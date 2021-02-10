@@ -6,6 +6,8 @@ const seedPrompts = [
   { prompt: 'This is a fourth test prompt.' },
 ];
 
-exports.seed = function (knex) {
-  return knex('prompts').insert(seedPrompts);
-};
+async function seed_prompts(knex) {
+  await knex('prompts').insert(seedPrompts);
+}
+
+module.exports = { seed_prompts };

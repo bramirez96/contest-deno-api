@@ -1,3 +1,5 @@
+import { moment } from '../../deps.ts';
+
 export interface IVote extends INewVote {
   id: number;
   created_at: Date;

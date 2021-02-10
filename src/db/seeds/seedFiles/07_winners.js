@@ -3,6 +3,8 @@ const winner = {
   submissionId: 3,
 };
 
-exports.seed = function (knex) {
+async function seed_winners(knex) {
   return knex('winners').insert(winner);
-};
+}
+
+module.exports = { seed_winners };

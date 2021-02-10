@@ -56,6 +56,34 @@ export default class SubmissionService extends BaseService {
     return subItems;
   }
 
+  public async getTopTen() {
+    const { id: promptId } = await this.promptModel.get(
+      { active: true },
+      { first: true }
+    );
+
+    const subs = await this.submissionModel.get(
+      { promptId },
+      {
+        limit: 10,
+        orderBy: 'score',
+        order: 'DESC',
+      }
+    );
+    const processedSubs = await Promise.all(
+      subs.map((s) => this.retrieveSubItem(s))
+    );
+
+    const top3 = ((await this.db
+      .table('top3')
+      .innerJoin('submissions', 'submissions.id', 'top3.submissionId')
+      .where('submissions.promptId', promptId)
+      .select('submissions.*')
+      .execute()) as unknown[]) as ISubmission[];
+
+    return { subs: processedSubs, hasVoted: top3.length > 0 };
+  }
+
   public async getSubs(
     config?: Omit<IGetQuery<false, keyof ISubmission>, 'first'>
   ) {
@@ -117,8 +145,12 @@ export default class SubmissionService extends BaseService {
       .execute()) as unknown) as ISubmission[];
 
     // Process winner into a sub item and return it
-    const sub = await this.retrieveSubItem(winner);
-    return sub;
+    if (winner) {
+      const sub = await this.retrieveSubItem(winner);
+      return sub;
+    } else {
+      return undefined;
+    }
   }
 
   public async processSubmission(

@@ -1,7 +1,5 @@
 // deno-lint-ignore-file
-const today = new Date();
-const yesterday = new Date(today);
-yesterday.setDate(today.getDate() - 1);
+const moment = require('moment');
 
 const testSubs = [
   {
@@ -13,7 +11,7 @@ const testSubs = [
     confidence: 50,
     score: 25,
     rotation: 0,
-    created_at: yesterday.toUTCString(),
+    created_at: moment.utc().subtract(1, 'd'),
   },
   {
     s3Label: 'seedItem1.jpeg',
@@ -24,7 +22,7 @@ const testSubs = [
     confidence: 70,
     score: 40,
     rotation: 0,
-    created_at: yesterday.toUTCString(),
+    created_at: moment.utc().subtract(1, 'd'),
   },
   {
     s3Label: 'seedItem1.jpeg',
@@ -35,7 +33,7 @@ const testSubs = [
     confidence: 100,
     score: 50,
     rotation: 0,
-    created_at: yesterday.toUTCString(),
+    created_at: moment.utc().subtract(1, 'd'),
   },
   {
     s3Label: 'seedItem1.jpeg',
@@ -46,6 +44,7 @@ const testSubs = [
     confidence: 80,
     score: 45,
     rotation: 0,
+    created_at: moment.utc(),
   },
   {
     s3Label: 'seedItem1.jpeg',
@@ -56,6 +55,7 @@ const testSubs = [
     confidence: 60,
     score: 25,
     rotation: 0,
+    created_at: moment.utc(),
   },
   {
     s3Label: 'seedItem1.jpeg',
@@ -66,9 +66,12 @@ const testSubs = [
     confidence: 100,
     score: 50,
     rotation: 0,
+    created_at: moment.utc(),
   },
 ];
 
-exports.seed = function (knex) {
-  return knex('submissions').insert(testSubs);
-};
+async function seed_submissions(knex) {
+  await knex('submissions').insert(testSubs);
+}
+
+module.exports = { seed_submissions };

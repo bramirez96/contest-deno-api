@@ -110,6 +110,21 @@ export default (app: IRouter) => {
     }
   });
 
+  // GET /top/admin
+  route.get(
+    '/top/admin',
+    authHandler({ roles: [Roles.admin] }),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const subs = await subServiceInstance.getTopTen();
+        res.setStatus(200).json(subs);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
   // POST /top
   route.post(
     '/top',

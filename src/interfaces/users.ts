@@ -1,9 +1,11 @@
-import { DatabaseResult } from '../../deps.ts';
+import { DatabaseResult, moment } from '../../deps.ts';
 import { Roles } from './roles.ts';
 
-export interface IUser extends Omit<INewUser, 'parentEmail' | 'age'> {
+export interface IUser
+  extends Omit<INewUser, 'parentEmail' | 'age' | 'roleId'> {
   id: number;
   isValidated: boolean;
+  roleId: number;
   created_at: Date;
   updated_at: Date;
 }

@@ -1,3 +1,5 @@
+import { moment } from '../../deps.ts';
+
 export interface IPromptQueueItem extends INewPromptQueueItem {
   id: number;
 }

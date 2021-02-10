@@ -1,3 +1,5 @@
+import { moment } from '../../deps.ts';
+
 export interface IValidation extends INewValidation {
   id: number;
   created_at: Date;

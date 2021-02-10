@@ -8,6 +8,7 @@ import {
   NextFunction,
   serviceCollection,
   log,
+  moment,
 } from '../../deps.ts';
 import routes from '../api/index.ts';
 import env from '../config/env.ts';
@@ -17,10 +18,8 @@ export default (app: Opine) => {
   const logger: log.Logger = serviceCollection.get('logger');
   // Log all API calls to the server
   app.use((req: Request, res: Response, next: NextFunction) => {
-    const now = new Date();
-    logger.debug(
-      `[${req.method}] ${req.path} (${req.ip})[${now.toISOString()}]`
-    );
+    const now = moment.utc();
+    logger.debug(`[${req.method}] ${req.path} (${req.ip})[${now.format()}]`);
     next();
   });
 

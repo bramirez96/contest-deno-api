@@ -20,15 +20,17 @@ const seedUsers = [
   },
   {
     codename: 'CodenameThree',
-    email: 'anemaww3@email.com',
+    email: 'email@email.com',
     firstname: 'Firstname3',
     lastname: 'Lastname3',
-    password: 'thisisastringyoucanteverloginuhoh',
+    password: '$2a$10$cZajEDkFrgEsdEbVYed4IeM6RAy75/FV9KRlJDZ63O1Cc0KNp13tG', // somepass123A
     isValidated: true,
     roleId: 3,
   },
 ];
 
-exports.seed = function (knex) {
-  return knex('users').insert(seedUsers);
-};
+async function seed_users(knex) {
+  await knex('users').insert(seedUsers);
+}
+
+module.exports = { seed_users };

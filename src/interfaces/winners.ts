@@ -1,3 +1,5 @@
+import { moment } from '../../deps.ts';
+
 export interface IWinner extends INewWinner {
   id: number;
   created_at: Date;

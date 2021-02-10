@@ -13,6 +13,7 @@ import {
   serviceCollection,
   log,
   NextFunction,
+  createError,
 } from '../../../deps.ts';
 import {
   codenameRegex,
@@ -24,6 +25,7 @@ import validate from '../middlewares/validate.ts';
 import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
 import { INewUser } from '../../interfaces/users.ts';
+import { Roles } from '../../interfaces/roles.ts';
 
 const route = Router();
 
@@ -75,6 +77,11 @@ export default (app: IRouter) => {
           req.body.email,
           req.body.password
         );
+
+        if (req.query.admin && response.user.roleId !== Roles.admin) {
+          throw createError(401, `Must be admin to login`);
+        }
+
         logger.debug(`User (ID: ${response.user.id}) successfully signed in`);
         res.setStatus(201).json(response);
       } catch (err) {
