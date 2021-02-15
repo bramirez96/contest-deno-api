@@ -1,4 +1,4 @@
-import { DatabaseResult, moment } from '../../deps.ts';
+import { DatabaseResult } from '../../deps.ts';
 import { Roles } from './roles.ts';
 
 export interface IUser

@@ -3,7 +3,6 @@ import {
   IRouter,
   Request,
   Response,
-  NextFunction,
   log,
   serviceCollection,
   validateArray,
@@ -31,7 +30,7 @@ export default (app: IRouter) => {
         maxLength: 3,
       }),
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         await contestInstance.submitVote(
           req.body.votes,

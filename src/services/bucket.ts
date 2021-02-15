@@ -74,7 +74,6 @@ export default class BucketService {
 
   private isValidFileType(extension: string) {
     const allowedExtensions = ['jpg', 'png', 'jpeg'];
-    // console.log({ extension }, allowedExtensions.includes(extension));
     return allowedExtensions.includes(extension);
   }
 }

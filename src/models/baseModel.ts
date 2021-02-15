@@ -27,9 +27,7 @@ export default class BaseModel<NewItem, FullItem> {
   // Putting basic CRUD operations on all Models
 
   // Overloading function call for better linting and usability :)
-  public async add<B extends boolean>(
-    body: NewItem | NewItem[]
-  ): Promise<FullItem[]>;
+  public async add(body: NewItem | NewItem[]): Promise<FullItem[]>;
   public async add<B extends boolean>(
     body: NewItem | NewItem[],
     first?: B

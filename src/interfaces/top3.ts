@@ -1,5 +1,3 @@
-import { moment } from '../../deps.ts';
-
 export interface ITop3 extends INewTop3 {
   id: number;
   created_at: Date;
