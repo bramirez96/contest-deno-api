@@ -1,40 +1,36 @@
-import { Service, Inject, serviceCollection, createError } from '../../deps.ts';
-import { INewTop3 } from '../interfaces/top3.ts';
-import FlagModel from '../models/flagModel.ts';
+import {
+  Service,
+  Inject,
+  serviceCollection,
+  createError,
+  moment,
+} from '../../deps.ts';
 import PromptQueueModel from '../models/promptQueue.ts';
 import PromptModel from '../models/prompts.ts';
-import Top3Model from '../models/top3Model.ts';
 import BaseService from './baseService.ts';
 
 @Service()
 export default class AdminService extends BaseService {
   constructor(
     @Inject(PromptModel) private promptModel: PromptModel,
-    @Inject(PromptQueueModel) private promptQueue: PromptQueueModel,
-    @Inject(Top3Model) private top3Model: Top3Model,
-    @Inject(FlagModel) private flagModel: FlagModel
+    @Inject(PromptQueueModel) private promptQueue: PromptQueueModel
   ) {
     super();
   }
 
   public async updateActivePrompt() {
     try {
-      const startDate = new Date().toISOString().split('T')[0];
+      const startsAt = (moment.utc().format('YYYY-MM-DD') as unknown) as Date;
       const currentPrompt = await this.promptModel.get(
         { active: true },
         { first: true }
       );
       const { promptId: newId } = await this.promptQueue.get(
-        { startDate },
+        { starts_at: startsAt },
         { first: true }
       );
       if (currentPrompt.id === newId) {
         throw createError(409, 'Prompt is already up-to-date');
-      }
-      const curHour = parseInt(new Date().toISOString().split('T')[1], 10);
-      if (curHour < 1 || curHour > 22) {
-        this.logger.debug('Could not update at this time');
-        throw createError(409, 'Could not update at this time');
       }
 
       await this.db.transaction(async () => {
@@ -44,39 +40,6 @@ export default class AdminService extends BaseService {
       this.logger.debug('Successfully updated active prompt');
 
       return newId;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  public async setTop3(ids: number[]) {
-    try {
-      const formattedTop3: INewTop3[] = ids.map((id) => ({ submissionId: id }));
-      const top3 = await this.top3Model.add(formattedTop3);
-      return top3;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  public async getFlagsBySubId(submissionId: number) {
-    try {
-      const flags = await this.flagModel.getBySubmissionId(submissionId);
-      const parsedFlags = flags.map((flag) => flag.flag);
-      return parsedFlags;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  public async flagSubmission(submissionId: number, flagIds: number[]) {
-    try {
-      const flagItems = flagIds.map((flagId) => ({ flagId, submissionId }));
-      const flags = await this.flagModel.addFlagsToSub(flagItems);
-      return flags;
     } catch (err) {
       this.logger.error(err);
       throw err;

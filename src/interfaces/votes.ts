@@ -1,10 +1,12 @@
+import { moment } from '../../deps.ts';
+
 export interface IVote extends INewVote {
   id: number;
-  createdAt: Date;
+  created_at: Date;
 }
 
 export interface INewVote {
-  userId: number;
+  userId?: number;
   firstPlaceId: number;
   secondPlaceId: number;
   thirdPlaceId: number;

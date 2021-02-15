@@ -8,6 +8,6 @@ export interface INewRole {
 
 export enum Roles {
   user = 1,
-  admin = 2,
-  teacher = 3,
+  teacher = 2,
+  admin = 3,
 }

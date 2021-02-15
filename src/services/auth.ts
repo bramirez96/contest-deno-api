@@ -6,6 +6,7 @@ import {
   bcrypt,
   createError,
   v5,
+  moment,
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import { Roles } from '../interfaces/roles.ts';
@@ -110,13 +111,13 @@ export default class AuthService extends BaseService {
       let updatedUser: IUser | undefined;
 
       await this.db.transaction(async () => {
-        const now = new Date().toUTCString();
+        const now = moment.utc().format();
         updatedUser = await this.userModel.update(userValidation.id, {
           isValidated: true,
-          updatedAt: now,
+          updated_at: (now as unknown) as Date,
         });
         await this.validationModel.update(userValidation.validationId, {
-          completedAt: now,
+          completed_at: (now as unknown) as Date,
         });
       });
 
@@ -149,7 +150,7 @@ export default class AuthService extends BaseService {
       await this.db.transaction(async () => {
         if (resetItem) {
           const timeSinceLastRequest =
-            Date.now() - resetItem.createdAt.getTime();
+            Date.now() - resetItem.created_at.getTime();
           if (timeSinceLastRequest < 600000) {
             throw createError(429, 'Cannot get another code so soon');
           } else {
@@ -195,7 +196,7 @@ export default class AuthService extends BaseService {
       await this.db.transaction(async () => {
         await this.userModel.update(user.id, {
           password: hashedPassword,
-          updatedAt: new Date().toUTCString(),
+          updated_at: (moment.utc() as unknown) as Date,
         });
         await this.resetModel.update(resetItem.id, { completed: true });
       });
@@ -208,14 +209,17 @@ export default class AuthService extends BaseService {
   private generateToken(user: Omit<IUser, 'password'>) {
     this.logger.debug(`Generating JWT for user (ID: ${user.id})`);
     const daysUntilExpiry = 2;
-    const today = new Date();
-    const exp = new Date(today);
-    exp.setDate(today.getDate() + daysUntilExpiry);
+    const exp = moment.utc().add(daysUntilExpiry, 'd');
 
     this.logger.debug(`Signing JWT for user (ID: ${user.id})`);
     return jwt.create(
       { alg: env.JWT.ALGO },
-      { exp: exp.getTime(), sub: user.id.toString(), iss: user.email },
+      {
+        exp: exp.valueOf(),
+        id: user.id.toString(),
+        email: user.email,
+        codename: user.codename,
+      },
       env.JWT.SECRET
     );
   }
@@ -231,7 +235,8 @@ export default class AuthService extends BaseService {
       }) as string; // Cast as string since we're not passing buffer
 
       const urlParams = new URLSearchParams({ token, email });
-      const url = env.SERVER_URL + '/auth/activation?' + urlParams.toString();
+      const url =
+        env.SERVER_URL + '/api/auth/activation?' + urlParams.toString();
 
       return { url, code: token };
     } catch (err) {

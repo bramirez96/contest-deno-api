@@ -8,13 +8,13 @@ import {
 } from '../../deps.ts';
 
 /**
- * Type T: new item interface, should be the fields required to
+ * Type NewItem: new item interface, should be the fields required to
  * create a new item\
- * Type U: complete item interface, all fields from the table
+ * Type FullItem: complete item interface, all fields from the table
  *
  * This is important if you want good linting from member functions!
  */
-export default class BaseModel<T, U> {
+export default class BaseModel<NewItem, FullItem> {
   constructor(tableName: string) {
     this.tableName = tableName;
     this.db = serviceCollection.get('pg');
@@ -27,47 +27,49 @@ export default class BaseModel<T, U> {
   // Putting basic CRUD operations on all Models
 
   // Overloading function call for better linting and usability :)
-  public async add<B extends boolean>(body: T | T[]): Promise<U[]>;
   public async add<B extends boolean>(
-    body: T | T[],
+    body: NewItem | NewItem[]
+  ): Promise<FullItem[]>;
+  public async add<B extends boolean>(
+    body: NewItem | NewItem[],
     first?: B
-  ): Promise<B extends true ? U : U[]>;
+  ): Promise<B extends true ? FullItem : FullItem[]>;
   public async add(
-    body: (T & QueryValues) | (T & QueryValues)[],
+    body: (NewItem & QueryValues) | (NewItem & QueryValues)[],
     first?: boolean
-  ): Promise<U | U[]> {
+  ): Promise<FullItem | FullItem[]> {
     this.logger.debug(`Attempting to add field to table ${this.tableName}`);
     const response = ((await this.db
       .table(this.tableName)
       .insert(body)
       .returning('*')
-      .execute()) as unknown[]) as U[];
+      .execute()) as unknown[]) as FullItem[];
 
     this.logger.debug(`Successfully added row to table ${this.tableName}`);
     return first ? response[0] : response;
   }
 
-  public async get<B extends false, K extends keyof U>(
-    filter?: (Partial<U> & DatabaseResult) | undefined,
-    config?: IGetResponse<B | undefined, K>
-  ): Promise<U[]>;
-  public async get<B extends boolean, K extends keyof U>(
+  public async get<B extends false, K extends keyof FullItem>(
+    filter?: (Partial<FullItem> & DatabaseResult) | undefined,
+    config?: IGetQuery<B | undefined, K>
+  ): Promise<FullItem[]>;
+  public async get<B extends boolean, K extends keyof FullItem>(
     filter?: undefined,
-    config?: IGetResponse<B, K>
-  ): Promise<B extends true ? U : U[]>;
-  public async get<B extends false, K extends keyof U>(
-    filter?: Partial<U> & DatabaseResult,
-    config?: IGetResponse<B, K>
-  ): Promise<U[]>;
-  public async get<B extends boolean, K extends keyof U>(
-    filter?: Partial<U> & DatabaseResult,
-    config?: IGetResponse<B, K>
-  ): Promise<B extends true ? U : U[]>;
+    config?: IGetQuery<B, K>
+  ): Promise<B extends true ? FullItem : FullItem[]>;
+  public async get<B extends false, K extends keyof FullItem>(
+    filter?: Partial<FullItem> & DatabaseResult,
+    config?: IGetQuery<B, K>
+  ): Promise<FullItem[]>;
+  public async get<B extends boolean, K extends keyof FullItem>(
+    filter?: Partial<FullItem> & DatabaseResult,
+    config?: IGetQuery<B, K>
+  ): Promise<B extends true ? FullItem : FullItem[]>;
   public async get(
-    filter?: (Partial<U> & DatabaseResult) | undefined,
-    config?: IGetResponse
-  ): Promise<U | U[]> {
-    this.logger.debug(`Attempting to retrieve all rows from ${this.tableName}`);
+    filter?: (Partial<FullItem> & DatabaseResult) | undefined,
+    config?: IGetQuery
+  ): Promise<FullItem | FullItem[]> {
+    this.logger.debug(`Attempting to retrieve rows from ${this.tableName}`);
 
     const sql = this.db.table(this.tableName).select('*');
     if (filter) {
@@ -79,15 +81,18 @@ export default class BaseModel<T, U> {
     if (config?.orderBy) {
       sql.order(config.orderBy as string, config?.order || 'ASC');
     }
-    const response = (await (sql.execute() as unknown)) as U[];
+    if (config?.offset) {
+      sql.offset(config.offset);
+    }
+    const response = (await (sql.execute() as unknown)) as FullItem[];
 
     return config?.first ? response[0] : response;
   }
 
   public async update(
     id: number,
-    changes: Partial<U> & DatabaseResult
-  ): Promise<U> {
+    changes: Partial<FullItem> & DatabaseResult
+  ): Promise<FullItem> {
     this.logger.debug(`Attempting to retrieve one row from ${this.tableName}`);
 
     const [response] = ((await this.db
@@ -95,7 +100,7 @@ export default class BaseModel<T, U> {
       .where('id', id)
       .update(changes)
       .returning('*')
-      .execute()) as unknown) as U[];
+      .execute()) as unknown) as FullItem[];
 
     this.logger.debug(`Successfully updated row from ${this.tableName}`);
     return response;
@@ -110,9 +115,10 @@ export default class BaseModel<T, U> {
   }
 }
 
-interface IGetResponse<B = boolean, K = string> {
+export interface IGetQuery<B = boolean, K = string> {
   first?: B;
   limit?: number;
+  offset?: number;
   orderBy?: K;
   order?: OrderDirection;
 }

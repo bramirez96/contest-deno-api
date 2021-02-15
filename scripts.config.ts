@@ -11,13 +11,20 @@ const config: DenonConfig = {
       cmd: 'deno run src/mod.ts start',
     },
     dev: {
-      cmd: 'yarn reset && deno run src/mod.ts start',
+      cmd: 'deno run src/mod.ts start',
     },
     test: {
       cmd: 'deno test __tests__/index.test.ts',
       env: {
         DENO_ENV: 'testing', // Set the testing environment
       },
+    },
+    'test:once': {
+      cmd: 'deno test __tests__/index.test.ts',
+      env: {
+        DENO_ENV: 'testing', // Set the testing environment
+      },
+      watch: false,
     },
   },
 };

@@ -10,8 +10,8 @@ exports.up = function (knex) {
       .references('users.id')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
-    t.datetime('createdAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
-    t.datetime('expiresAt').defaultTo(
+    t.datetime('created_at').defaultTo(knex.raw("(now() at time zone 'utc')"));
+    t.datetime('expires_at').defaultTo(
       knex.raw(`? + INTERVAL '? day'`, [
         knex.raw("(now() at time zone 'utc')"),
         1,

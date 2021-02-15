@@ -14,8 +14,8 @@ exports.up = function (knex) {
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
     t.boolean('isValidated').defaultTo(false);
-    t.datetime('createdAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
-    t.datetime('updatedAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
+    t.datetime('created_at').defaultTo(knex.raw("(now() at time zone 'utc')"));
+    t.datetime('updated_at').defaultTo(knex.raw("(now() at time zone 'utc')"));
   });
 };
 

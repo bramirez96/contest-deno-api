@@ -43,7 +43,7 @@ export interface IMainSuiteContext {
 }
 
 export const MainSuite = new TestSuite<IMainSuiteContext>({
-  name: '->',
+  name: '-> /api',
   context: { app, db },
 });
 

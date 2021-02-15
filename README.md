@@ -33,7 +33,7 @@ The Heroku CLI is a decent solution to run your application locally. The [Procfi
 To run the [Procfile](./Procfile) scripts, simply use the `heroku local` command, followed by the name of the script you'd like to run:
 
 ```bash
-heroku local web # runs the server
+heroku local start # runs the server
 heroku local test # runs the tests
 heroku local dev # resets and seeds the database, then runs the server
 ```
@@ -46,7 +46,7 @@ If you don't want the overhead of installing a script runner, you can always run
 deno run --allow-net --allow-env --allow-read --unstable -c ./tsconfig.json src/mod.ts start
 ```
 
-I recommend installing the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) to run the server locally. It allows you to use the `Procfile` script to run the server with a simple bash command: `heroku local web`.
+I recommend installing the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) to run the server locally. It allows you to use the `Procfile` script to run the server with a simple bash command: `heroku local start`.
 
 If you don't want to install the CLI for whatever reason, you can instead just use the `web` script from the `Procfile` directly in your bash terminal:
 

@@ -13,6 +13,8 @@ function cleanTables(knex) {
     );
 }
 
-exports.seed = function (knex) {
-  return cleanTables(knex);
-};
+async function seed_cleanup(knex) {
+  await cleanTables(knex);
+}
+
+module.exports = { seed_cleanup };

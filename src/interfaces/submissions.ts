@@ -1,8 +1,18 @@
-import { PutObjectResponse } from '../../deps.ts';
+import { moment, PutObjectResponse } from '../../deps.ts';
+
+export interface ISubItem {
+  id: number;
+  userId: number;
+  codename: string;
+  src: string;
+  rotation: number;
+  prompt: string;
+  score: number;
+}
 
 export interface ISubmission extends INewSubmission {
   id: number;
-  createdAt: Date;
+  created_at: Date;
 }
 
 export interface INewSubmission extends IDSResponse {
@@ -19,6 +29,6 @@ export interface IUploadResponse extends PutObjectResponse {
 export interface IDSResponse {
   transcription: string;
   confidence: number;
-  dsScore: number;
+  score: number;
   rotation: number;
 }
