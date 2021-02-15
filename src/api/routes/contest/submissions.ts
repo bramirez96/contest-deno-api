@@ -44,7 +44,7 @@ export default (app: IRouter) => {
         }),
         { minLength: 1, maxLength: 1 } // Only one page per sub allowed
       ),
-      promptId: [required, isString],
+      promptId: [required, isString]
     }),
     upload('story'),
     async (req: Request, res: Response) => {
