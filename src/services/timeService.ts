@@ -1,4 +1,4 @@
-import { moment, Service, serviceCollection } from '../../deps.ts';
+import { Service, serviceCollection } from '../../deps.ts';
 import BaseService from './baseService.ts';
 
 Service();

@@ -1,5 +1,3 @@
-import { moment } from '../../deps.ts';
-
 export interface IReset extends INewReset {
   id: number;
   completed: boolean;

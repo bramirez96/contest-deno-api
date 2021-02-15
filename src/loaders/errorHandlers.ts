@@ -33,6 +33,7 @@ export default (app: Opine) => {
   });
 
   // Fallback Error
+  // eslint-disable-next-line
   app.use((err: IError, req: Request, res: Response, next: NextFunction) => {
     logger.debug(`${err.status} - { error: '${err.message}' }`);
     res

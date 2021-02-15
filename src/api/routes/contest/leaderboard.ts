@@ -3,7 +3,6 @@ import {
   IRouter,
   Request,
   Response,
-  NextFunction,
   log,
   serviceCollection,
 } from '../../../../deps.ts';
@@ -17,7 +16,7 @@ export default (app: IRouter) => {
   app.use(['/scoreboard', '/leaderboard'], route);
 
   // GET /
-  route.get('/', async (req: Request, res: Response, next: NextFunction) => {
+  route.get('/', async (req: Request, res: Response) => {
     try {
       const leaderboard = await contestServiceInstance.getLeaderboard();
       res.setStatus(200).json(leaderboard);

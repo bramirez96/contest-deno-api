@@ -21,16 +21,25 @@
     "reset:ci": "yarn rollback:ci && yarn latest:ci",
     "reset:all": "yarn reset && yarn reset:test && yarn reset:ci",
     "make": "yarn knex migrate:make",
-    "makeseed": "yarn knex seed:make"
+    "makeseed": "yarn knex seed:make",
+    "lint:check": "npx eslint ."
   },
   "dependencies": {
+    "@types/json-schema": "^7.0.7",
     "dotenv": "^8.2.0",
     "knex": "^0.21.15",
     "knex-cleaner": "^1.3.1",
     "moment": "^2.29.1",
-    "pg": "^8.5.1"
+    "pg": "^8.5.1",
+    "typescript": "^4.1.5"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
+    "@typescript-eslint/eslint-plugin": "^4.15.1",
+    "@typescript-eslint/parser": "^4.15.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.20.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "prettier": "^2.2.1"
   }
 }

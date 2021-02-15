@@ -24,6 +24,7 @@ export default () => {
   return s3;
 };
 
+/* eslint-disable */
 class TestS3Bucket {
   public putObject(
     key: string,
@@ -58,3 +59,4 @@ class TestS3Bucket {
     };
   }
 }
+/* eslint-enable */
