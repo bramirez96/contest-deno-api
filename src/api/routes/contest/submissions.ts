@@ -3,7 +3,6 @@ import {
   IRouter,
   Request,
   Response,
-  NextFunction,
   log,
   serviceCollection,
   validateArray,
@@ -48,7 +47,7 @@ export default (app: IRouter) => {
       promptId: [required, isString],
     }),
     upload('story'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         await subServiceInstance.processSubmission(
           req.body.story[0],
@@ -67,7 +66,7 @@ export default (app: IRouter) => {
   route.get(
     '/',
     authHandler({ roles: [Roles.admin] }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         // TODO read query params into a generic query!
         const subs = await subServiceInstance.getSubs({
@@ -86,21 +85,18 @@ export default (app: IRouter) => {
   );
 
   // GET /winner
-  route.get(
-    '/winner',
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const winner = await subServiceInstance.getRecentWinner();
-        res.setStatus(200).json(winner);
-      } catch (err) {
-        logger.error(err);
-        throw err;
-      }
+  route.get('/winner', async (req: Request, res: Response) => {
+    try {
+      const winner = await subServiceInstance.getRecentWinner();
+      res.setStatus(200).json(winner);
+    } catch (err) {
+      logger.error(err);
+      throw err;
     }
-  );
+  });
 
   // GET /top
-  route.get('/top', async (req: Request, res: Response, next: NextFunction) => {
+  route.get('/top', async (req: Request, res: Response) => {
     try {
       const subs = await subServiceInstance.getTop3Subs();
       res.setStatus(200).json(subs);
@@ -114,7 +110,7 @@ export default (app: IRouter) => {
   route.get(
     '/top/admin',
     authHandler({ roles: [Roles.admin] }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const subs = await subServiceInstance.getTopTen();
         res.setStatus(200).json(subs);
@@ -135,19 +131,20 @@ export default (app: IRouter) => {
         maxLength: 3,
       }),
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       const top3 = await subServiceInstance.setTop3(req.body.ids);
       res.setStatus(201).json({ top3, message: 'Top 3 successfully set!' });
     }
   );
 
   // GET /:id - This is good for shareability! Public
-  route.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  route.get('/:id', async (req: Request, res: Response) => {
     try {
       const sub = await subServiceInstance.getById(parseInt(req.params.id, 10));
       res.setStatus(200).json(sub);
     } catch (err) {
-      return next(err);
+      logger.error(err);
+      throw err;
     }
   });
 
@@ -155,10 +152,11 @@ export default (app: IRouter) => {
   route.delete(
     '/:id',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const subModelInstance = serviceCollection.get(SubmissionModel);
         await subModelInstance.delete(parseInt(req.params.id, 10));
+        res.setStatus(204).end();
       } catch (err) {
         logger.error(err);
         throw err;
@@ -170,7 +168,7 @@ export default (app: IRouter) => {
   route.get(
     '/:id/flags',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const flags = await subServiceInstance.getFlagsBySubId(
           parseInt(req.params.id, 10)
@@ -188,7 +186,7 @@ export default (app: IRouter) => {
     '/:id/flags',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
     validate({ flags: [isArray] }, 'body'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const flags = await subServiceInstance.flagSubmission(
           parseInt(req.params.id, 10),
@@ -209,7 +207,7 @@ export default (app: IRouter) => {
   route.delete(
     '/:id/flags/:flagId',
     authHandler({ roles: [Roles.admin] }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         await subServiceInstance.removeFlag(
           parseInt(req.params.id, 10),

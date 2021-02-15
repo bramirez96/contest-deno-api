@@ -1,4 +1,4 @@
-import { moment, PutObjectResponse } from '../../deps.ts';
+import { PutObjectResponse } from '../../deps.ts';
 
 export interface ISubItem {
   id: number;

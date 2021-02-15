@@ -1,3 +1,3 @@
-import { EventEmitter, Service, serviceCollection } from '../../deps.ts';
+import { EventEmitter } from '../../deps.ts';
 
 export default new EventEmitter();

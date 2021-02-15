@@ -1,4 +1,4 @@
-import { Service, serviceCollection, Inject, Q, moment } from '../../deps.ts';
+import { Service, serviceCollection, Inject, moment } from '../../deps.ts';
 import { INewVote } from '../interfaces/votes.ts';
 import VoteModel from '../models/votes.ts';
 import BaseService from './baseService.ts';

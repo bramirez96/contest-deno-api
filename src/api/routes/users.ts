@@ -12,7 +12,6 @@ import {
   IRouter,
   serviceCollection,
   isIn,
-  NextFunction,
   isBool,
   createError,
   log,
@@ -36,7 +35,7 @@ export default (app: IRouter) => {
   app.use('/users', route);
 
   // GET /
-  route.get('/', async (req: Request, res: Response, next: NextFunction) => {
+  route.get('/', async (req: Request, res: Response) => {
     try {
       const userList = await userModelInstance.get(undefined, {
         limit: parseInt(req.params.limit, 10) || 10,
@@ -54,7 +53,7 @@ export default (app: IRouter) => {
   });
 
   // GET /:id
-  route.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  route.get('/:id', async (req: Request, res: Response) => {
     try {
       const userId = req.params.id;
       const user = await userModelInstance.get(
@@ -71,25 +70,22 @@ export default (app: IRouter) => {
   });
 
   // GET /:id/submissions
-  route.get(
-    '/:id/submissions',
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const subServiceInstance = serviceCollection.get(SubmissionService);
-        const subs = await subServiceInstance.getUserSubs(
-          parseInt(req.params.id, 10),
-          {
-            limit: parseInt(req.query.limit, 10) || 6,
-            offset: parseInt(req.query.offset, 10) || 0,
-          }
-        );
-        res.setStatus(200).json(subs);
-      } catch (err) {
-        logger.error(err);
-        throw err;
-      }
+  route.get('/:id/submissions', async (req: Request, res: Response) => {
+    try {
+      const subServiceInstance = serviceCollection.get(SubmissionService);
+      const subs = await subServiceInstance.getUserSubs(
+        parseInt(req.params.id, 10),
+        {
+          limit: parseInt(req.query.limit, 10) || 6,
+          offset: parseInt(req.query.offset, 10) || 0,
+        }
+      );
+      res.setStatus(200).json(subs);
+    } catch (err) {
+      logger.error(err);
+      throw err;
     }
-  );
+  });
 
   // POST /
   route.post(
@@ -108,7 +104,7 @@ export default (app: IRouter) => {
       age: [required, isNumber],
       roleId: [required, isNumber, isIn([1, 2])],
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const newUser = await userModelInstance.add(req.body, true);
 
@@ -132,7 +128,7 @@ export default (app: IRouter) => {
       roleId: [isNumber, isIn([1, 2])],
       isValidated: [isBool],
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const userId = req.params.id;
         await userModelInstance.update(parseInt(userId), {
@@ -149,20 +145,17 @@ export default (app: IRouter) => {
   );
 
   // DELETE /:id
-  route.delete(
-    '/:id',
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const userId = req.params.id;
-        await userModelInstance.delete(parseInt(userId));
+  route.delete('/:id', async (req: Request, res: Response) => {
+    try {
+      const userId = req.params.id;
+      await userModelInstance.delete(parseInt(userId));
 
-        return res.setStatus(204).end();
-      } catch (err) {
-        logger.error(err);
-        throw err;
-      }
+      return res.setStatus(204).end();
+    } catch (err) {
+      logger.error(err);
+      throw err;
     }
-  );
+  });
 
   console.log('User router loaded.');
 };

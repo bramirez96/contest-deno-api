@@ -14,6 +14,7 @@ export default class DSService {
   public async sendSubmissionToDS(
     s3Object: PutObjectResponse
   ): Promise<IDSResponse> {
+    console.log({ etag: s3Object.etag });
     const res = await Promise.resolve<IDSResponse>({
       transcription: 'asdaksfmnasdlkcfmnasdlfkasmfdlkasdf',
       confidence: 50,

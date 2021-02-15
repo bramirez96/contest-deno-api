@@ -30,6 +30,7 @@ class TestS3Bucket {
     body: Uint8Array,
     options?: PutObjectOptions | undefined
   ): PutObjectResponse {
+    console.log(key, body, options);
     return {
       etag: v4.generate(),
     };
@@ -38,6 +39,7 @@ class TestS3Bucket {
     key: string,
     options?: DeleteObjectOptions | undefined
   ): DeleteObjectResponse {
+    console.log(key, options);
     return {
       deleteMarker: true,
     };
@@ -46,6 +48,7 @@ class TestS3Bucket {
     key: string,
     options?: GetObjectOptions | undefined
   ): GetObjectResponse {
+    console.log(key, options);
     return {
       body: new Uint8Array(),
       contentLength: 5,
