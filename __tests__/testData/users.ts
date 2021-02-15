@@ -1,3 +1,4 @@
+import { Roles } from '../../src/interfaces/roles.ts';
 import { INewUser } from '../../src/interfaces/users.ts';
 import { v5 } from '../../testDeps.ts';
 
@@ -19,6 +20,15 @@ const valid: INewUser[] = [
     password: 'somepass123A',
     age: 24,
     parentEmail: 'parentEmail2@email.com',
+  },
+  {
+    codename: 'TestCodename3',
+    email: 'someemail3@email.com',
+    firstname: 'Firstname3',
+    lastname: 'Lastname3',
+    password: 'somepass123A',
+    age: 12,
+    parentEmail: 'parentEmail3@email.com',
   },
 ];
 
@@ -42,4 +52,14 @@ const wrongCode = v5.generate({
   value: 'someValue',
 });
 
-export default { valid, incomplete, tooYoung, newPass, wrongCode };
+const admin = {
+  codename: 'Admin1',
+  email: 'someEmail@admin.com',
+  firstname: 'Addy',
+  lastname: 'Minston',
+  password: 'somepass123A',
+  isValidated: true,
+  roleId: Roles.admin,
+};
+
+export default { valid, incomplete, tooYoung, newPass, wrongCode, admin };

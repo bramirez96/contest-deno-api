@@ -29,6 +29,19 @@ export default class UserModel extends BaseModel<INewUser, IUser> {
     this.logger.debug('User retrieved');
     return user;
   }
+
+  public async getRole(userId: number) {
+    this.logger.debug(`Getting role for user (ID: ${userId})`);
+
+    const [role] = (await this.db
+      .table('users')
+      .innerJoin('roles', 'roles.id', 'users.roleId')
+      .where('id', userId)
+      .select('roles.id', 'roles.role')
+      .execute()) as { id: number; role: string }[];
+
+    return role;
+  }
 }
 
 serviceCollection.addTransient(UserModel);

@@ -2,10 +2,10 @@
 exports.up = function (knex) {
   return knex.schema.createTable('rumbles', (t) => {
     t.increments('id');
-    t.boolean('canJoin').defaultTo(true);
+    t.boolean('canJoin').defaultTo(false);
     t.string('joinCode').unique();
     t.integer('numMinutes').notNullable();
-    t.integer('maxSections').notNullable().defaultTo(2);
+    t.integer('maxSections').notNullable().defaultTo(1);
     t.integer('promptId')
       .unsigned()
       .notNullable()

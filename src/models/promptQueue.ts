@@ -2,7 +2,7 @@ import { Service, serviceCollection } from '../../deps.ts';
 import {
   INewPromptQueueItem,
   IPromptQueueItem,
-} from '../interfaces/prompts.ts';
+} from '../interfaces/promptQueue.ts';
 import BaseModel from './baseModel.ts';
 
 @Service()

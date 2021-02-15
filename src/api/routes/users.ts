@@ -15,39 +15,83 @@ import {
   NextFunction,
   isBool,
   createError,
+  log,
+  moment,
 } from '../../../deps.ts';
 import {
   codenameRegex,
   emailRegex,
   passwordRegex,
 } from '../../config/dataConstraints.ts';
+import { IUser } from '../../interfaces/users.ts';
 import UserModel from '../../models/users.ts';
-import authHandler from '../middlewares/authHandler.ts';
+import SubmissionService from '../../services/submission.ts';
 import validate from '../middlewares/validate.ts';
 
 const route = Router();
 
 export default (app: IRouter) => {
+  const logger: log.Logger = serviceCollection.get('logger');
   const userModelInstance = serviceCollection.get(UserModel);
   app.use('/users', route);
 
+  // GET /
   route.get('/', async (req: Request, res: Response, next: NextFunction) => {
-    const userList = await userModelInstance.get();
+    try {
+      const userList = await userModelInstance.get(undefined, {
+        limit: parseInt(req.params.limit, 10) || 10,
+        offset: parseInt(req.params.offset, 10) || 0,
+        orderBy: (req.params.orderBy as keyof IUser) || 'id',
+        order: (req.params.order as 'ASC' | 'DESC') || 'ASC',
+        first: req.params.first === 'true',
+      });
 
-    res.setStatus(200).json(userList);
+      res.setStatus(200).json(userList);
+    } catch (err) {
+      logger.error(err);
+      throw err;
+    }
   });
 
+  // GET /:id
   route.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.params.id;
-    const user = await userModelInstance.get(
-      { id: parseInt(userId) },
-      { first: true }
-    );
-    if (!user) throw createError(404, 'User not found!');
+    try {
+      const userId = req.params.id;
+      const user = await userModelInstance.get(
+        { id: parseInt(userId) },
+        { first: true }
+      );
+      if (!user) throw createError(404, 'User not found!');
 
-    res.setStatus(200).json(user);
+      res.setStatus(200).json(user);
+    } catch (err) {
+      logger.error(err);
+      throw err;
+    }
   });
 
+  // GET /:id/submissions
+  route.get(
+    '/:id/submissions',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const subServiceInstance = serviceCollection.get(SubmissionService);
+        const subs = await subServiceInstance.getUserSubs(
+          parseInt(req.params.id, 10),
+          {
+            limit: parseInt(req.query.limit, 10) || 6,
+            offset: parseInt(req.query.offset, 10) || 0,
+          }
+        );
+        res.setStatus(200).json(subs);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  // POST /
   route.post(
     '/',
     validate({
@@ -65,12 +109,18 @@ export default (app: IRouter) => {
       roleId: [required, isNumber, isIn([1, 2])],
     }),
     async (req: Request, res: Response, next: NextFunction) => {
-      const newUser = await userModelInstance.add(req.body, true);
+      try {
+        const newUser = await userModelInstance.add(req.body, true);
 
-      return res.setStatus(201).json(newUser);
+        return res.setStatus(201).json(newUser);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
     }
   );
 
+  // PUT /:id
   route.put(
     '/:id',
     validate({
@@ -83,23 +133,34 @@ export default (app: IRouter) => {
       isValidated: [isBool],
     }),
     async (req: Request, res: Response, next: NextFunction) => {
-      const userId = req.params.id;
-      await userModelInstance.update(parseInt(userId), {
-        ...req.body,
-        updatedAt: new Date().toUTCString(),
-      });
+      try {
+        const userId = req.params.id;
+        await userModelInstance.update(parseInt(userId), {
+          ...req.body,
+          updated_at: moment.utc(),
+        });
 
-      return res.setStatus(204).end();
+        return res.setStatus(204).end();
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
     }
   );
 
+  // DELETE /:id
   route.delete(
     '/:id',
     async (req: Request, res: Response, next: NextFunction) => {
-      const userId = req.params.id;
-      await userModelInstance.delete(parseInt(userId));
+      try {
+        const userId = req.params.id;
+        await userModelInstance.delete(parseInt(userId));
 
-      return res.setStatus(204).end();
+        return res.setStatus(204).end();
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
     }
   );
 

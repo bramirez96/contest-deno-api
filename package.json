@@ -15,9 +15,11 @@
     "seed": "yarn knex seed:run",
     "seed:test": "yarn cross-env NODE_ENV=testing knex seed:run",
     "seed:ci": "yarn cross-env NODE_ENV=ci knex seed:run",
+    "seed:1": "yarn knex seed:run --specific=00_beforeAdminFlow.js",
     "reset": "yarn rollback && yarn latest && yarn seed",
-    "reset:test": "yarn rollback:test && yarn latest:test && yarn seed:test",
-    "reset:ci": "yarn rollback:ci && yarn latest:ci && yarn seed:ci",
+    "reset:test": "yarn rollback:test && yarn latest:test",
+    "reset:ci": "yarn rollback:ci && yarn latest:ci",
+    "reset:all": "yarn reset && yarn reset:test && yarn reset:ci",
     "make": "yarn knex migrate:make",
     "makeseed": "yarn knex seed:make"
   },
@@ -25,6 +27,7 @@
     "dotenv": "^8.2.0",
     "knex": "^0.21.15",
     "knex-cleaner": "^1.3.1",
+    "moment": "^2.29.1",
     "pg": "^8.5.1"
   },
   "devDependencies": {

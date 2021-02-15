@@ -10,8 +10,8 @@ exports.up = function (knex) {
       .references('users.id')
       .onUpdate('CASCADE')
       .onDelete('CASCADE');
-    t.datetime('createdAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
-    t.datetime('completedAt');
+    t.datetime('created_at').defaultTo(knex.raw("(now() at time zone 'utc')"));
+    t.datetime('completed_at');
   });
 };
 

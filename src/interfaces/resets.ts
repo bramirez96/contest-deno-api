@@ -1,8 +1,10 @@
+import { moment } from '../../deps.ts';
+
 export interface IReset extends INewReset {
   id: number;
   completed: boolean;
-  createdAt: Date;
-  expiresAt: Date;
+  created_at: Date;
+  expires_at: Date;
 }
 
 export interface INewReset {

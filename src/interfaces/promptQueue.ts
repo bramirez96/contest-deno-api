@@ -1,8 +1,10 @@
+import { moment } from '../../deps.ts';
+
 export interface IPromptQueueItem extends INewPromptQueueItem {
   id: number;
 }
 
 export interface INewPromptQueueItem {
   promptId: number;
-  startDate: Date | string;
+  starts_at: Date;
 }

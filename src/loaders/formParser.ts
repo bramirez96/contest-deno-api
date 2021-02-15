@@ -17,7 +17,6 @@ export default () => async (
   try {
     const form = await multiParser(req);
     if (!form) return next();
-
     if (form.files) {
       const files: { [key: string]: FormFile[] } = {};
       const fileFieldNames = Object.keys(form.files);

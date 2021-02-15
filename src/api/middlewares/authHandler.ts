@@ -11,18 +11,23 @@ import env from '../../config/env.ts';
 import UserModel from '../../models/users.ts';
 
 /**
- * Defaults to authReuired and adminOnly being true
+ * Defaults to requiring any authenticated user.
+ * Adds to body: { userInfo: { id, email, codename } };
  */
 export default (config?: IAuthHandlerConfig) => async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  // Set defaults for these config values
+  const roles = config?.roles ?? [1, 2, 3];
+  const authRequired = config?.authRequired ?? true;
+
   const logger: log.Logger = serviceCollection.get('logger');
   const token = req.get('Authorization');
 
-  const authRequired = config?.authRequired || true;
-  const adminOnly = config?.adminOnly || true;
+  // Add this to the body no matter what to prevent errors
+  req.body.userInfo = {};
 
   if (!token || token === 'null') {
     // If no token, check if auth is even required...
@@ -34,37 +39,36 @@ export default (config?: IAuthHandlerConfig) => async (
     // If it's there, we'll try to
     try {
       logger.debug('Attempting to verify token');
-      const { iss, sub, exp } = await jwt.verify(
+      const { id, email, codename, exp } = (await jwt.verify(
         token,
         env.JWT.SECRET,
         env.JWT.ALGO
-      );
-
-      const id = parseInt(sub || `${sub}`);
-      const email = iss;
+      )) as jwt.Payload & { email: string; id: string; codename: string };
 
       logger.debug('Checking token expiration');
       if (!exp || exp < Date.now()) {
         // If token is expired, let them know
         throw createError(401, 'Token is expired');
-      } else if (!id || !email) {
+      } else if (!id || !email || !codename) {
         // If token is formatted incorrectly
         throw createError(401, 'Invalid token body');
       } else {
-        if (adminOnly) {
-          logger.debug('Successfully authenticated, checking admin status');
-          // Get an instance of the UserModel if we need to admin check
+        if (roles) {
+          logger.debug(
+            `Successfully authenticated, authorizing for roles: \
+            ${roles.join(', ')}`
+          );
+          // Get an instance of the UserModel if we need to role check
           const userModelInstance = serviceCollection.get(UserModel);
-          // If user is not an admin
-          // const userIsAdmin = await userModelInstance.checkIsAdmin(id);
-          const userIsAdmin = true;
-          if (!userIsAdmin) {
+          const role = await userModelInstance.getRole(parseInt(id, 10));
+          if (!roles.includes(role.id)) {
             throw createError(401, 'Must be admin');
           }
         }
         // Pull the relevant snippets and continue
         req.body.userInfo.email = email;
         req.body.userInfo.id = id;
+        req.body.userInfo.codename = codename;
         next();
       }
     } catch (err) {
@@ -76,5 +80,5 @@ export default (config?: IAuthHandlerConfig) => async (
 
 interface IAuthHandlerConfig {
   authRequired?: boolean;
-  adminOnly?: boolean;
+  roles?: number[];
 }

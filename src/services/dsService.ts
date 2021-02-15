@@ -17,7 +17,7 @@ export default class DSService {
     const res = await Promise.resolve<IDSResponse>({
       transcription: 'asdaksfmnasdlkcfmnasdlfkasmfdlkasdf',
       confidence: 50,
-      dsScore: 50,
+      score: Math.floor(Math.random() * 40 + 10), // Rand 10-50
       rotation: 0,
     });
 

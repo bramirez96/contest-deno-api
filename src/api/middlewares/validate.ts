@@ -28,7 +28,7 @@ export default <T = undefined>(
     } else {
       throw createError(
         400,
-        `Invalid or missing fields: ${errorFields.join(', ')}`
+        `Invalid or missing fields in ${toValidate}: ${errorFields.join(', ')}`
       );
     }
   } catch (err) {

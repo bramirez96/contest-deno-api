@@ -13,6 +13,7 @@ import {
   serviceCollection,
   log,
   NextFunction,
+  createError,
 } from '../../../deps.ts';
 import {
   codenameRegex,
@@ -24,13 +25,16 @@ import validate from '../middlewares/validate.ts';
 import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
 import { INewUser } from '../../interfaces/users.ts';
+import { Roles } from '../../interfaces/roles.ts';
 
 const route = Router();
 
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
+  const authServiceInstance = serviceCollection.get(AuthService);
   app.use('/auth', route);
 
+  // POST /register
   route.post(
     '/register',
     validate<INewUser>({
@@ -50,7 +54,6 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         await authServiceInstance.SignUp(req.body);
 
         res.setStatus(201).json({ message: 'User creation successful.' });
@@ -61,6 +64,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // POST /login
   route.post(
     '/login',
     validate({
@@ -69,11 +73,15 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         const response = await authServiceInstance.SignIn(
           req.body.email,
           req.body.password
         );
+
+        if (req.query.admin && response.user.roleId !== Roles.admin) {
+          throw createError(401, `Must be admin to login`);
+        }
+
         logger.debug(`User (ID: ${response.user.id}) successfully signed in`);
         res.setStatus(201).json(response);
       } catch (err) {
@@ -83,6 +91,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // GET /activation
   route.get(
     '/activation',
     validate(
@@ -94,7 +103,6 @@ export default (app: IRouter) => {
     ),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         const { token, user } = await authServiceInstance.Validate(
           req.query.email,
           req.query.token
@@ -112,17 +120,12 @@ export default (app: IRouter) => {
     }
   );
 
+  // GET /reset
   route.get(
     '/reset',
-    validate(
-      {
-        email: [required, isEmail, match(emailRegex)],
-      },
-      'query'
-    ),
+    validate({ email: [required, isEmail, match(emailRegex)] }, 'query'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         await authServiceInstance.GetResetEmail(req.query.email);
 
         res.setStatus(200).json({ message: 'Password reset email sent!' });
@@ -133,6 +136,7 @@ export default (app: IRouter) => {
     }
   );
 
+  // POST /reset
   route.post(
     '/reset',
     validate({
@@ -142,7 +146,6 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const authServiceInstance = serviceCollection.get(AuthService);
         await authServiceInstance.ResetPasswordWithCode(
           req.body.email,
           req.body.password,

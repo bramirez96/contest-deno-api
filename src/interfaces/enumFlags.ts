@@ -6,4 +6,6 @@ export interface INewEnumFlags {
   flag: string;
 }
 
-export enum Flags {}
+export enum Flags {
+  Content = 1,
+}

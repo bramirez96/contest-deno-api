@@ -39,9 +39,11 @@ try {
 export interface IMainSuiteContext {
   app: SuperDeno;
   db: PostgresAdapter;
+  token: string;
 }
+
 export const MainSuite = new TestSuite<IMainSuiteContext>({
-  name: '->',
+  name: '-> /api',
   context: { app, db },
 });
 

@@ -6,7 +6,7 @@ exports.up = (knex) => {
     t.string('etag').notNullable().index();
     t.string('transcription');
     t.integer('confidence');
-    t.integer('dsScore');
+    t.integer('score');
     t.integer('rotation').defaultTo(0);
     t.integer('promptId')
       .notNullable()
@@ -20,7 +20,7 @@ exports.up = (knex) => {
       .references('users.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.datetime('createdAt').defaultTo(knex.raw("(now() at time zone 'utc')"));
+    t.datetime('created_at').defaultTo(knex.raw("(now() at time zone 'utc')"));
   });
 };
 

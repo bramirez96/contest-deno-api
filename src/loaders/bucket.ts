@@ -1,4 +1,13 @@
-import { S3Bucket, v4 } from '../../deps.ts';
+import {
+  DeleteObjectOptions,
+  DeleteObjectResponse,
+  GetObjectOptions,
+  GetObjectResponse,
+  PutObjectOptions,
+  PutObjectResponse,
+  S3Bucket,
+  v4,
+} from '../../deps.ts';
 import env from '../config/env.ts';
 
 export default () => {
@@ -16,7 +25,36 @@ export default () => {
 };
 
 class TestS3Bucket {
-  public upload(buffer: Uint8Array, extension?: string) {
-    return v4.generate();
+  public putObject(
+    key: string,
+    body: Uint8Array,
+    options?: PutObjectOptions | undefined
+  ): PutObjectResponse {
+    return {
+      etag: v4.generate(),
+    };
+  }
+  public deleteObject(
+    key: string,
+    options?: DeleteObjectOptions | undefined
+  ): DeleteObjectResponse {
+    return {
+      deleteMarker: true,
+    };
+  }
+  public getObject(
+    key: string,
+    options?: GetObjectOptions | undefined
+  ): GetObjectResponse {
+    return {
+      body: new Uint8Array(),
+      contentLength: 5,
+      deleteMarker: false,
+      etag: v4.generate(),
+      lastModified: new Date(),
+      missingMeta: 0,
+      storageClass: 'STANDARD',
+      taggingCount: 0,
+    };
   }
 }
