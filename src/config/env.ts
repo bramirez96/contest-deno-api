@@ -1,6 +1,6 @@
 import { config, Algorithm } from '../../deps.ts';
 
-config();
+config({ export: true });
 
 export type envTypes = 'development' | 'production' | 'testing' | 'ci';
 const PORT = Deno.env.get('PORT') || '8000';
