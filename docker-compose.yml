@@ -2,7 +2,7 @@ version: '3'
 
 services:
   pg:
-    image: postgres:latest
+    image: postgres:12
     container_name: ss-deno-be
     ports:
       - '5900:5932'
