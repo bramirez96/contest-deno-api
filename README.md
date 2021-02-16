@@ -8,29 +8,34 @@ This is a refactor of the existing Story Squad API built in Deno.
 
 ## Running the Server Locally
 
-There are three options for running the server. There are almost certainly other options, but these are the easiest and most practical that I've found.
+Here are three options for running the server. There are almost certainly other options, but these are the easiest and most practical that I've found.
 
 ### Option 1: `Denon`
+
+> **_Note:_** This MIGHT only work in Windows, as I have yet to see it work on Mac.  
+> **_Note 2:_** At the time of updating this documentation, there is currently a BREAKING bug in the Denon package and not much we can do to fix it. If you encounter an error on installation, please refer to options 2 or 3 instead.
 
 I highly recommend using Denon. It offers two main functionalities that many developers have grown accustomed to from Node development: a file watcher and a script manager. Denon allows you to specify scripts to run in a similar fashion to a Node `package.json` file. Check out the scripts for this project in [`scripts.config.ts`](./scripts.config.ts).
 
 There are two steps to install Denon as a global Bash script:
 
 ```bash
-# Step 1: Install from deno.land or nest.land
-deno install -qAf --unstable https://deno.land/x/denon/denon.ts
-# or
-deno install -qAf --unstable https://x.nest.land/denon/denon.ts
+# Step 1: Install from deno.land
+deno install -qAf --unstable --reload https://deno.land/x/denon@2.4.6/denon.ts
 
-# Step 2: Add the denon alias to your Bash config
+# Step 2: Add the denon alias to your shell config
+# FOR BASH:
 echo 'alias denon="~/.deno/bin/denon.cmd"' >> ~/.bashrc
+
+# FOR ZSH:
+echo 'alias denon="~/.deno/bin/denon.cmd"' >> ~/.zshrc
 ```
 
 ### Option 2: The Heroku CLI
 
 The Heroku CLI is a decent solution to run your application locally. The [Procfile](./Procfile) contains a list of scripts used to run various aspects of the project. Follow the [documentation from Heroku](https://devcenter.heroku.com/articles/heroku-cli) to install the CLI.
 
-To run the [Procfile](./Procfile) scripts, simply use the `heroku local` command, followed by the name of the script you'd like to run:
+To run the [Procfile](./Procfile) scripts, simply use the `heroku local <scriptname>` command with the name of the script you'd like to run:
 
 ```bash
 heroku local start # runs the server
@@ -43,15 +48,11 @@ heroku local dev # resets and seeds the database, then runs the server
 If you don't want the overhead of installing a script runner, you can always run the server with Deno's built-in run script.
 
 ```bash
-deno run --allow-net --allow-env --allow-read --unstable -c ./tsconfig.json src/mod.ts start
+deno run --allow-net --allow-env --allow-read --unstable --watch -c ./tsconfig.json src/mod.ts start
 ```
 
-I recommend installing the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) to run the server locally. It allows you to use the `Procfile` script to run the server with a simple bash command: `heroku local start`.
-
-If you don't want to install the CLI for whatever reason, you can instead just use the `web` script from the `Procfile` directly in your bash terminal:
+If you'd like to run the server NOT in watch mode, remove the `--watch` flag:
 
 ```bash
-deno run --allow-net --allow-env --allow-read --unstable -c ./tsconfig.json src/app.ts
+deno run --allow-net --allow-env --allow-read --unstable -c ./tsconfig.json src/mod.ts start
 ```
-
-> Note: currently, this script is allowing all access with the `-A` flag. This WILL be changed later but is just easier for our current needs.
