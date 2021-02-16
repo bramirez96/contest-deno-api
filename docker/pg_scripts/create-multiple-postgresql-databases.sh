@@ -7,9 +7,9 @@ function create_user_and_database() {
 	local database=$1
 	echo "  Creating user and database '$database'"
 	psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
-	    CREATE USER $database;
+	    CREATE USER $database IF NOT EXISTS;
 	    CREATE DATABASE $database;
-	    GRANT ALL PRIVILEGES ON DATABASE $database TO $database;
+	    GRANT ALL PRIVILEGES ON DATABASE $database TO $owner;
 EOSQL
 }
 

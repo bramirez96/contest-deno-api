@@ -1,8 +1,6 @@
 # Setting Up Deno
 
-This guide is for installing Deno in Git Bash on Windows.
-
-## Install Deno
+## Installing Deno
 
 View the online installation guide [here](https://deno.land/manual/getting_started/installation), or run the following script:
 
@@ -10,7 +8,7 @@ View the online installation guide [here](https://deno.land/manual/getting_start
 curl -fsSL https://deno.land/x/install/install.sh | sh
 ```
 
-## Configure Bash
+### Configure Bash
 
 After installation, run the following commands.
 
@@ -39,6 +37,10 @@ echo 'export PATH="$HOME/.deno/bin:$PATH"' >> ~/.bashrc
 ```
 
 At this point, you will likely have to restart your machine or at least your Bash instance for your new configuration to take effect.
+
+### Configure ZShell (Mac)
+
+PLEASE FOLLOW THE DENO SETUP INSTRUCTIONS ON THE WEBSITE
 
 ### Test Your Deno Install
 
