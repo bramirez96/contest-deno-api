@@ -1,5 +1,7 @@
 # Database Setup
 
+BEN WAS HERE
+
 Make sure you have Docker installed on your machine, and then run `docker-compose up -d`.
 
 Your database container should be set up. If there are any error on composition, you'll need to change ports listed in your Docker configuration files, or you can figure out what on your machine is being hosted on the ports we're attempting to us.
