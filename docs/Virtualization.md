@@ -1,24 +1,43 @@
 # Docker and Virtualization
 
-If you are new to docker there are a few steps you need to take in order to run docker properly.
-If you try running docker and get a message regarding virtualization followed by a strange link you will need to do the following:
+If you try running docker and get a message regarding virtualization you will need to do the following:
 
 ## Windows
 
-### A. First you will need to reset your machine through recovery mode
+Reset your machine through recovery mode by following:
 
 `Windows key > Settings > Update & Security > Recovery > Restart Now`.
 
-When your PC restarts open Click on Troubleshoot > Advanced Options > Select UEFI Firmware Settings > Click Restart.
+When your PC restarts click on `Troubleshoot > Advanced Options > Select UEFI Firmware Settings > Click Restart`.
 
-### B. Navigate to your machines BIOS settings
+Once your machine restarts you will be brought to your BIOS settings. We are looking for the `SVM Mode` that you need to **enable**.
 
-Step A will restart your machine and bring you to your BIOS settings. No matter what type of CPU you have you will find a `SVM Mode` that you need to **enable**. For me, this setting was under my BIOS `Advanced Settings` > CPU Config section.
+For me, this setting was under `Advanced Settings > CPU Config section`.
 Once you have **enabled** the SVM Mode you can Save & Reset your machine.
 
-## Final Steps
+### Final Steps
 
-Open your taks manager after your machine restarts and open your task manager: CTRL + Shift + ESC.
-Open the performance tab and ensure that Virtualization is now **enabled**.
+Open your task manager after your machine restarts.
+Open the Performance tab and ensure that Virtualization is now **enabled**.
 
-You should now have no issue starting Docker Desktop properly.
+If opening docker continues to give you an error when opening follow this official [Docker Guide](https://docs.docker.com/docker-for-windows/troubleshoot/)
+
+## [Mac](https://docs.docker.com/docker-for-mac/troubleshoot/)
+
+"Docker Desktop for Mac requires the [Apple Hypervisor framework](https://developer.apple.com/documentation/hypervisor). Docker Desktop is only compatible with Mac systems that have a CPU that supports the Hypervisor framework. Most Macs built in 2010 and later support it, as described in the Apple Hypervisor Framework documentation about supported hardware:
+
+_Generally, machines with an Intel VT-x feature set that includes Extended Page Tables (EPT) and Unrestricted Mode are supported._
+
+To check if your Mac supports the Hypervisor framework, run the following command in a terminal window.
+
+```bash
+sysctl kern.hv_support
+```
+
+If your Mac supports the Hypervisor Framework, the command prints `kern.hv_support: 1.`
+
+If not, the command prints `kern.hv_support: 0`.
+
+See also, Hypervisor Framework Reference in the Apple documentation, and Docker Desktop [Mac system requirements](https://developer.apple.com/documentation/hypervisor)."
+
+[Source](https://docs.docker.com/docker-for-mac/troubleshoot/)
