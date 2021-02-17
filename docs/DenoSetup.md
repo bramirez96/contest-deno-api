@@ -5,7 +5,7 @@
 View the online installation guide [here](https://deno.land/manual/getting_started/installation), or run the following script:
 
 ```bash
-curl -fsSL https://deno.land/x/install/install.sh | sh
+curl -fsSL https://deno.land/x/install/install.sh | sh -s v1.6.3
 ```
 
 ### Configure Bash (Windows, Git Bash)
