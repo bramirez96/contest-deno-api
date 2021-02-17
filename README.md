@@ -2,6 +2,8 @@
 
 This is a refactor of the existing Story Squad API built in Deno.
 
+[Onboarding Checklist](./docs/Onboarding.md)
+
 [Deno Installation Guide](./docs/DenoSetup.md)
 
 [Database Setup Guide](./docs/DBSetup.md)
