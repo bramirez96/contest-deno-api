@@ -12,7 +12,6 @@ import {
   IRouter,
   serviceCollection,
   log,
-  NextFunction,
   createError,
 } from '../../../deps.ts';
 import {
@@ -26,7 +25,6 @@ import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
 import { INewUser } from '../../interfaces/users.ts';
 import { Roles } from '../../interfaces/roles.ts';
-import CleverService from '../../services/clever.ts';
 
 const route = Router();
 

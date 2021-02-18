@@ -126,7 +126,10 @@ export type {
 
 export { default as moment } from 'https://deno.land/x/momentjs@2.29.1-deno/mod.ts';
 
-import axiod from 'https://deno.land/x/axiod@0.20.0-0/mod.ts';
-export { axiod };
-
-export { Base64 } from 'https://deno.land/x/bb64@1.1.0/mod.ts';
+export { CleverClient } from './lib/clever_library/mod.ts';
+export type {
+  CleverGradeType,
+  CleverSubjectType,
+  ICleverTeacher,
+  ICleverStudent,
+} from './lib/clever_library/mod.ts';

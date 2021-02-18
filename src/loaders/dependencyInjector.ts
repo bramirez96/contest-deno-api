@@ -3,6 +3,7 @@ import pgConnect from './postgres.ts';
 import logger from './logger.ts';
 import mailer from './mailer.ts';
 import bucket from './bucket.ts';
+import clever from './clever.ts';
 
 export default async () => {
   try {
@@ -17,6 +18,9 @@ export default async () => {
 
     const s3 = bucket();
     serviceCollection.addStatic('s3', s3);
+
+    const cleverClient = clever();
+    serviceCollection.addStatic('clever', cleverClient);
   } catch (err) {
     console.log({ err });
     throw err;

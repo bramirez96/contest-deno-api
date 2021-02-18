@@ -58,3 +58,10 @@ export type CleverGradeType =
   | 'Ungraded'
   | 'Other'
   | '';
+
+export interface ICleverConfig {
+  clientId: string;
+  clientSecret: string;
+  redirectURI: string;
+  apiVersion?: string;
+}

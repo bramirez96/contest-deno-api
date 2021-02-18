@@ -52,8 +52,8 @@ export default {
     ALGO: (Deno.env.get('JWT_ALGORITHM') as Algorithm) || 'HS512',
   },
   CLEVER_CONFIG: {
-    ID: Deno.env.get('CLEVER_CLIENT_ID') || '',
-    SECRET: Deno.env.get('CLEVER_CLIENT_SECRET') || '',
-    REDIRECT: REACT_APP_URL + (Deno.env.get('CLEVER_REACT_APP_EP') || ''),
+    clientId: Deno.env.get('CLEVER_CLIENT_ID') || '',
+    clientSecret: Deno.env.get('CLEVER_CLIENT_SECRET') || '',
+    redirectURI: REACT_APP_URL + (Deno.env.get('CLEVER_REACT_APP_EP') || ''),
   },
 };
