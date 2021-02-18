@@ -125,3 +125,8 @@ export type {
 } from 'https://deno.land/x/cotton@v0.7.5/src/querybuilder.ts';
 
 export { default as moment } from 'https://deno.land/x/momentjs@2.29.1-deno/mod.ts';
+
+import axiod from 'https://deno.land/x/axiod@0.20.0-0/mod.ts';
+export { axiod };
+
+export { Base64 } from 'https://deno.land/x/bb64@1.1.0/mod.ts';

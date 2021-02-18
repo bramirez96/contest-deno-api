@@ -17,13 +17,15 @@ const envPrefix = () => {
   }
 };
 
+const REACT_APP_URL = Deno.env.get('REACT_APP_URL') || 'http://localhost:3000';
+
 export default {
   DENO_ENV: DENO_ENV === 'ci' ? 'testing' : DENO_ENV,
   PORT: parseInt(PORT, 10),
   UUID_NAMESPACE: Deno.env.get('UUID_NAMESPACE') || '',
   SERVER_URL: Deno.env.get('SERVER_URL') || 'http://localhost:' + PORT,
   DB_URL: Deno.env.get(envPrefix() + 'DB_URL'),
-  REACT_APP_URL: Deno.env.get('REACT_APP_URL') || 'http://localhost:3000',
+  REACT_APP_URL,
   DB_CONFIG: {
     database: Deno.env.get(envPrefix() + 'DB_NAME') || '',
     hostname: Deno.env.get(envPrefix() + 'DB_HOST') || '',
@@ -52,5 +54,6 @@ export default {
   CLEVER_CONFIG: {
     ID: Deno.env.get('CLEVER_CLIENT_ID') || '',
     SECRET: Deno.env.get('CLEVER_CLIENT_SECRET') || '',
+    REDIRECT: REACT_APP_URL + (Deno.env.get('CLEVER_REACT_APP_EP') || ''),
   },
 };

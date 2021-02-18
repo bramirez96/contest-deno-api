@@ -26,6 +26,7 @@ import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
 import { INewUser } from '../../interfaces/users.ts';
 import { Roles } from '../../interfaces/roles.ts';
+import CleverService from '../../services/clever.ts';
 
 const route = Router();
 
@@ -52,14 +53,14 @@ export default (app: IRouter) => {
       firstname: [required, isString],
       lastname: [required, isString],
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         await authServiceInstance.SignUp(req.body);
 
         res.setStatus(201).json({ message: 'User creation successful.' });
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
@@ -71,7 +72,7 @@ export default (app: IRouter) => {
       email: [required, isEmail],
       password: [required, isString],
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const response = await authServiceInstance.SignIn(
           req.body.email,
@@ -86,7 +87,7 @@ export default (app: IRouter) => {
         res.setStatus(201).json(response);
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
@@ -101,7 +102,7 @@ export default (app: IRouter) => {
       },
       'query'
     ),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const { token, user } = await authServiceInstance.Validate(
           req.query.email,
@@ -115,7 +116,7 @@ export default (app: IRouter) => {
         res.redirect(302, redirectURL);
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
@@ -124,14 +125,14 @@ export default (app: IRouter) => {
   route.get(
     '/reset',
     validate({ email: [required, isEmail, match(emailRegex)] }, 'query'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         await authServiceInstance.GetResetEmail(req.query.email);
 
         res.setStatus(200).json({ message: 'Password reset email sent!' });
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
@@ -144,7 +145,7 @@ export default (app: IRouter) => {
       password: [required, isString, match(passwordRegex)],
       code: [required, isString, match(uuidV5Regex)],
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         await authServiceInstance.ResetPasswordWithCode(
           req.body.email,
@@ -155,7 +156,7 @@ export default (app: IRouter) => {
         res.setStatus(204).end();
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
