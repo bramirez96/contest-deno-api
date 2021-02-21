@@ -5,6 +5,6 @@ export default class BaseService {
     this.db = serviceCollection.get('pg');
     this.logger = serviceCollection.get('logger');
   }
-  public db: PostgresAdapter;
+  protected db: PostgresAdapter;
   protected logger: log.Logger;
 }

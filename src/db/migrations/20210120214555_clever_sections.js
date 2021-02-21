@@ -3,7 +3,6 @@ exports.up = function (knex) {
   return knex.schema.createTable('clever_sections', (t) => {
     t.increments('id');
     t.string('name');
-    t.string('number');
     t.boolean('active').defaultTo(true);
     t.string('subjectId')
       .notNullable()

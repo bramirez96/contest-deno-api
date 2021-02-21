@@ -1,4 +1,5 @@
 import { Service, serviceCollection } from '../../deps.ts';
+import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { INewUser, IUser, IValidationByUser } from '../interfaces/users.ts';
 import BaseModel from './baseModel.ts';
 
@@ -41,6 +42,20 @@ export default class UserModel extends BaseModel<INewUser, IUser> {
       .execute()) as { id: number; role: string }[];
 
     return role;
+  }
+
+  public async findByCleverId(cleverId: string) {
+    this.logger.debug(`Attempting to retrieve user with clever id ${cleverId}`);
+
+    const [user] = ((await this.db
+      .table('users')
+      .innerJoin('sso_lookup', 'users.id', 'sso_lookup.userId')
+      .where('sso_lookup.providerId', SSOLookups.Clever)
+      .where('sso_lookup.accessToken', cleverId)
+      .select('users.*')
+      .execute()) as unknown) as (IUser | undefined)[];
+
+    return user;
   }
 }
 

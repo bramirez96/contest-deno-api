@@ -1,8 +1,8 @@
 import { Service, serviceCollection } from '../../deps.ts';
-import { INewSSOLookup, ISSOLookup } from '../interfaces/ssoLookup.ts';
+import { INewSSOLookup, ISSOLookup } from '../interfaces/ssoLookups.ts';
 import BaseModel from './baseModel.ts';
 
-Service();
+@Service()
 export default class SSOLookupModel extends BaseModel<
   INewSSOLookup,
   ISSOLookup

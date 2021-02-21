@@ -10,14 +10,15 @@ export interface ICleverSection {
 
 export interface ICleverTeacher {
   id: string;
-  email: string;
-  name: { first: string; last: string };
+  email?: string;
+  name: { first: string; last: string; middle?: string };
   sections: string[];
 }
 
 export interface ICleverStudent {
   id: string;
-  name: { first: string; last: string };
+  email?: string;
+  name: { first: string; last: string; middle?: string };
   grade: CleverGradeType;
 }
 

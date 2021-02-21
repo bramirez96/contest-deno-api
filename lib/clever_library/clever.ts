@@ -42,12 +42,21 @@ export default class CleverClient {
     }
   }
 
-  public async getCurrentUserId(token: string): Promise<string> {
+  public async getCurrentUser(
+    token: string
+  ): Promise<{
+    type: 'teacher' | 'student';
+    data: {
+      id: string;
+      district: string;
+      type: 'teacher' | 'student';
+      authorized_by: string;
+    };
+    links: { rel: string; uri: string }[];
+  }> {
     try {
-      const { data } = await axiod.get(`${this.api}/me`, {
-        headers: { Authorization: 'Bearer ' + token },
-      });
-      return data.data.id;
+      const { data } = await axiod.get(`${this.api}/me`, this.bearer(token));
+      return data;
     } catch (err) {
       console.log(err);
       throw err;
@@ -59,9 +68,10 @@ export default class CleverClient {
     token: string
   ): Promise<{ data: ICleverTeacher; links: { rel: string; uri: string }[] }> {
     try {
-      const { data } = await axiod.get(`${this.api}/teachers/${teacherId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await axiod.get(
+        `${this.api}/teachers/${teacherId}`,
+        this.bearer(token)
+      );
       return data;
     } catch (err) {
       console.log(err);
@@ -79,9 +89,7 @@ export default class CleverClient {
     try {
       const { data } = await axiod.get(
         `${this.api}/teachers/${teacherId}/sections`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        this.bearer(token)
       );
       return data;
     } catch (err) {
@@ -95,9 +103,10 @@ export default class CleverClient {
     token: string
   ): Promise<{ data: ICleverSection; links: { rel: string; uri: string }[] }> {
     try {
-      const { data } = await axiod.get(`${this.api}/sections/${sectionId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await axiod.get(
+        `${this.api}/sections/${sectionId}`,
+        this.bearer(token)
+      );
       return data;
     } catch (err) {
       console.log(err);
@@ -115,9 +124,7 @@ export default class CleverClient {
     try {
       const { data } = await axiod.get(
         `${this.api}/sections/${sectionId}/students`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        this.bearer(token)
       );
       return data;
     } catch (err) {
@@ -126,7 +133,7 @@ export default class CleverClient {
     }
   }
 
-  public async getStudentById(
+  public async getStudent(
     studentId: string,
     token: string
   ): Promise<{
@@ -134,13 +141,18 @@ export default class CleverClient {
     links: { rel: string; uri: string }[];
   }> {
     try {
-      const { data } = await axiod.get(`${this.api}/students/${studentId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await axiod.get(
+        `${this.api}/students/${studentId}`,
+        this.bearer(token)
+      );
       return data;
     } catch (err) {
       console.log(err);
       throw err;
     }
+  }
+
+  private bearer(token: string) {
+    return { headers: { Authorization: `Bearer ${token}` } };
   }
 }

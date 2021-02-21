@@ -25,6 +25,7 @@ import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
 import { INewUser } from '../../interfaces/users.ts';
 import { Roles } from '../../interfaces/roles.ts';
+import oauth from './oauth.ts';
 
 const route = Router();
 
@@ -32,18 +33,14 @@ export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const authServiceInstance = serviceCollection.get(AuthService);
   app.use('/auth', route);
+  // Add the oauth routes
+  oauth(route);
 
   // POST /register
   route.post(
     '/register',
     validate<INewUser>({
-      codename: [
-        required,
-        isString,
-        minLength(1),
-        maxLength(20),
-        match(codenameRegex),
-      ],
+      codename: [required, isString, match(codenameRegex)],
       email: [required, isEmail, match(emailRegex)],
       parentEmail: [required, isEmail, match(emailRegex)],
       password: [required, isString, match(passwordRegex)],

@@ -2,7 +2,7 @@ import { Service, serviceCollection } from '../../deps.ts';
 import { INewStudent, IStudent } from '../interfaces/cleverStudents.ts';
 import BaseModel from './baseModel.ts';
 
-Service();
+@Service()
 export default class CleverStudentModel extends BaseModel<
   INewStudent,
   IStudent
