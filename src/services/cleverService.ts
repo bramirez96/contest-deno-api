@@ -6,11 +6,14 @@ import {
   createError,
   ICleverStudent,
   ICleverTeacher,
+  v5,
 } from '../../deps.ts';
+import env from '../config/env.ts';
 import {
   CleverAuthResponseType,
   IAuthResponse,
 } from '../interfaces/apiResponses.ts';
+import { INewSection, ISection } from '../interfaces/cleverSections.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { IOAuthUser } from '../interfaces/users.ts';
@@ -171,6 +174,65 @@ export default class CleverService extends BaseService {
     cleverId: string
   ): Promise<IAuthResponse> {
     try {
+      const { token, user } = await this.authService.SignIn(codename, password);
+      await this.ssoModel.add({
+        accessToken: cleverId,
+        providerId: SSOLookups.Clever,
+        userId: user.id,
+      });
+
+      return { token, user };
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async createSection(
+    body: Omit<INewSection, 'joinCode'>,
+    teacherId: number
+  ) {
+    try {
+      this.logger.debug(
+        `Attempting to add section '${body.name}' for teacher with id ${teacherId}`
+      );
+
+      let section: ISection | undefined;
+      await this.db.transaction(async () => {
+        const joinCode = this.generateJoinCode(body);
+        // Transactions mantain data integrity when creaing multiple rows
+        const [res] = await this.sectionModel.add({ ...body, joinCode });
+
+        await this.teacherModel.add({
+          primary: true,
+          sectionId: res.id,
+          userId: teacherId,
+        });
+
+        section = res;
+      });
+      if (section) return section;
+      else throw createError(400, 'Could not create section');
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  private generateJoinCode(section: Omit<INewSection, 'joinCode'>) {
+    try {
+      this.logger.debug(
+        `Generating join code for section with name: '${section.name}'`
+      );
+
+      const joinCode = v5.generate({
+        namespace: env.UUID_NAMESPACE,
+        value: `${section.name}-${Date.now()}`,
+      }) as string;
+
+      this.logger.debug(`Join code generated for section '${section.name}'`);
+
+      return joinCode;
     } catch (err) {
       this.logger.error(err);
       throw err;

@@ -64,13 +64,13 @@ export default (app: IRouter) => {
   route.post(
     '/login',
     validate({
-      email: [required, isEmail],
+      codename: [required, isString],
       password: [required, isString],
     }),
     async (req: Request, res: Response) => {
       try {
         const response = await authServiceInstance.SignIn(
-          req.body.email,
+          req.body.codename,
           req.body.password
         );
 

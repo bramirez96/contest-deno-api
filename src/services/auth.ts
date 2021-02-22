@@ -77,14 +77,17 @@ export default class AuthService extends BaseService {
     }
   }
 
-  public async SignIn(email: string, password: string): Promise<IAuthResponse> {
+  public async SignIn(
+    codename: string,
+    password: string
+  ): Promise<IAuthResponse> {
     try {
-      const user = await this.userModel.get({ email }, { first: true });
+      const user = await this.userModel.get({ codename }, { first: true });
       if (!user) throw createError(404, 'User not found');
       if (!user.isValidated)
         throw createError(403, 'Account must be validated');
 
-      this.logger.debug(`Verifying password for user (EMAIL: ${email})`);
+      this.logger.debug(`Verifying password for user (CODENAME: ${codename})`);
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) throw createError(401, 'Invalid password');
       this.logger.debug(`Password verified`);

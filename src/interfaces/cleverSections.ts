@@ -9,6 +9,7 @@ export interface ISection extends INewSection {
 
 export interface INewSection {
   name: string;
+  joinCode: string;
   subjectId: Subjects | CleverSubjectType;
   gradeId: Grades | CleverGradeType;
 }

@@ -4,6 +4,7 @@ exports.up = function (knex) {
     t.increments('id');
     t.string('name');
     t.boolean('active').defaultTo(true);
+    t.string('joinCode').notNullable().unique().index();
     t.string('subjectId')
       .notNullable()
       .references('enum_subjects.id')
