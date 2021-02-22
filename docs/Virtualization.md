@@ -15,8 +15,6 @@ Once your machine restarts you will be brought to your BIOS settings. Find the `
 For me, this setting was under `Advanced Settings > CPU Config section`.
 Once you have **enabled** the SVM Mode you can Save & Reset your machine.
 
-### Final Steps
-
 Open your task manager after your machine restarts.
 Open the Performance tab and ensure that Virtualization is now **enabled**.
 
