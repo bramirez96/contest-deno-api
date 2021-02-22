@@ -12,7 +12,8 @@ import {
   IAuthResponse,
 } from '../interfaces/apiResponses.ts';
 import { Roles } from '../interfaces/roles.ts';
-import { IOAuthUser, IUser } from '../interfaces/users.ts';
+import { SSOLookups } from '../interfaces/ssoLookups.ts';
+import { IOAuthUser } from '../interfaces/users.ts';
 import CleverSectionModel from '../models/cleverSections.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
@@ -49,14 +50,14 @@ export default class CleverService extends BaseService {
 
       if (existingUser) {
         // If the user exists in our DB, sign them in! Easy!
-        const token = await this.authService.generateToken(existingUser);
+        const authToken = await this.authService.generateToken(existingUser);
         Reflect.deleteProperty(existingUser, 'password');
 
         // Return an auth response and user type!
         return {
           actionType: 'SUCCESS',
           userType: type,
-          body: { token, user: existingUser },
+          body: { token: authToken, user: existingUser },
         };
       } else {
         // We don't have a user account connected to their clever ID yet!
@@ -113,7 +114,8 @@ export default class CleverService extends BaseService {
 
   public async registerCleverUser(
     body: IOAuthUser,
-    userType: string
+    userType: string,
+    cleverId: string
   ): Promise<IAuthResponse> {
     try {
       this.logger.debug(
@@ -130,7 +132,7 @@ export default class CleverService extends BaseService {
 
       // Attempt to create a user and log them in
       await this.db.transaction(async () => {
-        // Hash their
+        // Hash their password
         const hashedPassword = await this.authService.hashPassword(
           body.password
         );
@@ -143,6 +145,13 @@ export default class CleverService extends BaseService {
           },
           true
         );
+
+        await this.ssoModel.add({
+          accessToken: cleverId,
+          providerId: SSOLookups.Clever,
+          userId: user.id,
+        });
+
         // Generate their auth token
         token = await this.authService.generateToken(user);
       });
@@ -150,6 +159,18 @@ export default class CleverService extends BaseService {
       // Verify the user was created and logged in successfully
       if (!user || !token) throw createError(401, 'Failed to create user');
       else return { user, token };
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async loginAndMerge(
+    codename: string,
+    password: string,
+    cleverId: string
+  ): Promise<IAuthResponse> {
+    try {
     } catch (err) {
       this.logger.error(err);
       throw err;

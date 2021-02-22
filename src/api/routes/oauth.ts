@@ -8,7 +8,6 @@ import {
   Request,
   Response,
   match,
-  createError,
 } from '../../../deps.ts';
 import {
   codenameRegex,
@@ -41,8 +40,9 @@ export default (app: IRouter) => {
     }
   );
 
+  // POST /api/auth/o/clever/signup?userType=student&cleverId=someID
   route.post(
-    '/clever/:userType',
+    '/clever/signup',
     validate<IOAuthUser>({
       codename: [required, isString, match(codenameRegex)],
       email: [isString, match(emailRegex)],
@@ -50,13 +50,44 @@ export default (app: IRouter) => {
       lastname: [required, isString],
       password: [required, isString, match(passwordRegex)],
     }),
+    validate(
+      {
+        userType: [required, isString],
+        cleverId: [required, isString],
+      },
+      'query'
+    ),
     async (req: Request, res: Response) => {
       try {
         const cleverResponse = await cleverInstance.registerCleverUser(
           req.body,
-          req.params.userType
+          req.query.userType,
+          req.query.cleverId
         );
         res.setStatus(201).json(cleverResponse);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  // POST /api/auth/o/clever/merge?cleverId=someid
+  route.post(
+    '/clever/merge',
+    validate({
+      codename: [required, isString],
+      password: [required, isString],
+    }),
+    validate({ cleverId: [required, isString] }, 'query'),
+    async (req: Request, res: Response) => {
+      try {
+        const authResponse = await cleverInstance.loginAndMerge(
+          req.body.codename,
+          req.body.password,
+          req.query.cleverId
+        );
+        res.setStatus(201).json(authResponse);
       } catch (err) {
         logger.error(err);
         throw err;
