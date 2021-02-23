@@ -78,6 +78,7 @@ export default class CleverService extends BaseService {
           // We only support students and teachers! Throw an error on admins/staff!
           throw createError(401, 'Account type not supported');
         }
+        console.log('clever acc', user);
 
         // If the user has an email in their clever account, check our
         // user table for an email match. If we find a match, the user
