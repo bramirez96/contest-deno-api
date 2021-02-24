@@ -1,4 +1,5 @@
 import { ICleverStudent, ICleverTeacher } from '../../deps.ts';
+import { Roles } from './roles.ts';
 import { IUser } from './users.ts';
 
 export interface IAuthResponse {
@@ -16,7 +17,7 @@ export interface IAuthResponse {
  * ```ts
  * {
  *   actionType: 'SUCCESS' | 'MERGE' | 'NEW';
- *   userType: 'student' | 'teacher'
+ *   roleId: Roles & number
  *   body: object
  * }
  * ```
@@ -47,19 +48,23 @@ export interface IAuthResponse {
  * auto-populate the signup form on the frontend in an effort to
  * reduce friction and improve the user experience.
  */
+
 export type CleverAuthResponseType =
   | {
       actionType: 'SUCCESS';
-      userType: 'student' | 'teacher';
+      roleId: Roles & number;
       body: IAuthResponse;
+      cleverId: string;
     }
   | {
       actionType: 'MERGE';
-      userType: 'student' | 'teacher';
+      roleId: Roles & number;
       body: IUser;
+      cleverId: string;
     }
   | {
       actionType: 'NEW';
-      userType: 'student' | 'teacher';
+      roleId: Roles & number;
       body: ICleverStudent | ICleverTeacher;
+      cleverId: string;
     };

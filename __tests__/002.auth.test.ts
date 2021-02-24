@@ -178,16 +178,17 @@ test(LoginSuite, 'returns a 400 on missing body', async (context) => {
 test(LoginSuite, 'returns a 404 on invalid email', async (context) => {
   const res = await context.app
     .post('/api/auth/login')
-    .send({ email: 'nope@email.com', password: 'notEvenAPassword' });
+    .send({ codename: 'NotARealCodename', password: 'notEvenAPassword' });
 
   assertEquals(res.status, 404);
   assertEquals(res.body.message, 'User not found');
 });
 
 test(LoginSuite, 'returns 403 if not validated', async (context) => {
-  const res = await context.app
-    .post('/api/auth/login')
-    .send({ email: users.valid[1].email, password: users.valid[1].password });
+  const res = await context.app.post('/api/auth/login').send({
+    codename: users.valid[1].codename,
+    password: users.valid[1].password,
+  });
 
   assertEquals(res.status, 403);
   assertEquals(res.body.message, 'Account must be validated');

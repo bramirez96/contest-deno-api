@@ -47,6 +47,10 @@ export default class CleverService extends BaseService {
       // Get user's info from clever
       const rawUser = await this.clever.getCurrentUser(token);
       const { id, type } = rawUser.data; // Pull id for easier use
+      let roleId: number;
+      if (type === 'student') roleId = Roles.user;
+      else if (type === 'teacher') roleId = Roles.teacher;
+      else throw createError(401, 'Account type not supported');
 
       // Now we have user info, check if they exist in our database
       const existingUser = await this.userModel.findByCleverId(rawUser.data.id);
@@ -59,8 +63,9 @@ export default class CleverService extends BaseService {
         // Return an auth response and user type!
         return {
           actionType: 'SUCCESS',
-          userType: type,
           body: { token: authToken, user: existingUser },
+          cleverId: id,
+          roleId,
         };
       } else {
         // We don't have a user account connected to their clever ID yet!
@@ -93,8 +98,9 @@ export default class CleverService extends BaseService {
             // If we found a mergable user, return a merge response!!
             return {
               actionType: 'MERGE',
-              userType: type,
               body: userToMerge,
+              cleverId: id,
+              roleId,
             };
           }
         }
@@ -106,8 +112,9 @@ export default class CleverService extends BaseService {
         // it as easy as possible for our users.
         return {
           actionType: 'NEW',
-          userType: type,
           body: user,
+          cleverId: id,
+          roleId,
         };
       }
     } catch (err) {
@@ -136,6 +143,10 @@ export default class CleverService extends BaseService {
 
       // Attempt to create a user and log them in
       await this.db.transaction(async () => {
+        // Sanitize data
+        Reflect.deleteProperty(body, 'age');
+        Reflect.deleteProperty(body, 'parentEmail');
+
         // Hash their password
         const hashedPassword = await this.authService.hashPassword(
           body.password

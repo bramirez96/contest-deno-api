@@ -2,7 +2,7 @@ import { Roles } from '../../src/interfaces/roles.ts';
 import { INewUser } from '../../src/interfaces/users.ts';
 import { v5 } from '../../testDeps.ts';
 
-const valid: INewUser[] = [
+const valid: Omit<INewUser, 'roleId'>[] = [
   {
     codename: 'TestCodename1',
     email: 'someemail1@email.com',
@@ -36,7 +36,7 @@ const incomplete: Partial<INewUser> = {
   email: 'justanemail@email.com',
 };
 
-const tooYoung: INewUser = {
+const tooYoung = {
   codename: 'ChildCodename',
   email: 'someEmail@email.com',
   parentEmail: 'someEmail@email.com',
