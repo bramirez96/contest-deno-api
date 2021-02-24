@@ -156,6 +156,7 @@ export default class CleverService extends BaseService {
           {
             ...body,
             password: hashedPassword,
+            isValidated: true,
             roleId,
           },
           true
