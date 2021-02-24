@@ -2,6 +2,7 @@ import { Router } from '../../deps.ts';
 import auth from './routes/auth.ts';
 import contestRoutes from './routes/contest/index.ts';
 import users from './routes/users.ts';
+import rumbleRoutes from './routes/rumble/index.ts';
 
 export default () => {
   console.log('Loading routers...');
@@ -10,6 +11,7 @@ export default () => {
   auth(app);
   users(app);
   contestRoutes(app);
+  rumbleRoutes(app);
 
   console.log('Routers loaded.');
   return app;
