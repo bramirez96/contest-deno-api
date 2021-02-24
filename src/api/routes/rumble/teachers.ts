@@ -84,5 +84,23 @@ export default (app: IRouter) => {
     }
   );
 
+  // PUT /rumbles/:rumbleId/start - begins a game and returns a Date
+  route.put(
+    '/:teacherId/sections/:sectionId/rumbles/:rumbleId/start',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    async (req, res) => {
+      try {
+        const endTime = await rumbleServiceInstance.startRumble(
+          parseInt(req.params.sectionId, 10),
+          parseInt(req.params.rumbleId, 10)
+        );
+        res.setStatus(201).json(endTime);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
   console.log('Rumble teacher route loaded.');
 };

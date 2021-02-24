@@ -4,6 +4,7 @@ import {
   serviceCollection,
   createError,
   v5,
+  moment,
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import { ISection, ISectionPostBody } from '../interfaces/cleverSections.ts';
@@ -124,6 +125,28 @@ export default class RumbleService extends BaseService {
     }
   }
 
+  public async startRumble(sectionId: number, rumbleId: number) {
+    try {
+      // Get the rumble based off of the ID to know the desired game length
+      const rumble = await this.rumbleModel.get(
+        { id: rumbleId },
+        { first: true }
+      );
+
+      // Calculate the end time from the game length
+      const endTime = this.calculateEndTime(rumble.numMinutes);
+
+      // Update the end time of the given rumble
+      await this.rumbleSections.updateEndTime(endTime, sectionId, rumbleId);
+
+      // Return the end time to the user
+      return endTime;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
   private generateJoinCode(key: string) {
     try {
       this.logger.debug(`Generating join code with key: '${key}'`);
@@ -140,6 +163,10 @@ export default class RumbleService extends BaseService {
       this.logger.error(err);
       throw err;
     }
+  }
+
+  private calculateEndTime(numMinutes: number): Date {
+    return (moment.utc().add(numMinutes, 'm') as unknown) as Date;
   }
 }
 
