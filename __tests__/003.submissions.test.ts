@@ -27,7 +27,7 @@ const S = new TestSuite({
       console.log('Admin user added to table...');
 
       const res = await context.app.post('/api/auth/login').send({
-        email: users.admin.email,
+        codename: users.admin.codename,
         password: users.admin.password,
       });
       context.token = res.body.token;
@@ -107,7 +107,7 @@ test(UploadSubSuite, 'returns a 201 on jpeg upload', async (context) => {
 
 test(UploadSubSuite, 'successfully uploads sub for user 2', async (context) => {
   const { status, body } = await context.app.post('/api/auth/login').send({
-    email: users.valid[1].email,
+    codename: users.valid[1].codename,
     password: users.valid[1].password,
   });
   assertEquals(status, 201);
@@ -124,7 +124,7 @@ test(UploadSubSuite, 'successfully uploads sub for user 2', async (context) => {
 
 test(UploadSubSuite, 'successfully uploads sub for user 3', async (context) => {
   const { status, body } = await context.app.post('/api/auth/login').send({
-    email: users.valid[2].email,
+    codename: users.valid[2].codename,
     password: users.valid[2].password,
   });
   assertEquals(status, 201);

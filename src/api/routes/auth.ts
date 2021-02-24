@@ -5,14 +5,11 @@ import {
   isString,
   isNumber,
   isEmail,
-  minLength,
-  maxLength,
   required,
   match,
   IRouter,
   serviceCollection,
   log,
-  NextFunction,
   createError,
 } from '../../../deps.ts';
 import {
@@ -26,6 +23,7 @@ import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
 import { INewUser } from '../../interfaces/users.ts';
 import { Roles } from '../../interfaces/roles.ts';
+import oauth from './oauth.ts';
 
 const route = Router();
 
@@ -33,18 +31,14 @@ export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const authServiceInstance = serviceCollection.get(AuthService);
   app.use('/auth', route);
+  // Add the oauth routes
+  oauth(route);
 
   // POST /register
   route.post(
     '/register',
     validate<INewUser>({
-      codename: [
-        required,
-        isString,
-        minLength(1),
-        maxLength(20),
-        match(codenameRegex),
-      ],
+      codename: [required, isString, match(codenameRegex)],
       email: [required, isEmail, match(emailRegex)],
       parentEmail: [required, isEmail, match(emailRegex)],
       password: [required, isString, match(passwordRegex)],
@@ -52,14 +46,14 @@ export default (app: IRouter) => {
       firstname: [required, isString],
       lastname: [required, isString],
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         await authServiceInstance.SignUp(req.body);
 
         res.setStatus(201).json({ message: 'User creation successful.' });
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
@@ -68,13 +62,13 @@ export default (app: IRouter) => {
   route.post(
     '/login',
     validate({
-      email: [required, isEmail],
+      codename: [required, isString],
       password: [required, isString],
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const response = await authServiceInstance.SignIn(
-          req.body.email,
+          req.body.codename,
           req.body.password
         );
 
@@ -86,7 +80,7 @@ export default (app: IRouter) => {
         res.setStatus(201).json(response);
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
@@ -101,7 +95,7 @@ export default (app: IRouter) => {
       },
       'query'
     ),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         const { token, user } = await authServiceInstance.Validate(
           req.query.email,
@@ -115,7 +109,7 @@ export default (app: IRouter) => {
         res.redirect(302, redirectURL);
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
@@ -124,14 +118,14 @@ export default (app: IRouter) => {
   route.get(
     '/reset',
     validate({ email: [required, isEmail, match(emailRegex)] }, 'query'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         await authServiceInstance.GetResetEmail(req.query.email);
 
         res.setStatus(200).json({ message: 'Password reset email sent!' });
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
@@ -144,7 +138,7 @@ export default (app: IRouter) => {
       password: [required, isString, match(passwordRegex)],
       code: [required, isString, match(uuidV5Regex)],
     }),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response) => {
       try {
         await authServiceInstance.ResetPasswordWithCode(
           req.body.email,
@@ -155,7 +149,7 @@ export default (app: IRouter) => {
         res.setStatus(204).end();
       } catch (err) {
         logger.error(err);
-        next(err);
+        throw err;
       }
     }
   );
