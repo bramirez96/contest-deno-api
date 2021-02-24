@@ -60,5 +60,5 @@ export default (app: IRouter) => {
     }
   );
 
-  console.log('Rumble teacher routes loaded.');
+  console.log('Rumble teacher route loaded.');
 };

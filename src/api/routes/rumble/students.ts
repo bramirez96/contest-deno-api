@@ -10,14 +10,14 @@ export default (app: IRouter) => {
   const studentModelInstance = serviceCollection.get(CleverStudentModel);
   app.use('/students', route);
 
-  // GET /teachers/:teacherId/sections returns ISection[]
+  // GET /students/:studentId/sections returns ISection[]
   route.get(
-    '/teachers/:teacherId/sections',
+    '/:studentId/sections',
     authHandler({ roles: [Roles.admin, Roles.teacher] }),
     async (req, res) => {
       try {
         const sections = await studentModelInstance.getSectionsById(
-          parseInt(req.params.teacherId, 10)
+          parseInt(req.params.studentId, 10)
         );
         res.setStatus(200).json(sections);
       } catch (err) {
@@ -27,5 +27,5 @@ export default (app: IRouter) => {
     }
   );
 
-  console.log('Rumble teacher routes loaded.');
+  console.log('Rumble students route loaded.');
 };

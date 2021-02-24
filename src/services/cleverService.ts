@@ -201,6 +201,33 @@ export default class CleverService extends BaseService {
     }
   }
 
+  public async getEnumData(): Promise<ICleverEnumData> {
+    try {
+      const gradeList = (await this.db.table('enum_grades').execute()) as {
+        [key: string]: string;
+      }[];
+
+      const grades = gradeList.map((g) => {
+        const gradeId = Object.keys(g)[0];
+        return { gradeId, value: g[gradeId] };
+      });
+
+      const subjectList = (await this.db.table('enum_subjects').execute()) as {
+        [key: string]: string;
+      }[];
+
+      const subjects = subjectList.map((s) => {
+        const subjectId = Object.keys(s)[0];
+        return { subjectId, value: s[subjectId] };
+      });
+
+      return { grades, subjects };
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
   public async createSection(
     body: Omit<INewSection, 'joinCode'>,
     teacherId: number
@@ -339,3 +366,8 @@ export default class CleverService extends BaseService {
 }
 
 serviceCollection.addTransient(CleverService);
+
+interface ICleverEnumData {
+  grades: { gradeId: string; value: string }[];
+  subjects: { subjectId: string; value: string }[];
+}
