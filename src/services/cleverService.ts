@@ -259,6 +259,40 @@ export default class CleverService extends BaseService {
     }
   }
 
+  public async addChildToSection(
+    joinCode: string,
+    sectionId: number,
+    studentId: number
+  ) {
+    try {
+      // Get the section with the given id
+      const section = await this.sectionModel.get(
+        { id: sectionId },
+        { first: true }
+      );
+      // Handle nonexistent section
+      if (!section) {
+        throw createError(404, 'Invalid section ID');
+      }
+      // Handle incorrect join code
+      if (joinCode !== section.joinCode) {
+        throw createError(401, 'Join code is invalid');
+      }
+
+      // Connect the student user to the section
+      await this.studentModel.add({
+        gradeId: section.gradeId,
+        sectionId: section.id,
+        userId: studentId,
+      });
+
+      return section;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
   private generateJoinCode(section: Omit<INewSection, 'joinCode'>) {
     try {
       this.logger.debug(
