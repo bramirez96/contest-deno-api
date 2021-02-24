@@ -5,8 +5,6 @@ import {
   isString,
   isNumber,
   isEmail,
-  minLength,
-  maxLength,
   required,
   match,
   IRouter,
