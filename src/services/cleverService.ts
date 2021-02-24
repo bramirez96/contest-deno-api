@@ -6,20 +6,15 @@ import {
   createError,
   ICleverStudent,
   ICleverTeacher,
-  v5,
 } from '../../deps.ts';
-import env from '../config/env.ts';
 import {
   CleverAuthResponseType,
   IAuthResponse,
+  ICleverEnumData,
 } from '../interfaces/apiResponses.ts';
-import { INewSection, ISection } from '../interfaces/cleverSections.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { IOAuthUser } from '../interfaces/users.ts';
-import CleverSectionModel from '../models/cleverSections.ts';
-import CleverStudentModel from '../models/cleverStudents.ts';
-import CleverTeacherModel from '../models/cleverTeachers.ts';
 import SSOLookupModel from '../models/ssoLookups.ts';
 import UserModel from '../models/users.ts';
 import AuthService from './auth.ts';
@@ -31,10 +26,7 @@ export default class CleverService extends BaseService {
     @Inject('clever') private clever: CleverClient,
     @Inject(AuthService) private authService: AuthService,
     @Inject(UserModel) private userModel: UserModel,
-    @Inject(SSOLookupModel) private ssoModel: SSOLookupModel,
-    @Inject(CleverSectionModel) private sectionModel: CleverSectionModel,
-    @Inject(CleverStudentModel) private studentModel: CleverStudentModel,
-    @Inject(CleverTeacherModel) private teacherModel: CleverTeacherModel
+    @Inject(SSOLookupModel) private ssoModel: SSOLookupModel
   ) {
     super();
   }
@@ -228,91 +220,6 @@ export default class CleverService extends BaseService {
     }
   }
 
-  public async createSection(
-    body: Omit<INewSection, 'joinCode'>,
-    teacherId: number
-  ) {
-    try {
-      this.logger.debug(
-        `Attempting to add section '${body.name}' for teacher with id ${teacherId}`
-      );
-
-      let section: ISection | undefined;
-      await this.db.transaction(async () => {
-        const joinCode = this.generateJoinCode(body);
-        // Transactions mantain data integrity when creaing multiple rows
-        const [res] = await this.sectionModel.add({ ...body, joinCode });
-
-        await this.teacherModel.add({
-          primary: true,
-          sectionId: res.id,
-          userId: teacherId,
-        });
-
-        section = res;
-      });
-      if (section) return section;
-      else throw createError(400, 'Could not create section');
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  public async addChildToSection(
-    joinCode: string,
-    sectionId: number,
-    studentId: number
-  ) {
-    try {
-      // Get the section with the given id
-      const section = await this.sectionModel.get(
-        { id: sectionId },
-        { first: true }
-      );
-      // Handle nonexistent section
-      if (!section) {
-        throw createError(404, 'Invalid section ID');
-      }
-      // Handle incorrect join code
-      if (joinCode !== section.joinCode) {
-        throw createError(401, 'Join code is invalid');
-      }
-
-      // Connect the student user to the section
-      await this.studentModel.add({
-        gradeId: section.gradeId,
-        sectionId: section.id,
-        userId: studentId,
-      });
-
-      return section;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  private generateJoinCode(section: Omit<INewSection, 'joinCode'>) {
-    try {
-      this.logger.debug(
-        `Generating join code for section with name: '${section.name}'`
-      );
-
-      const joinCode = v5.generate({
-        namespace: env.UUID_NAMESPACE,
-        value: `${section.name}-${Date.now()}`,
-      }) as string;
-
-      this.logger.debug(`Join code generated for section '${section.name}'`);
-
-      return joinCode;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
   // Long transactional query for automatic rostering. Not currently needed.
   // public async generateRoster(code: string) {
   //   try {
@@ -400,8 +307,3 @@ export default class CleverService extends BaseService {
 }
 
 serviceCollection.addTransient(CleverService);
-
-interface ICleverEnumData {
-  grades: { gradeId: string; value: string }[];
-  subjects: { subjectId: string; value: string }[];
-}

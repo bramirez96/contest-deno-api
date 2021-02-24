@@ -5,11 +5,14 @@ import {
   serviceCollection,
   required,
   isString,
+  isNumber,
+  minNumber,
 } from '../../../../deps.ts';
 import { INewSection } from '../../../interfaces/cleverSections.ts';
 import { Roles } from '../../../interfaces/roles.ts';
+import { IRumblePostBody } from '../../../interfaces/rumbles.ts';
 import CleverTeacherModel from '../../../models/cleverTeachers.ts';
-import CleverService from '../../../services/cleverService.ts';
+import RumbleService from '../../../services/rumble.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 import validate from '../../middlewares/validate.ts';
 
@@ -17,6 +20,7 @@ const route = Router();
 
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
+  const rumbleServiceInstance = serviceCollection.get(RumbleService);
   app.use('/teachers', route);
 
   // GET /teachers/:teacherId/sections returns ISection[]
@@ -47,12 +51,32 @@ export default (app: IRouter) => {
     }),
     async (req, res) => {
       try {
-        const cleverServiceInstance = serviceCollection.get(CleverService);
-        const newSection = await cleverServiceInstance.createSection(
+        const newSection = await rumbleServiceInstance.createSection(
           req.body,
           parseInt(req.params.teacherId, 10)
         );
         res.setStatus(201).json(newSection);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  route.post(
+    '/:teacherId/sections/:sectionId/rumbles',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    validate<IRumblePostBody>({
+      numMinutes: [required, isNumber, minNumber(1)],
+      promptId: [required, isNumber, minNumber(1)],
+    }),
+    async (req, res) => {
+      try {
+        const rumble = await rumbleServiceInstance.createGameInstance(
+          req.body,
+          parseInt(req.params.sectionId, 10)
+        );
+        res.setStatus(201).json(rumble);
       } catch (err) {
         logger.error(err);
         throw err;

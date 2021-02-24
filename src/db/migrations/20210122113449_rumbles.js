@@ -12,6 +12,7 @@ exports.up = function (knex) {
       .references('prompts.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
+    t.datetime('created_at').defaultTo(knex.raw("(now() at time zone 'utc')"));
   });
 };
 

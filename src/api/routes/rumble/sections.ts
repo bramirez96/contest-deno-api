@@ -9,13 +9,13 @@ import {
 } from '../../../../deps.ts';
 import { uuidV5Regex } from '../../../config/dataConstraints.ts';
 import validate from '../../middlewares/validate.ts';
-import CleverService from '../../../services/cleverService.ts';
+import RumbleService from '../../../services/rumble.ts';
 
 const route = Router();
 
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
-  const cleverServiceInstance = serviceCollection.get(CleverService);
+  const rumbleServiceInstance = serviceCollection.get(RumbleService);
   app.use('/sections', route);
 
   // POST /:sectionId/students/:studentId - adds a student to a section
@@ -26,7 +26,7 @@ export default (app: IRouter) => {
     }),
     async (req, res) => {
       try {
-        const section = await cleverServiceInstance.addChildToSection(
+        const section = await rumbleServiceInstance.addChildToSection(
           req.body.joinCode,
           parseInt(req.params.sectionId, 10),
           parseInt(req.params.studentId, 10)
