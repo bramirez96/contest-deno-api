@@ -14,10 +14,6 @@ exports.up = function (knex) {
       .references('clever_sections.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.string('gradeId')
-      .references('enum_grades.id')
-      .onUpdate('CASCADE')
-      .onDelete('RESTRICT');
   });
 };
 
