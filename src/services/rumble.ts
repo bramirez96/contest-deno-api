@@ -41,9 +41,11 @@ export default class RumbleService extends BaseService {
         const joinCode = this.generateJoinCode(body.name);
         // Transactions mantain data integrity when creaing multiple rows
         const [res] = await this.sectionModel.add({
-          ...body,
           joinCode,
           active: true,
+          gradeId: body.gradeId,
+          name: body.name,
+          subjectId: body.subjectId,
         });
 
         await this.teacherModel.add({
