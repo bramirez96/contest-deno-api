@@ -7,6 +7,16 @@ export interface IAuthResponse {
   token: string;
 }
 
+export interface ICleverEnumData {
+  grades: ISelectOption[];
+  subjects: ISelectOption[];
+}
+
+export interface ISelectOption {
+  value: string;
+  label: string;
+}
+
 /**
  * # Clever Auth Response
  *
