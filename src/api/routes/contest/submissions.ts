@@ -13,6 +13,7 @@ import {
   minNumber,
   isArray,
 } from '../../../../deps.ts';
+import { Sources } from '../../../interfaces/enumSources.ts';
 import { Roles } from '../../../interfaces/roles.ts';
 import { INewSubmission } from '../../../interfaces/submissions.ts';
 import SubmissionModel from '../../../models/submissions.ts';
@@ -52,7 +53,8 @@ export default (app: IRouter) => {
         await subServiceInstance.processSubmission(
           req.body.story[0],
           parseInt(req.body.promptId, 10),
-          req.body.userInfo.id
+          req.body.userInfo.id,
+          Sources.FDSC
         );
         res.setStatus(201).json({ message: 'Upload successful!' });
       } catch (err) {

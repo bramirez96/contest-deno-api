@@ -86,7 +86,6 @@ export default class RumbleService extends BaseService {
 
       // Connect the student user to the section
       await this.studentModel.add({
-        gradeId: section.gradeId,
         sectionId: section.id,
         userId: studentId,
       });

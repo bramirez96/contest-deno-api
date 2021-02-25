@@ -15,6 +15,7 @@ import BaseService from './baseService.ts';
 import BucketService from './bucket.ts';
 import DSService from './dsService.ts';
 import { IGetQuery } from '../models/baseModel.ts';
+import { Sources } from '../interfaces/enumSources.ts';
 
 @Service()
 export default class SubmissionService extends BaseService {
@@ -156,7 +157,8 @@ export default class SubmissionService extends BaseService {
   public async processSubmission(
     uploadResponse: IUploadResponse,
     promptId: number,
-    userId: number
+    userId: number,
+    sourceId: Sources & number = Sources.FDSC // Default to FDSC
   ) {
     try {
       const dsReponse = await this.dsService.sendSubmissionToDS(uploadResponse);
@@ -165,7 +167,8 @@ export default class SubmissionService extends BaseService {
         uploadResponse,
         dsReponse,
         promptId,
-        userId
+        userId,
+        sourceId
       );
 
       let submission: ISubmission | undefined;
@@ -283,7 +286,8 @@ export default class SubmissionService extends BaseService {
     u: IUploadResponse,
     d: IDSResponse,
     promptId: number,
-    userId: number
+    userId: number,
+    sourceId: Sources & number
   ): INewSubmission {
     return {
       confidence: d.confidence,
@@ -294,6 +298,7 @@ export default class SubmissionService extends BaseService {
       s3Label: u.s3Label,
       userId: userId,
       promptId: promptId,
+      sourceId: sourceId,
     };
   }
 

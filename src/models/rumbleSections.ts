@@ -27,7 +27,7 @@ export default class RumbleSectionsModel extends BaseModel<
       .table(this.tableName)
       .where('sectionId', sectionId)
       .where('rumbleId', rumbleId)
-      .update({ endTime })
+      .update({ end_time: endTime })
       .execute();
 
     console.log(

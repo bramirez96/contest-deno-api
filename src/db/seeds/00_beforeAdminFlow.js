@@ -9,11 +9,13 @@ const { seed_sso_providers } = require('./seedFiles/08_sso_providers');
 const { seed_enum_subjects } = require('./seedFiles/09_enum_subjects');
 const { seed_enum_grades } = require('./seedFiles/10_enum_grades');
 const { seed_clever_tokens } = require('./seedFiles/11_clever_tokens');
+const { seed_source_enum } = require('./seedFiles/enum_sources');
 
 exports.seed = async function (knex) {
   await seed_cleanup(knex);
   await seed_enum_grades(knex);
   await seed_enum_subjects(knex);
+  await seed_source_enum(knex);
   await seed_roles(knex);
   await seed_users(knex);
   await seed_prompts(knex);

@@ -35,6 +35,7 @@ const S = new TestSuite({
 
       await context.db.table('enum_flags').insert(_enum.flags).execute();
       await context.db.table('prompts').insert(_enum.prompts).execute();
+      await context.db.table('enum_sources').insert(_enum.sources).execute();
       console.log('Test data added for prompts and flags...');
     }
   },

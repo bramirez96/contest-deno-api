@@ -20,6 +20,7 @@ export interface INewSubmission extends IDSResponse {
   etag: string;
   userId: number;
   promptId: number;
+  sourceId?: number;
 }
 
 export interface IUploadResponse extends PutObjectResponse {
