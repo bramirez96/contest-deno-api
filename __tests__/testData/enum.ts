@@ -5,4 +5,5 @@ export default {
     { active: false, prompt: 'Here is another test prompt' },
   ],
   flags: [{ flag: 'Content' }],
+  sources: [{ source: 'FDSC' }, { source: 'Rumble' }],
 };
