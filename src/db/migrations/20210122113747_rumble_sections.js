@@ -2,7 +2,7 @@
 exports.up = function (knex) {
   return knex.schema.createTable('rumble_sections', (t) => {
     t.increments('id');
-    t.dateTime('endTime').notNullable();
+    t.dateTime('end_time').notNullable();
     t.integer('rumbleId')
       .unsigned()
       .notNullable()

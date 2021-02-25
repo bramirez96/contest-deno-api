@@ -1,6 +1,6 @@
 export interface IRumbleSections extends INewRumbleSections {
   id: number;
-  endTime?: Date;
+  end_time?: Date;
   created_at: Date;
 }
 
