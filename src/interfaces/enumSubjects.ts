@@ -3,7 +3,7 @@ export interface ISubjectEnum {
   subject: SubjectType[keyof SubjectType];
 }
 
-type SubjectType = {
+export type SubjectType = {
   'english/language arts': 'English/Language Arts';
   math: 'Math';
   science: 'Science';

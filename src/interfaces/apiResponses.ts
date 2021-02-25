@@ -8,8 +8,13 @@ export interface IAuthResponse {
 }
 
 export interface ICleverEnumData {
-  grades: { gradeId: string; value: string }[];
-  subjects: { subjectId: string; value: string }[];
+  grades: ISelectOption[];
+  subjects: ISelectOption[];
+}
+
+export interface ISelectOption {
+  value: string;
+  label: string;
 }
 
 /**

@@ -11,7 +11,9 @@ import {
   CleverAuthResponseType,
   IAuthResponse,
   ICleverEnumData,
+  ISelectOption,
 } from '../interfaces/apiResponses.ts';
+import { GradeType } from '../interfaces/enumGrades.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { IOAuthUser } from '../interfaces/users.ts';
@@ -194,24 +196,22 @@ export default class CleverService extends BaseService {
   }
 
   public async getEnumData(): Promise<ICleverEnumData> {
+    const enumMap = (item: Record<string, string>): ISelectOption => {
+      const itemId = Object.keys(item)[0];
+      return { value: itemId, label: item[itemId] };
+    };
     try {
+      // Get and parse the database results for grade enums
       const gradeList = (await this.db.table('enum_grades').execute()) as {
         [key: string]: string;
       }[];
+      const grades = gradeList.map(enumMap);
 
-      const grades = gradeList.map((g) => {
-        const gradeId = Object.keys(g)[0];
-        return { gradeId, value: g[gradeId] };
-      });
-
+      // and for subject enums
       const subjectList = (await this.db.table('enum_subjects').execute()) as {
         [key: string]: string;
       }[];
-
-      const subjects = subjectList.map((s) => {
-        const subjectId = Object.keys(s)[0];
-        return { subjectId, value: s[subjectId] };
-      });
+      const subjects = subjectList.map(enumMap);
 
       return { grades, subjects };
     } catch (err) {
