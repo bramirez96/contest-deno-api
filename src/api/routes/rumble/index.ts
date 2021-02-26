@@ -3,7 +3,6 @@ import rumbleData from './rumbleData.ts';
 import students from './students.ts';
 import teachers from './teachers.ts';
 import sections from './sections.ts';
-import submissions from './submissions.ts';
 
 export default (app: IRouter) => {
   console.log('Loading rumble routers...');
@@ -14,7 +13,6 @@ export default (app: IRouter) => {
   students(rumbleRouter);
   sections(rumbleRouter);
   rumbleData(rumbleRouter);
-  submissions(rumbleRouter);
 
   console.log('Rumble routers loaded.');
 };
