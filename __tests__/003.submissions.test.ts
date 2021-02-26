@@ -42,7 +42,7 @@ const S = new TestSuite({
 });
 
 const SubSuite = new TestSuite({
-  name: '/contest/submit',
+  name: '/submit',
   suite: S,
 });
 
@@ -52,14 +52,14 @@ const UploadSubSuite = new TestSuite({
 });
 
 test(UploadSubSuite, 'returns a 401 on missing token', async (context) => {
-  const res = await context.app.post('/api/contest/submit');
+  const res = await context.app.post('/api/submit');
   assertEquals(res.status, 401);
   assertEquals(res.body.message, 'You must be logged in');
 });
 
 test(UploadSubSuite, 'returns a 400 on empty body', async (context) => {
   const res = await context.app
-    .post('/api/contest/submit')
+    .post('/api/submit')
     .set('Authorization', context.token);
 
   assertEquals(res.status, 400);
@@ -68,7 +68,7 @@ test(UploadSubSuite, 'returns a 400 on empty body', async (context) => {
 
 test(UploadSubSuite, 'return 400 on invalid field name', async (context) => {
   const res = await context.app
-    .post('/api/contest/submit')
+    .post('/api/submit')
     .set('Authorization', context.token)
     .send(submissions.invalidField);
 
@@ -78,7 +78,7 @@ test(UploadSubSuite, 'return 400 on invalid field name', async (context) => {
 
 test(UploadSubSuite, 'returns 422 on invalid file type', async (context) => {
   const res = await context.app
-    .post('/api/contest/submit')
+    .post('/api/submit')
     .set('Authorization', context.token)
     .send(submissions.invalidFile);
 
@@ -88,7 +88,7 @@ test(UploadSubSuite, 'returns 422 on invalid file type', async (context) => {
 
 test(UploadSubSuite, 'returns 409 on invalid prompt id', async (context) => {
   const res = await context.app
-    .post('/api/contest/submit')
+    .post('/api/submit')
     .set('Authorization', context.token)
     .send(submissions.invalidPrompt);
 
@@ -98,7 +98,7 @@ test(UploadSubSuite, 'returns 409 on invalid prompt id', async (context) => {
 
 test(UploadSubSuite, 'returns a 201 on jpeg upload', async (context) => {
   const res = await context.app
-    .post('/api/contest/submit')
+    .post('/api/submit')
     .set('Authorization', context.token)
     .send(submissions.validFile[0]);
 
@@ -116,7 +116,7 @@ test(UploadSubSuite, 'successfully uploads sub for user 2', async (context) => {
   assertExists(body.user);
 
   const res = await context.app
-    .post('/api/contest/submit')
+    .post('/api/submit')
     .set('Authorization', body.token)
     .send(submissions.validFile[1]);
   assertEquals(res.status, 201);
@@ -133,7 +133,7 @@ test(UploadSubSuite, 'successfully uploads sub for user 3', async (context) => {
   assertExists(body.user);
 
   const res = await context.app
-    .post('/api/contest/submit')
+    .post('/api/submit')
     .set('Authorization', body.token)
     .send(submissions.validFile[2]);
   assertEquals(res.status, 201);
@@ -147,7 +147,7 @@ const GetSubsSuite = new TestSuite({
 
 test(GetSubsSuite, 'returns a list of submissions', async (context) => {
   const res = await context.app
-    .get('/api/contest/submissions')
+    .get('/api/submissions')
     .set('Authorization', context.token);
 
   assertEquals(res.status, 200);
@@ -156,7 +156,7 @@ test(GetSubsSuite, 'returns a list of submissions', async (context) => {
 
 test(GetSubsSuite, 'correctly limits responses', async (context) => {
   const res = await context.app
-    .get('/api/contest/submissions?limit=1')
+    .get('/api/submissions?limit=1')
     .set('Authorization', context.token);
 
   assertEquals(res.status, 200);
@@ -165,7 +165,7 @@ test(GetSubsSuite, 'correctly limits responses', async (context) => {
 
 test(GetSubsSuite, 'correctly orders submissions', async (context) => {
   const res = await context.app
-    .get('/api/contest/submissions?orderBy=score&order=DESC&limit=10')
+    .get('/api/submissions?orderBy=score&order=DESC&limit=10')
     .set('Authorization', context.token);
 
   const isSortedByScore = (arr: { score: number }[]) => {
@@ -180,13 +180,13 @@ test(GetSubsSuite, 'correctly orders submissions', async (context) => {
 
 test(GetSubsSuite, 'correctly offsets responses', async (context) => {
   const res1 = await context.app
-    .get('/api/contest/submissions?limit=1')
+    .get('/api/submissions?limit=1')
     .set('Authorization', context.token);
   assertEquals(res1.status, 200);
   assertEquals(res1.body.length, 1);
 
   const res2 = await context.app
-    .get('/api/contest/submissions?limit=1&offset=1')
+    .get('/api/submissions?limit=1&offset=1')
     .set('Authorization', context.token);
   assertEquals(res2.status, 200);
   assertEquals(res2.body.length, 1);
@@ -200,14 +200,14 @@ const GetSubById = new TestSuite({
 });
 
 test(GetSubById, 'returns the correct sub', async (context) => {
-  const res = await context.app.get('/api/contest/submissions/2');
+  const res = await context.app.get('/api/submissions/2');
 
   assertEquals(res.status, 200);
   assertEquals(res.body.id, 2);
 });
 
 test(GetSubById, 'throws error on bad id', async (context) => {
-  const res = await context.app.get('/api/contest/submissions/20');
+  const res = await context.app.get('/api/submissions/20');
 
   assertEquals(res.status, 404);
   assertEquals(res.body.message, 'Submission not found');
@@ -220,7 +220,7 @@ const PostTop3Suite = new TestSuite({
 
 test(PostTop3Suite, 'returns a 400 on empty body', async (context) => {
   const res = await context.app
-    .post('/api/contest/submissions/top')
+    .post('/api/submissions/top')
     .set('Authorization', context.token);
 
   assertEquals(res.status, 400);
@@ -229,7 +229,7 @@ test(PostTop3Suite, 'returns a 400 on empty body', async (context) => {
 
 test(PostTop3Suite, 'returns a 400 with less than 3 subs', async (context) => {
   const res = await context.app
-    .post('/api/contest/submissions/top')
+    .post('/api/submissions/top')
     .send({ ids: [2, 3] })
     .set('Authorization', context.token);
 
@@ -239,7 +239,7 @@ test(PostTop3Suite, 'returns a 400 with less than 3 subs', async (context) => {
 
 test(PostTop3Suite, 'returns a 400 with more than 3 subs', async (context) => {
   const res = await context.app
-    .post('/api/contest/submissions/top')
+    .post('/api/submissions/top')
     .send({ ids: [2, 3, 4, 5] })
     .set('Authorization', context.token);
 
@@ -249,7 +249,7 @@ test(PostTop3Suite, 'returns a 400 with more than 3 subs', async (context) => {
 
 test(PostTop3Suite, 'throw a 409 on invalid subIds', async (context) => {
   const res = await context.app
-    .post('/api/contest/submissions/top')
+    .post('/api/submissions/top')
     .send({ ids: [2, 8, 10] })
     .set('Authorization', context.token);
 
@@ -259,11 +259,11 @@ test(PostTop3Suite, 'throw a 409 on invalid subIds', async (context) => {
 
 test(PostTop3Suite, 'returns a 201 on success', async (context) => {
   const { body } = await context.app
-    .get('/api/contest/submissions?orderBy=score&order=DESC&limit=10')
+    .get('/api/submissions?orderBy=score&order=DESC&limit=10')
     .set('Authorization', context.token);
   const ids = (body as { id: number }[]).map((x) => x.id).slice(0, 3);
   const res = await context.app
-    .post('/api/contest/submissions/top')
+    .post('/api/submissions/top')
     .send({ ids })
     .set('Authorization', context.token);
 
@@ -279,7 +279,7 @@ const PostFlagsSuite = new TestSuite({
 
 test(PostFlagsSuite, 'returns 409 on invalid submissionId', async (context) => {
   const res = await context.app
-    .post('/api/contest/submissions/0/flags')
+    .post('/api/submissions/0/flags')
     .send({ flags: [1] })
     .set('Authorization', context.token);
 
@@ -289,7 +289,7 @@ test(PostFlagsSuite, 'returns 409 on invalid submissionId', async (context) => {
 
 test(PostFlagsSuite, 'returns a 404 on invalid flagId', async (context) => {
   const res = await context.app
-    .post('/api/contest/submissions/2/flags')
+    .post('/api/submissions/2/flags')
     .send({ flags: [20] })
     .set('Authorization', context.token);
 
@@ -299,7 +299,7 @@ test(PostFlagsSuite, 'returns a 404 on invalid flagId', async (context) => {
 
 test(PostFlagsSuite, 'adds a flag to subId 2', async (context) => {
   const res = await context.app
-    .post('/api/contest/submissions/2/flags')
+    .post('/api/submissions/2/flags')
     .send({ flags: [1] })
     .set('Authorization', context.token);
 
@@ -309,7 +309,7 @@ test(PostFlagsSuite, 'adds a flag to subId 2', async (context) => {
 
 test(PostFlagsSuite, 'returns a 409 on duplicate flag', async (context) => {
   const res = await context.app
-    .post('/api/contest/submissions/2/flags')
+    .post('/api/submissions/2/flags')
     .send({ flags: [1] })
     .set('Authorization', context.token);
 
@@ -324,7 +324,7 @@ const GetFlagsSuite = new TestSuite({
 
 test(GetFlagsSuite, 'returns a 201 with a list of flags', async (context) => {
   const res = await context.app
-    .get('/api/contest/submissions/2/flags')
+    .get('/api/submissions/2/flags')
     .set('Authorization', context.token);
 
   assertEquals(res.status, 200);
@@ -334,7 +334,7 @@ test(GetFlagsSuite, 'returns a 201 with a list of flags', async (context) => {
 
 test(GetFlagsSuite, 'returns empty 200 on invalid subId', async (context) => {
   const res = await context.app
-    .get('/api/contest/submissions/20/flags')
+    .get('/api/submissions/20/flags')
     .set('Authorization', context.token);
 
   assertEquals(res.status, 200);
@@ -348,14 +348,14 @@ const RemoveFlagSuite = new TestSuite({
 
 test(RemoveFlagSuite, 'returns 204 on success', async (context) => {
   const res = await context.app
-    .delete('/api/contest/submissions/20/flags/1')
+    .delete('/api/submissions/20/flags/1')
     .set('Authorization', context.token);
   assertEquals(res.status, 204);
 });
 
 test(RemoveFlagSuite, 'throws error on NaN params', async (context) => {
   const res = await context.app
-    .delete('/api/contest/submissions/whoa/flags/there')
+    .delete('/api/submissions/whoa/flags/there')
     .set('Authorization', context.token);
   assertEquals(res.status, 400);
   assertEquals(res.body.message, 'Invalid data provided');
