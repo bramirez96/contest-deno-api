@@ -14,6 +14,13 @@ exports.up = (knex) => {
       .references('prompts.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
+    t.integer('sourceId')
+      .notNullable()
+      .unsigned()
+      .references('enum_sources.id')
+      .onUpdate('CASCADE')
+      .onDelete('RESTRICT')
+      .defaultTo(1);
     t.integer('userId')
       .notNullable()
       .unsigned()

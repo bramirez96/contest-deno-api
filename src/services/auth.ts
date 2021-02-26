@@ -9,6 +9,7 @@ import {
   moment,
 } from '../../deps.ts';
 import env from '../config/env.ts';
+import { IAuthResponse } from '../interfaces/apiResponses.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { IUser, INewUser } from '../interfaces/users.ts';
 import ResetModel from '../models/resets.ts';
@@ -29,25 +30,27 @@ export default class AuthService extends BaseService {
   }
 
   public async SignUp(body: INewUser) {
-    // Initialize variable to store sendTo email for validation
-    let sendTo: string;
-    // Underage users must have a parent email on file for validation
-    if (!body.age) {
-      throw createError(400, 'No age sent');
-    }
-    if (body.age < 13) {
-      if (!body.parentEmail || body.email === body.parentEmail) {
-        throw createError(
-          400,
-          'Underage users must have a parent email on file'
-        );
-      } else {
-        sendTo = body.parentEmail;
-      }
-    } else {
-      sendTo = body.email;
-    }
     try {
+      // Initialize variable to store sendTo email for validation
+      let sendTo: string;
+      // Check body data one more time for safety since we explicitly cast later
+      if (!body.age) throw createError(400, 'No age received');
+      if (!body.email) throw createError(400, 'No email received');
+      if (!body.password) throw createError(400, 'No password received');
+      if (!body.codename) throw createError(400, 'No codename received');
+      // Underage users must have a parent email on file for validation
+      if (body.age < 13) {
+        if (!body.parentEmail || body.email === body.parentEmail) {
+          throw createError(
+            400,
+            'Underage users must have a parent email on file'
+          );
+        } else {
+          sendTo = body.parentEmail;
+        }
+      } else {
+        sendTo = body.email;
+      }
       // Start a transaction for data integrity
       await this.db.transaction(async () => {
         // Further sanitize data
@@ -74,14 +77,17 @@ export default class AuthService extends BaseService {
     }
   }
 
-  public async SignIn(email: string, password: string): Promise<IAuthResponse> {
+  public async SignIn(
+    codename: string,
+    password: string
+  ): Promise<IAuthResponse> {
     try {
-      const user = await this.userModel.get({ email }, { first: true });
+      const user = await this.userModel.get({ codename }, { first: true });
       if (!user) throw createError(404, 'User not found');
       if (!user.isValidated)
         throw createError(403, 'Account must be validated');
 
-      this.logger.debug(`Verifying password for user (EMAIL: ${email})`);
+      this.logger.debug(`Verifying password for user (CODENAME: ${codename})`);
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) throw createError(401, 'Invalid password');
       this.logger.debug(`Password verified`);
@@ -206,7 +212,7 @@ export default class AuthService extends BaseService {
     }
   }
 
-  private generateToken(user: Omit<IUser, 'password'>) {
+  public generateToken(user: Omit<IUser, 'password'>) {
     this.logger.debug(`Generating JWT for user (ID: ${user.id})`);
     const daysUntilExpiry = 2;
     const exp = moment.utc().add(daysUntilExpiry, 'd');
@@ -263,18 +269,13 @@ export default class AuthService extends BaseService {
     }
   }
 
-  private async hashPassword(password: string) {
+  public async hashPassword(password: string) {
     this.logger.debug('Hashing password');
     const salt = await bcrypt.genSalt(8);
     const hashedPassword = await bcrypt.hash(password, salt);
     this.logger.debug('Password hashed');
     return hashedPassword;
   }
-}
-
-interface IAuthResponse {
-  user: Omit<IUser, 'password'>;
-  token: string;
 }
 
 serviceCollection.addTransient(AuthService);

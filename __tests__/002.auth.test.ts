@@ -172,22 +172,23 @@ test(LoginSuite, 'returns a 400 on missing body', async (context) => {
   const res = await context.app.post('/api/auth/login');
 
   assertEquals(res.status, 400);
-  assertStringIncludes(res.body.message, 'email, password');
+  assertStringIncludes(res.body.message, 'codename, password');
 });
 
 test(LoginSuite, 'returns a 404 on invalid email', async (context) => {
   const res = await context.app
     .post('/api/auth/login')
-    .send({ email: 'nope@email.com', password: 'notEvenAPassword' });
+    .send({ codename: 'NotARealCodename', password: 'notEvenAPassword' });
 
   assertEquals(res.status, 404);
   assertEquals(res.body.message, 'User not found');
 });
 
 test(LoginSuite, 'returns 403 if not validated', async (context) => {
-  const res = await context.app
-    .post('/api/auth/login')
-    .send({ email: users.valid[1].email, password: users.valid[1].password });
+  const res = await context.app.post('/api/auth/login').send({
+    codename: users.valid[1].codename,
+    password: users.valid[1].password,
+  });
 
   assertEquals(res.status, 403);
   assertEquals(res.body.message, 'Account must be validated');
@@ -203,7 +204,7 @@ test(LoginSuite, 'returns 201 and token after validation', async (context) => {
   const { code } = val;
 
   // Validate the user
-  const { email, password } = users.valid[1];
+  const { codename, email, password } = users.valid[1];
   let res = await context.app.get(
     `/api/auth/activation?token=${code}&email=${email}`
   );
@@ -211,7 +212,7 @@ test(LoginSuite, 'returns 201 and token after validation', async (context) => {
   assertStringIncludes(res.headers.location as string, 'authToken');
 
   // Log them in
-  res = await context.app.post('/api/auth/login').send({ email, password });
+  res = await context.app.post('/api/auth/login').send({ codename, password });
   assertEquals(res.status, 201);
   assertExists(res.body.user);
   assertExists(res.body.token);
@@ -220,16 +221,17 @@ test(LoginSuite, 'returns 201 and token after validation', async (context) => {
 test(LoginSuite, 'returns 401 on invalid password', async (context) => {
   const res = await context.app
     .post('/api/auth/login')
-    .send({ email: users.valid[0].email, password: 'thewrongpassword' });
+    .send({ codename: users.valid[0].codename, password: 'thewrongpassword' });
 
   assertEquals(res.status, 401);
   assertEquals(res.body.message, 'Invalid password');
 });
 
 test(LoginSuite, 'returns 201 and token on login', async (context) => {
-  const res = await context.app
-    .post('/api/auth/login')
-    .send({ email: users.valid[0].email, password: users.valid[0].password });
+  const res = await context.app.post('/api/auth/login').send({
+    codename: users.valid[0].codename,
+    password: users.valid[0].password,
+  });
 
   assertEquals(res.status, 201);
   assertExists(res.body.user);

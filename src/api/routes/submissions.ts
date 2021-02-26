@@ -12,14 +12,15 @@ import {
   isNumber,
   minNumber,
   isArray,
-} from '../../../../deps.ts';
-import { Roles } from '../../../interfaces/roles.ts';
-import { INewSubmission } from '../../../interfaces/submissions.ts';
-import SubmissionModel from '../../../models/submissions.ts';
-import SubmissionService from '../../../services/submission.ts';
-import authHandler from '../../middlewares/authHandler.ts';
-import upload from '../../middlewares/upload.ts';
-import validate from '../../middlewares/validate.ts';
+} from '../../../deps.ts';
+import { Sources } from '../../interfaces/enumSources.ts';
+import { Roles } from '../../interfaces/roles.ts';
+import { INewSubmission } from '../../interfaces/submissions.ts';
+import SubmissionModel from '../../models/submissions.ts';
+import SubmissionService from '../../services/submission.ts';
+import authHandler from '../middlewares/authHandler.ts';
+import upload from '../middlewares/upload.ts';
+import validate from '../middlewares/validate.ts';
 
 const route = Router();
 
@@ -52,7 +53,8 @@ export default (app: IRouter) => {
         await subServiceInstance.processSubmission(
           req.body.story[0],
           parseInt(req.body.promptId, 10),
-          req.body.userInfo.id
+          req.body.userInfo.id,
+          req.query.sourceId
         );
         res.setStatus(201).json({ message: 'Upload successful!' });
       } catch (err) {

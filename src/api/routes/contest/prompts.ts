@@ -35,11 +35,11 @@ export default (app: IRouter) => {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const prompts = await promptModelInstance.get(undefined, {
-          limit: parseInt(req.params.limit, 10) || 10,
-          offset: parseInt(req.params.offset, 10) || 0,
-          orderBy: (req.params.orderBy as keyof IPrompt) || 'id',
-          order: (req.params.order as 'ASC' | 'DESC') || 'ASC',
-          first: req.params.first === 'true',
+          limit: parseInt(req.query.limit, 10) || 10,
+          offset: parseInt(req.query.offset, 10) || 0,
+          orderBy: (req.query.orderBy as keyof IPrompt) || 'id',
+          order: (req.query.order as 'ASC' | 'DESC') || 'ASC',
+          first: req.query.first === 'true',
         });
 
         res.setStatus(200).json(prompts);
@@ -76,11 +76,9 @@ export default (app: IRouter) => {
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const adminServiceInstance = serviceCollection.get(AdminService);
-        const newId = await adminServiceInstance.updateActivePrompt();
+        await adminServiceInstance.updateActivePrompt();
 
-        res
-          .setStatus(200)
-          .json({ message: `Successfully marked prompt ${newId} as active` });
+        res.setStatus(204).json();
       } catch (err) {
         logger.error(err);
         next(err);
@@ -99,7 +97,6 @@ export default (app: IRouter) => {
           { id: parseInt(req.params.id) },
           { first: true }
         );
-        if (!prompt) throw createError(404, 'Prompt not found!');
 
         res.setStatus(200).json(prompt);
       } catch (err) {
@@ -118,7 +115,7 @@ export default (app: IRouter) => {
       try {
         const newPrompt = await promptModelInstance.add(req.body, true);
 
-        res.setStatus(200).json(newPrompt);
+        res.setStatus(201).json(newPrompt);
       } catch (err) {
         logger.error(err);
         next(err);

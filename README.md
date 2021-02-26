@@ -2,6 +2,8 @@
 
 This is a refactor of the existing Story Squad API built in Deno.
 
+[Onboarding Checklist](./docs/Onboarding.md)
+
 [Deno Installation Guide](./docs/DenoSetup.md)
 
 [Database Setup Guide](./docs/DBSetup.md)
@@ -28,7 +30,7 @@ deno install -qAf --unstable --reload https://deno.land/x/denon@2.4.6/denon.ts
 echo 'alias denon="~/.deno/bin/denon.cmd"' >> ~/.bashrc
 
 # FOR ZSH:
-echo 'alias denon="~/.deno/bin/denon.cmd"' >> ~/.zshrc
+echo 'alias denon="~/.deno/bin/denon"' >> ~/.zshrc
 ```
 
 ### Option 2: The Heroku CLI

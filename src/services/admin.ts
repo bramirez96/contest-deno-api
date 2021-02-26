@@ -38,8 +38,6 @@ export default class AdminService extends BaseService {
         await this.promptModel.update(currentPrompt.id, { active: false });
       });
       this.logger.debug('Successfully updated active prompt');
-
-      return newId;
     } catch (err) {
       this.logger.error(err);
       throw err;
