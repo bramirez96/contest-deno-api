@@ -1,6 +1,5 @@
 import { IRouter, Router } from '../../../../deps.ts';
 import leaderboard from './leaderboard.ts';
-import prompts from './prompts.ts';
 import votes from './votes.ts';
 
 export default (app: IRouter) => {
@@ -8,7 +7,6 @@ export default (app: IRouter) => {
   const contestRouter = Router();
   app.use('/contest', contestRouter);
 
-  prompts(contestRouter);
   votes(contestRouter);
   leaderboard(contestRouter);
 

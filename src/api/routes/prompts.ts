@@ -1,3 +1,4 @@
+import { i } from '../../../../../../../AppData/Local/deno/deps/https/jspm.dev/1b6a1e6c7f1d37e8ae4d41f357139075be43391fcfef23407ab19863891833c1';
 import {
   Router,
   IRouter,
@@ -11,14 +12,14 @@ import {
   isString,
   isBool,
   createError,
-} from '../../../../deps.ts';
-import { INewPrompt, IPrompt } from '../../../interfaces/prompts.ts';
-import { Roles } from '../../../interfaces/roles.ts';
-import PromptQueueModel from '../../../models/promptQueue.ts';
-import PromptModel from '../../../models/prompts.ts';
-import AdminService from '../../../services/admin.ts';
-import authHandler from '../../middlewares/authHandler.ts';
-import validate from '../../middlewares/validate.ts';
+} from '../../../deps.ts';
+import { INewPrompt, IPrompt } from '../../interfaces/prompts.ts';
+import { Roles } from '../../interfaces/roles.ts';
+import PromptQueueModel from '../../models/promptQueue.ts';
+import PromptModel from '../../models/prompts.ts';
+import AdminService from '../../services/admin.ts';
+import authHandler from '../middlewares/authHandler.ts';
+import validate from '../middlewares/validate.ts';
 
 const route = Router();
 
@@ -110,15 +111,38 @@ export default (app: IRouter) => {
   route.post(
     '/',
     authHandler({ roles: [Roles.admin] }),
-    validate<INewPrompt>({ prompt: [required, isString] }, 'params'),
+    validate<INewPrompt>({ prompt: [required, isString] }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const newPrompt = await promptModelInstance.add(req.body, true);
-
+        const [newPrompt] = await promptModelInstance.add({
+          prompt: req.body.prompt,
+          approved: true,
+          creatorId: req.body.userInfo.id,
+        });
         res.setStatus(201).json(newPrompt);
       } catch (err) {
         logger.error(err);
         next(err);
+      }
+    }
+  );
+
+  // POST /custom
+  route.post(
+    '/custom',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    validate({ prompt: [required, isString] }),
+    async (req, res) => {
+      try {
+        const [newPrompt] = await promptModelInstance.add({
+          prompt: req.body.prompt,
+          approved: false,
+          creatorId: req.body.userInfo.id,
+        });
+        res.setStatus(201).json(newPrompt);
+      } catch (err) {
+        logger.error(err);
+        throw err;
       }
     }
   );
