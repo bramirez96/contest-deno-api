@@ -150,7 +150,11 @@ export default (app: IRouter) => {
   route.put(
     '/:id',
     authHandler({ roles: [Roles.admin] }),
-    validate<IPrompt>({ active: [isBool], prompt: [isString] }),
+    validate<IPrompt>({
+      active: [isBool],
+      prompt: [isString],
+      approved: [isBool],
+    }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         await promptModelInstance.update(parseInt(req.params.id), req.body);
