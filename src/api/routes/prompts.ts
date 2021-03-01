@@ -11,14 +11,14 @@ import {
   isString,
   isBool,
   createError,
-} from '../../../../deps.ts';
-import { INewPrompt, IPrompt } from '../../../interfaces/prompts.ts';
-import { Roles } from '../../../interfaces/roles.ts';
-import PromptQueueModel from '../../../models/promptQueue.ts';
-import PromptModel from '../../../models/prompts.ts';
-import AdminService from '../../../services/admin.ts';
-import authHandler from '../../middlewares/authHandler.ts';
-import validate from '../../middlewares/validate.ts';
+} from '../../../deps.ts';
+import { INewPrompt, IPrompt } from '../../interfaces/prompts.ts';
+import { Roles } from '../../interfaces/roles.ts';
+import PromptQueueModel from '../../models/promptQueue.ts';
+import PromptModel from '../../models/prompts.ts';
+import AdminService from '../../services/admin.ts';
+import authHandler from '../middlewares/authHandler.ts';
+import validate from '../middlewares/validate.ts';
 
 const route = Router();
 
@@ -110,11 +110,14 @@ export default (app: IRouter) => {
   route.post(
     '/',
     authHandler({ roles: [Roles.admin] }),
-    validate<INewPrompt>({ prompt: [required, isString] }, 'params'),
+    validate<INewPrompt>({ prompt: [required, isString] }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const newPrompt = await promptModelInstance.add(req.body, true);
-
+        const [newPrompt] = await promptModelInstance.add({
+          prompt: req.body.prompt,
+          approved: true,
+          creatorId: req.body.userInfo.id,
+        });
         res.setStatus(201).json(newPrompt);
       } catch (err) {
         logger.error(err);
@@ -123,11 +126,35 @@ export default (app: IRouter) => {
     }
   );
 
+  // POST /custom
+  route.post(
+    '/custom',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    validate({ prompt: [required, isString] }),
+    async (req, res) => {
+      try {
+        const [newPrompt] = await promptModelInstance.add({
+          prompt: req.body.prompt,
+          approved: false,
+          creatorId: req.body.userInfo.id,
+        });
+        res.setStatus(201).json(newPrompt);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
   // PUT /:id
   route.put(
     '/:id',
     authHandler({ roles: [Roles.admin] }),
-    validate<IPrompt>({ active: [isBool], prompt: [isString] }),
+    validate<IPrompt>({
+      active: [isBool],
+      prompt: [isString],
+      approved: [isBool],
+    }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         await promptModelInstance.update(parseInt(req.params.id), req.body);
