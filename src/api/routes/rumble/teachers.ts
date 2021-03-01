@@ -7,6 +7,8 @@ import {
   isString,
   isNumber,
   minNumber,
+  validateObject,
+  validateArray,
 } from '../../../../deps.ts';
 import { INewSection } from '../../../interfaces/cleverSections.ts';
 import { Roles } from '../../../interfaces/roles.ts';
@@ -64,17 +66,22 @@ export default (app: IRouter) => {
   );
 
   route.post(
-    '/:teacherId/sections/:sectionId/rumbles',
+    '/:teacherId/rumbles',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
-    validate<IRumblePostBody>({
-      numMinutes: [required, isNumber, minNumber(1)],
-      promptId: [required, isNumber, minNumber(1)],
+    validate({
+      rumble: validateObject(true, {
+        numMinutes: [required, isNumber, minNumber(1)],
+        promptId: [required, isNumber, minNumber(1)],
+      }),
+      sectionIds: validateArray(true, [isNumber, minNumber(1)], {
+        minLength: 1,
+      }),
     }),
     async (req, res) => {
       try {
-        const rumble = await rumbleServiceInstance.createGameInstance(
-          req.body,
-          parseInt(req.params.sectionId, 10)
+        const rumble = await rumbleServiceInstance.createGameInstances(
+          req.body.rumble,
+          req.body.sectionIds
         );
         res.setStatus(201).json(rumble);
       } catch (err) {
