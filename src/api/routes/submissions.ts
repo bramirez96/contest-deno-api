@@ -52,7 +52,7 @@ export default (app: IRouter) => {
         await subServiceInstance.processSubmission(
           req.body.story[0],
           parseInt(req.body.promptId, 10),
-          req.body.userInfo.id,
+          req.body.user.id,
           req.query.sourceId
         );
         res.setStatus(201).json({ message: 'Upload successful!' });
@@ -192,7 +192,7 @@ export default (app: IRouter) => {
         const flags = await subServiceInstance.flagSubmission(
           parseInt(req.params.id, 10),
           req.body.flags,
-          req.body.userInfo.id
+          req.body.user.id
         );
 
         res

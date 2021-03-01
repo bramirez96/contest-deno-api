@@ -116,7 +116,7 @@ export default (app: IRouter) => {
         const [newPrompt] = await promptModelInstance.add({
           prompt: req.body.prompt,
           approved: true,
-          creatorId: req.body.userInfo.id,
+          creatorId: req.body.user.id,
         });
         res.setStatus(201).json(newPrompt);
       } catch (err) {
@@ -136,7 +136,7 @@ export default (app: IRouter) => {
         const [newPrompt] = await promptModelInstance.add({
           prompt: req.body.prompt,
           approved: false,
-          creatorId: req.body.userInfo.id,
+          creatorId: req.body.user.id,
         });
         res.setStatus(201).json(newPrompt);
       } catch (err) {
