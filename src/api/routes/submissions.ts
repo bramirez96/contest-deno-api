@@ -13,7 +13,6 @@ import {
   minNumber,
   isArray,
 } from '../../../deps.ts';
-import { Sources } from '../../interfaces/enumSources.ts';
 import { Roles } from '../../interfaces/roles.ts';
 import { INewSubmission } from '../../interfaces/submissions.ts';
 import SubmissionModel from '../../models/submissions.ts';
@@ -192,7 +191,8 @@ export default (app: IRouter) => {
       try {
         const flags = await subServiceInstance.flagSubmission(
           parseInt(req.params.id, 10),
-          req.body.flags
+          req.body.flags,
+          req.body.userInfo.id
         );
 
         res

@@ -14,6 +14,7 @@ exports.up = function (knex) {
       .references('clever_sections.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
+    t.unique(['userId', 'sectionId']);
   });
 };
 

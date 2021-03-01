@@ -209,11 +209,16 @@ export default class SubmissionService extends BaseService {
     }
   }
 
-  public async flagSubmission(submissionId: number, flagIds: number[]) {
+  public async flagSubmission(
+    submissionId: number,
+    flagIds: number[],
+    creatorId?: number
+  ) {
     try {
       const flagItems = flagIds.map((flagId) => ({
         flagId,
         submissionId: submissionId,
+        creatorId,
       }));
       const flags = await this.db
         .table('submission_flags')

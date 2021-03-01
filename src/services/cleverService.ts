@@ -13,7 +13,6 @@ import {
   ICleverEnumData,
   ISelectOption,
 } from '../interfaces/apiResponses.ts';
-import { GradeType } from '../interfaces/enumGrades.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { IOAuthUser } from '../interfaces/users.ts';
@@ -197,8 +196,8 @@ export default class CleverService extends BaseService {
 
   public async getEnumData(): Promise<ICleverEnumData> {
     const enumMap = (item: Record<string, string>): ISelectOption => {
-      const itemId = Object.keys(item)[0];
-      return { value: itemId, label: item[itemId] };
+      const itemId = Object.keys(item).filter((i) => i !== 'id')[0];
+      return { value: item.id, label: item[itemId] };
     };
     try {
       // Get and parse the database results for grade enums
@@ -206,6 +205,7 @@ export default class CleverService extends BaseService {
         [key: string]: string;
       }[];
       const grades = gradeList.map(enumMap);
+      console.log({ gradeList, grades });
 
       // and for subject enums
       const subjectList = (await this.db.table('enum_subjects').execute()) as {

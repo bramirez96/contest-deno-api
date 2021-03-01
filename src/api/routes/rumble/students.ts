@@ -13,7 +13,7 @@ export default (app: IRouter) => {
   // GET /students/:studentId/sections returns ISection[]
   route.get(
     '/:studentId/sections',
-    authHandler({ roles: [Roles.admin, Roles.teacher] }),
+    authHandler({ roles: [Roles.admin, Roles.user] }),
     async (req, res) => {
       try {
         const sections = await studentModelInstance.getSectionsById(
