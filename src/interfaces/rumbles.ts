@@ -1,6 +1,7 @@
 export interface IRumble extends INewRumble {
   id: number;
   created_at: Date;
+  end_time?: Date;
 }
 
 export interface INewRumble extends IRumblePostBody {
