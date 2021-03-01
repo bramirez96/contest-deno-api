@@ -255,7 +255,6 @@ export default class CleverService extends BaseService {
         [key: string]: string;
       }[];
       const grades = gradeList.map(enumMap);
-      console.log({ gradeList, grades });
 
       // and for subject enums
       const subjectList = (await this.db.table('enum_subjects').execute()) as {

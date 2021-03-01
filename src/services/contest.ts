@@ -1,11 +1,15 @@
 import { Service, serviceCollection, Inject, moment } from '../../deps.ts';
 import { INewVote } from '../interfaces/votes.ts';
+import PromptModel from '../models/prompts.ts';
 import VoteModel from '../models/votes.ts';
 import BaseService from './baseService.ts';
 
 @Service()
 export default class ContestService extends BaseService {
-  constructor(@Inject(VoteModel) private voteModel: VoteModel) {
+  constructor(
+    @Inject(VoteModel) private voteModel: VoteModel,
+    @Inject(PromptModel) private promptModel: PromptModel
+  ) {
     super();
   }
 
