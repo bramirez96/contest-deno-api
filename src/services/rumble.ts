@@ -8,7 +8,11 @@ import {
 } from '../../deps.ts';
 import sections from '../api/routes/rumble/sections.ts';
 import env from '../config/env.ts';
-import { ISection, ISectionPostBody } from '../interfaces/cleverSections.ts';
+import {
+  ISection,
+  ISectionPostBody,
+  ISectionWithRumbles,
+} from '../interfaces/cleverSections.ts';
 import {
   IRumble,
   IRumblePostBody,
@@ -73,7 +77,7 @@ export default class RumbleService extends BaseService {
     joinCode: string,
     sectionId: number,
     studentId: number
-  ) {
+  ): Promise<ISectionWithRumbles> {
     try {
       // Get the section with the given id
       const section = await this.sectionModel.get(
@@ -95,7 +99,11 @@ export default class RumbleService extends BaseService {
         userId: studentId,
       });
 
-      return section;
+      const rumbles = await this.rumbleModel.getActiveRumblesBySectionId(
+        sectionId
+      );
+
+      return { ...section, rumbles };
     } catch (err) {
       this.logger.error(err);
       throw err;
@@ -131,8 +139,8 @@ export default class RumbleService extends BaseService {
 
           rumbles.push({ ...res, sectionName: name, sectionId });
         }
-        if (rumbles.length !== sections.length)
-          throw createError(409, 'Unable to create rumbles');
+        // if (rumbles.length !== sections.length)
+        //   throw createError(409, 'Unable to create rumbles');
       });
       return rumbles;
     } catch (err) {
