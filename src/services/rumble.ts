@@ -1,42 +1,76 @@
 import {
-  Service,
-  Inject,
-  serviceCollection,
   createError,
-  v5,
+  Inject,
   moment,
+  Service,
+  serviceCollection,
+  v5,
 } from '../../deps.ts';
-import sections from '../api/routes/rumble/sections.ts';
 import env from '../config/env.ts';
 import {
   ISection,
   ISectionPostBody,
   ISectionWithRumbles,
 } from '../interfaces/cleverSections.ts';
+import { Roles } from '../interfaces/roles.ts';
 import {
-  IRumble,
   IRumblePostBody,
   IRumbleWithSectionInfo,
 } from '../interfaces/rumbles.ts';
+import { IUser } from '../interfaces/users.ts';
 import CleverSectionModel from '../models/cleverSections.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
 import RumbleModel from '../models/rumbles.ts';
 import RumbleSectionsModel from '../models/rumbleSections.ts';
-import UserModel from '../models/users.ts';
 import BaseService from './baseService.ts';
 
 @Service()
 export default class RumbleService extends BaseService {
   constructor(
-    @Inject(UserModel) private userModel: UserModel,
     @Inject(RumbleModel) private rumbleModel: RumbleModel,
     @Inject(CleverTeacherModel) private teacherModel: CleverTeacherModel,
-    @Inject(RumbleSectionsModel) private rumbleSections: RumbleSectionsModel,
     @Inject(CleverStudentModel) private studentModel: CleverStudentModel,
-    @Inject(CleverSectionModel) private sectionModel: CleverSectionModel
+    @Inject(CleverSectionModel) private sectionModel: CleverSectionModel,
+    @Inject(RumbleSectionsModel) private rumbleSections: RumbleSectionsModel
   ) {
     super();
+  }
+
+  public async getSections(user: IUser) {
+    try {
+      this.logger.debug(`Getting sections for user ${user.id}`);
+
+      let sections: ISection[];
+      if (user.roleId === Roles.teacher) {
+        sections = await this.teacherModel.getSectionsById(user.id);
+      } else if (user.roleId === Roles.user) {
+        sections = await this.studentModel.getSectionsById(user.id);
+      } else {
+        throw createError(401, 'Invalid user type!');
+      }
+
+      await this.getActiveRumblesForSections(sections as ISectionWithRumbles[]);
+
+      return sections as ISectionWithRumbles[];
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getActiveRumblesForSections(sections: ISectionWithRumbles[]) {
+    try {
+      for await (const section of sections) {
+        const rumbleArray = await this.rumbleModel.getActiveRumblesBySectionId(
+          section.id
+        );
+        section.rumbles = rumbleArray;
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 
   public async createSection(body: ISectionPostBody, teacherId: number) {

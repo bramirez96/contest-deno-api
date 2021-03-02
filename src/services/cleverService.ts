@@ -1,11 +1,11 @@
 import {
-  Service,
-  serviceCollection,
-  Inject,
   CleverClient,
   createError,
   ICleverStudent,
   ICleverTeacher,
+  Inject,
+  Service,
+  serviceCollection,
 } from '../../deps.ts';
 import {
   CleverAuthResponseType,
@@ -13,25 +13,24 @@ import {
   ICleverEnumData,
   ISelectOption,
 } from '../interfaces/apiResponses.ts';
-import { ISection, ISectionWithRumbles } from '../interfaces/cleverSections.ts';
+import { ISectionWithRumbles } from '../interfaces/cleverSections.ts';
 import { Roles } from '../interfaces/roles.ts';
-import { IRumble } from '../interfaces/rumbles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { IOAuthUser, IUser } from '../interfaces/users.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
-import RumbleModel from '../models/rumbles.ts';
 import SSOLookupModel from '../models/ssoLookups.ts';
 import UserModel from '../models/users.ts';
 import AuthService from './auth.ts';
 import BaseService from './baseService.ts';
+import RumbleService from './rumble.ts';
 
 @Service()
 export default class CleverService extends BaseService {
   constructor(
     @Inject('clever') private clever: CleverClient,
     @Inject(UserModel) private userModel: UserModel,
-    @Inject(RumbleModel) private rumbleModel: RumbleModel,
+    @Inject(RumbleService) private rumbleService: RumbleService,
     @Inject(AuthService) private authService: AuthService,
     @Inject(SSOLookupModel) private ssoModel: SSOLookupModel,
     @Inject(CleverTeacherModel) private teacherModel: CleverTeacherModel,
@@ -207,37 +206,11 @@ export default class CleverService extends BaseService {
   ): Promise<{ enumData: ICleverEnumData; sections: ISectionWithRumbles[] }> {
     try {
       const enumData = await this.getEnumData();
-
-      let sections: ISection[];
-      console.log({ user });
-      if (user.roleId === Roles.user) {
-        sections = await this.studentModel.getSectionsById(user.id);
-      } else if (user.roleId === Roles.teacher) {
-        sections = await this.teacherModel.getSectionsById(user.id);
-      } else {
-        throw createError(401, 'Invalid user type');
-      }
-
-      await this.getActiveRumblesForSections(sections as ISectionWithRumbles[]);
-
+      const sections = await this.rumbleService.getSections(user);
       return {
         enumData,
-        sections: sections as ISectionWithRumbles[],
+        sections: sections,
       };
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  private async getActiveRumblesForSections(sections: ISectionWithRumbles[]) {
-    try {
-      for await (const section of sections) {
-        const rumbleArray = await this.rumbleModel.getActiveRumblesBySectionId(
-          section.id
-        );
-        section.rumbles = rumbleArray;
-      }
     } catch (err) {
       this.logger.error(err);
       throw err;
