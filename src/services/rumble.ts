@@ -73,6 +73,24 @@ export default class RumbleService extends BaseService {
     }
   }
 
+  public async getStudentsInSection(sectionId: number) {
+    // Leaving this in the service to open us up for more data later
+    try {
+      this.logger.debug(
+        `Attempting to retrieve students from section ${sectionId}`
+      );
+
+      const students = await this.sectionModel.getStudentsBySectionId(
+        sectionId
+      );
+
+      return students;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
   public async createSection(body: ISectionPostBody, teacherId: number) {
     try {
       this.logger.debug(
