@@ -13,7 +13,7 @@ import {
   ICleverEnumData,
   ISelectOption,
 } from '../interfaces/apiResponses.ts';
-import { ISection, ISectionWithRumbles } from '../interfaces/cleverSections.ts';
+import { ISectionWithRumbles } from '../interfaces/cleverSections.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { IOAuthUser, IUser } from '../interfaces/users.ts';
@@ -206,24 +206,10 @@ export default class CleverService extends BaseService {
   ): Promise<{ enumData: ICleverEnumData; sections: ISectionWithRumbles[] }> {
     try {
       const enumData = await this.getEnumData();
-
-      let sections: ISection[];
-      console.log({ user });
-      if (user.roleId === Roles.user) {
-        sections = await this.studentModel.getSectionsById(user.id);
-      } else if (user.roleId === Roles.teacher) {
-        sections = await this.teacherModel.getSectionsById(user.id);
-      } else {
-        throw createError(401, 'Invalid user type');
-      }
-
-      await this.rumbleService.getActiveRumblesForSections(
-        sections as ISectionWithRumbles[]
-      );
-
+      const sections = await this.rumbleService.getSections(user);
       return {
         enumData,
-        sections: sections as ISectionWithRumbles[],
+        sections: sections,
       };
     } catch (err) {
       this.logger.error(err);

@@ -52,7 +52,7 @@ export default class RumbleService extends BaseService {
 
       await this.getActiveRumblesForSections(sections as ISectionWithRumbles[]);
 
-      return sections;
+      return sections as ISectionWithRumbles[];
     } catch (err) {
       this.logger.error(err);
       throw err;
