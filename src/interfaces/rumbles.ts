@@ -1,3 +1,8 @@
+export interface IRumbleWithSectionInfo extends IRumble {
+  sectionName: string;
+  sectionId: number;
+}
+
 export interface IRumble extends INewRumble {
   id: number;
   created_at: Date;

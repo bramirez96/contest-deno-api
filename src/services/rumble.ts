@@ -6,9 +6,18 @@ import {
   v5,
   moment,
 } from '../../deps.ts';
+import sections from '../api/routes/rumble/sections.ts';
 import env from '../config/env.ts';
-import { ISection, ISectionPostBody } from '../interfaces/cleverSections.ts';
-import { IRumble, IRumblePostBody } from '../interfaces/rumbles.ts';
+import {
+  ISection,
+  ISectionPostBody,
+  ISectionWithRumbles,
+} from '../interfaces/cleverSections.ts';
+import {
+  IRumble,
+  IRumblePostBody,
+  IRumbleWithSectionInfo,
+} from '../interfaces/rumbles.ts';
 import CleverSectionModel from '../models/cleverSections.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
@@ -68,7 +77,7 @@ export default class RumbleService extends BaseService {
     joinCode: string,
     sectionId: number,
     studentId: number
-  ) {
+  ): Promise<ISectionWithRumbles> {
     try {
       // Get the section with the given id
       const section = await this.sectionModel.get(
@@ -90,36 +99,50 @@ export default class RumbleService extends BaseService {
         userId: studentId,
       });
 
-      return section;
+      const rumbles = await this.rumbleModel.getActiveRumblesBySectionId(
+        sectionId
+      );
+
+      return { ...section, rumbles };
     } catch (err) {
       this.logger.error(err);
       throw err;
     }
   }
 
-  public async createGameInstance(body: IRumblePostBody, sectionId: number) {
+  public async createGameInstances(
+    body: IRumblePostBody,
+    sectionIds: number[]
+  ): Promise<IRumbleWithSectionInfo[]> {
     try {
-      let rumble: IRumble | undefined;
+      const rumbles: IRumbleWithSectionInfo[] = [];
       await this.db.transaction(async () => {
-        const joinCode = this.generateJoinCode(
-          `${body.numMinutes}-${body.promptId}`
-        );
-        const [res] = await this.rumbleModel.add({
-          joinCode,
-          canJoin: false,
-          maxSections: 1,
-          numMinutes: body.numMinutes,
-          promptId: body.promptId,
-        });
+        for await (const sectionId of sectionIds) {
+          const joinCode = this.generateJoinCode(
+            `${body.numMinutes}-${body.promptId}`
+          );
 
-        await this.rumbleSections.add({
-          rumbleId: res.id,
-          sectionId,
-        });
+          const [res] = await this.rumbleModel.add({
+            joinCode,
+            canJoin: false,
+            maxSections: 1,
+            numMinutes: body.numMinutes,
+            promptId: body.promptId,
+          });
 
-        rumble = res;
+          await this.rumbleSections.add({
+            rumbleId: res.id,
+            sectionId,
+          });
+
+          const [{ name }] = await this.sectionModel.get({ id: sectionId });
+
+          rumbles.push({ ...res, sectionName: name, sectionId });
+        }
+        // if (rumbles.length !== sections.length)
+        //   throw createError(409, 'Unable to create rumbles');
       });
-      return rumble;
+      return rumbles;
     } catch (err) {
       this.logger.error(err);
       throw err;
