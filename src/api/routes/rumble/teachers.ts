@@ -1,19 +1,17 @@
 import {
-  Router,
   IRouter,
-  log,
-  serviceCollection,
-  required,
-  isString,
   isNumber,
+  isString,
+  log,
   minNumber,
-  validateObject,
+  required,
+  Router,
+  serviceCollection,
   validateArray,
+  validateObject,
 } from '../../../../deps.ts';
 import { INewSection } from '../../../interfaces/cleverSections.ts';
 import { Roles } from '../../../interfaces/roles.ts';
-import { IRumblePostBody } from '../../../interfaces/rumbles.ts';
-import CleverTeacherModel from '../../../models/cleverTeachers.ts';
 import RumbleService from '../../../services/rumble.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 import validate from '../../middlewares/validate.ts';
@@ -31,10 +29,7 @@ export default (app: IRouter) => {
     authHandler({ roles: [Roles.admin, Roles.teacher] }),
     async (req, res) => {
       try {
-        const teacherModelInstance = serviceCollection.get(CleverTeacherModel);
-        const sections = await teacherModelInstance.getSectionsById(
-          parseInt(req.params.teacherId, 10)
-        );
+        const sections = await rumbleServiceInstance.getSections(req.body.user);
         res.setStatus(200).json(sections);
       } catch (err) {
         logger.error(err);
