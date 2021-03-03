@@ -2,12 +2,10 @@ import {
   IRouter,
   isString,
   log,
-  match,
   required,
   Router,
   serviceCollection,
 } from '../../../../deps.ts';
-import { uuidV5Regex } from '../../../config/dataConstraints.ts';
 import { Roles } from '../../../interfaces/roles.ts';
 import RumbleService from '../../../services/rumble.ts';
 import authHandler from '../../middlewares/authHandler.ts';
@@ -41,7 +39,7 @@ export default (app: IRouter) => {
   route.post(
     '/:sectionId/students/:studentId',
     validate({
-      joinCode: [required, isString, match(uuidV5Regex)],
+      joinCode: [required, isString],
     }),
     async (req, res) => {
       try {
