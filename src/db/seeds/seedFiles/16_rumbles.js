@@ -1,7 +1,7 @@
 // deno-lint-ignore-file
 const rumbles = [
   { joinCode: 'somejoinCode', numMinutes: 60, promptId: 1 },
-  { joinCode: 'somejoinCode123', numMinutes: 60, promptId: 2 },
+  { joinCode: 'somejoinCode123', numMinutes: 80, promptId: 2 },
 ];
 
 async function seed_rumbles(knex) {
