@@ -1,4 +1,5 @@
 import { Service, serviceCollection } from '../../deps.ts';
+import { Sources } from '../interfaces/enumSources.ts';
 import { INewSubmission, ISubmission } from '../interfaces/submissions.ts';
 import BaseModel from './baseModel.ts';
 
@@ -30,14 +31,9 @@ export default class SubmissionModel extends BaseModel<
           'clever_sections.id',
           'rumble_sections.sectionId'
         )
-        .innerJoin(
-          'clever_students',
-          'clever_students.sectionId',
-          'clever_sections.id'
-        )
-        .innerJoin('users', 'users.id', 'clever_students.userId')
-        .where('users.id', studentId)
+        .where('submissions.userId', studentId)
         .where('clever_sections.id', sectionId)
+        .where('submissions.sourceId', Sources.Rumble)
         .select('submissions.*')
         .execute()) as unknown[]) as ISubmission[];
 
