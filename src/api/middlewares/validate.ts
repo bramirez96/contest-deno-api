@@ -1,13 +1,13 @@
 import {
-  ValidationRules,
-  validate,
-  Request,
-  Response,
-  NextFunction,
   createError,
   log,
-  serviceCollection,
+  NextFunction,
+  Request,
+  Response,
   Rule,
+  serviceCollection,
+  validate,
+  ValidationRules,
 } from '../../../deps.ts';
 
 export default <ObjectInterface = undefined>(
@@ -15,7 +15,6 @@ export default <ObjectInterface = undefined>(
   toValidate: 'query' | 'body' | 'params' = 'body'
 ) => async (req: Request, res: Response, next: NextFunction) => {
   const logger: log.Logger = serviceCollection.get('logger');
-  console.log(req.body);
   try {
     logger.debug(`Validating ${toValidate} for endpoint: ${req.path}`);
 

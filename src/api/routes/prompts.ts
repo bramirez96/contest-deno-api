@@ -1,20 +1,19 @@
 import {
-  Router,
-  IRouter,
-  Request,
-  Response,
-  NextFunction,
-  serviceCollection,
-  log,
-  isNumber,
-  required,
-  isString,
-  isBool,
   createError,
+  IRouter,
+  isBool,
+  isNumber,
+  isString,
+  log,
+  NextFunction,
+  Request,
+  required,
+  Response,
+  Router,
+  serviceCollection,
 } from '../../../deps.ts';
 import { INewPrompt, IPrompt } from '../../interfaces/prompts.ts';
 import { Roles } from '../../interfaces/roles.ts';
-import PromptQueueModel from '../../models/promptQueue.ts';
 import PromptModel from '../../models/prompts.ts';
 import AdminService from '../../services/admin.ts';
 import authHandler from '../middlewares/authHandler.ts';
@@ -55,10 +54,7 @@ export default (app: IRouter) => {
     '/active',
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const currentPrompt = await promptModelInstance.get(
-          { active: true },
-          { first: true }
-        );
+        const [currentPrompt] = await promptModelInstance.get({ active: true });
         if (!currentPrompt) throw createError(404, 'No prompt currently set!');
 
         res.setStatus(200).json(currentPrompt);
@@ -109,10 +105,9 @@ export default (app: IRouter) => {
     validate({ id: [required, isNumber] }, 'params'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const prompt = await promptModelInstance.get(
-          { id: parseInt(req.params.id) },
-          { first: true }
-        );
+        const [prompt] = await promptModelInstance.get({
+          id: parseInt(req.params.id),
+        });
 
         res.setStatus(200).json(prompt);
       } catch (err) {
