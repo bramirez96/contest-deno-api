@@ -91,6 +91,17 @@ export default class RumbleService extends BaseService {
     }
   }
 
+  public async getSubmissionsByStudentId(studentId: number) {
+    try {
+      this.logger.debug(
+        `Attempting to retrieve submissions for student with id ${studentId}`
+      );
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
   public async createSection(body: ISectionPostBody, teacherId: number) {
     try {
       this.logger.debug(

@@ -25,5 +25,21 @@ export default (app: IRouter) => {
     }
   );
 
+  route.get(
+    '/:studentId/submissions',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    async (req, res) => {
+      try {
+        const submissions = await rumbleServiceInstance.getSubmissionsByStudentId(
+          parseInt(req.params.studentId, 10)
+        );
+        res.setStatus(200).json(submissions);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
   console.log('Rumble students route loaded.');
 };
