@@ -69,6 +69,22 @@ export default (app: IRouter) => {
     }
   );
 
+  // GET /queue
+  route.get(
+    '/queue',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const promptQueue = await promptModelInstance.getUpcoming();
+        // Returns an array of prompts that include a `starts_at` date field
+        res.setStatus(200).json(promptQueue);
+      } catch (err) {
+        logger.error(err);
+        next(err);
+      }
+    }
+  );
+
   // PUT /active <- this runs the service that updates current prompt
   route.put(
     '/active',
@@ -116,7 +132,7 @@ export default (app: IRouter) => {
         const [newPrompt] = await promptModelInstance.add({
           prompt: req.body.prompt,
           approved: true,
-          creatorId: req.body.userInfo.id,
+          creatorId: req.body.user.id,
         });
         res.setStatus(201).json(newPrompt);
       } catch (err) {
@@ -136,7 +152,7 @@ export default (app: IRouter) => {
         const [newPrompt] = await promptModelInstance.add({
           prompt: req.body.prompt,
           approved: false,
-          creatorId: req.body.userInfo.id,
+          creatorId: req.body.user.id,
         });
         res.setStatus(201).json(newPrompt);
       } catch (err) {
@@ -177,25 +193,6 @@ export default (app: IRouter) => {
         await promptModelInstance.delete(parseInt(req.params.id));
 
         res.setStatus(204).end();
-      } catch (err) {
-        logger.error(err);
-        next(err);
-      }
-    }
-  );
-
-  // GET /queue
-  route.get(
-    '/queue',
-    authHandler({ roles: [Roles.teacher, Roles.admin] }),
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const queueModelInstance = serviceCollection.get(PromptQueueModel);
-        const promptQueue = await queueModelInstance.get(undefined, {
-          orderBy: 'starts_at',
-          order: 'ASC',
-        });
-        res.setStatus(200).json(promptQueue);
       } catch (err) {
         logger.error(err);
         next(err);

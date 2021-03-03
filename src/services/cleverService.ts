@@ -1,11 +1,11 @@
 import {
-  Service,
-  serviceCollection,
-  Inject,
   CleverClient,
   createError,
   ICleverStudent,
   ICleverTeacher,
+  Inject,
+  Service,
+  serviceCollection,
 } from '../../deps.ts';
 import {
   CleverAuthResponseType,
@@ -13,21 +13,28 @@ import {
   ICleverEnumData,
   ISelectOption,
 } from '../interfaces/apiResponses.ts';
+import { ISectionWithRumbles } from '../interfaces/cleverSections.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
-import { IOAuthUser } from '../interfaces/users.ts';
+import { IOAuthUser, IUser } from '../interfaces/users.ts';
+import CleverStudentModel from '../models/cleverStudents.ts';
+import CleverTeacherModel from '../models/cleverTeachers.ts';
 import SSOLookupModel from '../models/ssoLookups.ts';
 import UserModel from '../models/users.ts';
 import AuthService from './auth.ts';
 import BaseService from './baseService.ts';
+import RumbleService from './rumble.ts';
 
 @Service()
 export default class CleverService extends BaseService {
   constructor(
     @Inject('clever') private clever: CleverClient,
-    @Inject(AuthService) private authService: AuthService,
     @Inject(UserModel) private userModel: UserModel,
-    @Inject(SSOLookupModel) private ssoModel: SSOLookupModel
+    @Inject(RumbleService) private rumbleService: RumbleService,
+    @Inject(AuthService) private authService: AuthService,
+    @Inject(SSOLookupModel) private ssoModel: SSOLookupModel,
+    @Inject(CleverTeacherModel) private teacherModel: CleverTeacherModel,
+    @Inject(CleverStudentModel) private studentModel: CleverStudentModel
   ) {
     super();
   }
@@ -194,7 +201,23 @@ export default class CleverService extends BaseService {
     }
   }
 
-  public async getEnumData(): Promise<ICleverEnumData> {
+  public async getUserInfo(
+    user: IUser
+  ): Promise<{ enumData: ICleverEnumData; sections: ISectionWithRumbles[] }> {
+    try {
+      const enumData = await this.getEnumData();
+      const sections = await this.rumbleService.getSections(user);
+      return {
+        enumData,
+        sections: sections,
+      };
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  private async getEnumData(): Promise<ICleverEnumData> {
     const enumMap = (item: Record<string, string>): ISelectOption => {
       const itemId = Object.keys(item).filter((i) => i !== 'id')[0];
       return { value: item.id, label: item[itemId] };
@@ -205,7 +228,6 @@ export default class CleverService extends BaseService {
         [key: string]: string;
       }[];
       const grades = gradeList.map(enumMap);
-      console.log({ gradeList, grades });
 
       // and for subject enums
       const subjectList = (await this.db.table('enum_subjects').execute()) as {

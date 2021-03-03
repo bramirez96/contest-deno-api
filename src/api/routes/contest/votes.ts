@@ -34,7 +34,7 @@ export default (app: IRouter) => {
       try {
         await contestInstance.submitVote(
           req.body.votes,
-          parseInt(req.body.userInfo.id, 10) || undefined
+          parseInt(req.body.user.id, 10) || undefined
         );
         res.setStatus(201).json({ ERR: 'ERR' });
       } catch (err) {

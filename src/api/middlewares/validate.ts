@@ -15,6 +15,7 @@ export default <ObjectInterface = undefined>(
   toValidate: 'query' | 'body' | 'params' = 'body'
 ) => async (req: Request, res: Response, next: NextFunction) => {
   const logger: log.Logger = serviceCollection.get('logger');
+  console.log(req.body);
   try {
     logger.debug(`Validating ${toValidate} for endpoint: ${req.path}`);
 

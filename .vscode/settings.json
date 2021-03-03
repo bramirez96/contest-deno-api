@@ -8,6 +8,9 @@
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  },
   "deno.import_intellisense_origins": {
     "https://deno.land": true
   },

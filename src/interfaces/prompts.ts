@@ -1,3 +1,7 @@
+export interface IPromptInQueue extends IPrompt {
+  starts_at: Date;
+}
+
 export interface IPrompt extends INewPrompt {
   id: number;
   active: boolean;
