@@ -91,6 +91,38 @@ export default class RumbleService extends BaseService {
         sectionId
       );
 
+      for await (const student of students) {
+        const subs = await this.getSubsByStudentAndSection(
+          student.id,
+          sectionId
+        );
+        student.submissions = subs;
+      }
+
+      return students;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getStudentsInRumble(rumbleId: number) {
+    // Leaving this in the service to open us up for more data later
+    try {
+      this.logger.debug(
+        `Attempting to retrieve students from section ${rumbleId}`
+      );
+
+      const students = await this.rumbleModel.getStudentsByRumbleId(rumbleId);
+
+      for await (const student of students) {
+        const subs = await this.getSubsByStudentAndSection(
+          student.id,
+          rumbleId
+        );
+        student.submissions = subs;
+      }
+
       return students;
     } catch (err) {
       this.logger.error(err);
