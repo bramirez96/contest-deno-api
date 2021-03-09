@@ -19,7 +19,7 @@ export default class RumbleSectionsModel extends BaseModel<
     sectionId: number,
     rumbleId: number
   ) {
-    console.log(
+    this.logger.debug(
       `Attempting to mark rumble (${rumbleId}) active for section ${sectionId}`
     );
 
@@ -30,7 +30,7 @@ export default class RumbleSectionsModel extends BaseModel<
       .update({ end_time: endTime })
       .execute();
 
-    console.log(
+    this.logger.debug(
       `Successfully marked rumble (${rumbleId}) active for section ${sectionId}`
     );
   }

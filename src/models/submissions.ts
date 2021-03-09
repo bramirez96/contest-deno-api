@@ -43,6 +43,41 @@ export default class SubmissionModel extends BaseModel<
       throw err;
     }
   }
+
+  public async getSubByStudentAndRumbleId(studentId: number, rumbleId: number) {
+    try {
+      const subs = ((await this.db
+        // .table('rumbles')
+        // .innerJoin('rumble_sections', 'rumble_sections.rumbleId', 'rumbles.id')
+        // .innerJoin(
+        //   'clever_sections',
+        //   'clever_sections.id',
+        //   'rumble_sections.sectionId'
+        // )
+        // .innerJoin(
+        //   'clever_students',
+        //   'clever_students.sectionId',
+        //   'clever_sections.id'
+        // )
+        // .innerJoin('users', 'users.id', 'clever_students.userId')
+        // .innerJoin('submissions', 'submissions.userId', 'users.id')
+        // .where('users.id', studentId)
+        // .where('rumbles.id', rumbleId)
+        // .select('submissions.*')
+        // .order('submissions.id', 'DESC')
+        .table('submissions')
+        .innerJoin('prompts', 'prompts.id', 'submissions.promptId')
+        .innerJoin('rumbles', 'rumbles.promptId', 'prompts.id')
+        .where('rumbles.id', rumbleId)
+        .where('submissions.userId', studentId)
+        .select('submissions.*')
+        .execute()) as unknown[]) as ISubmission[];
+      return subs[0];
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
 }
 
 serviceCollection.addTransient(SubmissionModel);
