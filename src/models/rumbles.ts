@@ -1,5 +1,11 @@
 import { Service, serviceCollection } from '../../deps.ts';
-import { INewRumble, IRumble } from '../interfaces/rumbles.ts';
+import { ISection } from '../interfaces/cleverSections.ts';
+import { IStudentWithSubmissions } from '../interfaces/cleverStudents.ts';
+import {
+  INewRumble,
+  IRumble,
+  IRumbleWithSectionInfo,
+} from '../interfaces/rumbles.ts';
 import BaseModel from './baseModel.ts';
 
 @Service()
@@ -8,7 +14,7 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
     super('rumbles');
   }
 
-  public async getActiveRumblesBySectionId(sectionId: number) {
+  public async getActiveRumblesBySection(section: ISection) {
     try {
       const rumbles = ((await this.db
         .table('rumbles')
@@ -19,10 +25,41 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
           'rumble_sections.sectionId'
         )
         .select('rumbles.*', 'rumble_sections.end_time')
-        .where('clever_sections.id', sectionId)
+        .where('clever_sections.id', section.id)
         .execute()) as unknown[]) as IRumble[];
 
-      return rumbles;
+      return rumbles.map<IRumbleWithSectionInfo>((r) => ({
+        ...r,
+        sectionId: section.id,
+        sectionName: section.name,
+      }));
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getStudentsByRumbleId(rumbleId: number) {
+    try {
+      const students = ((await this.db
+        .table('rumbles')
+        .innerJoin('rumble_sections', 'rumble_sections.rumbleId', 'rumbles.id')
+        .innerJoin(
+          'clever_sections',
+          'clever_sections.id',
+          'rumble_sections.sectionId'
+        )
+        .innerJoin(
+          'clever_students',
+          'clever_students.sectionId',
+          'clever_sections.id'
+        )
+        .innerJoin('users', 'users.id', 'clever_students.userId')
+        .where('rumbles.id', rumbleId)
+        .select('users.*')
+        .execute()) as unknown[]) as IStudentWithSubmissions[];
+
+      return students;
     } catch (err) {
       this.logger.error(err);
       throw err;

@@ -1,6 +1,6 @@
 import { Service, serviceCollection } from '../../deps.ts';
 import { INewSection, ISection } from '../interfaces/cleverSections.ts';
-import { IUser } from '../interfaces/users.ts';
+import { IStudentWithSubmissions } from '../interfaces/cleverStudents.ts';
 import BaseModel from './baseModel.ts';
 
 @Service()
@@ -24,7 +24,7 @@ export default class CleverSectionModel extends BaseModel<
         .innerJoin('users', 'users.id', 'clever_students.userId')
         .where('clever_sections.id', sectionId)
         .select('users.*')
-        .execute()) as unknown[]) as IUser[];
+        .execute()) as unknown[]) as IStudentWithSubmissions[];
 
       return students;
     } catch (err) {
