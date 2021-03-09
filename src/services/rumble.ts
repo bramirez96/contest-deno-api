@@ -17,18 +17,25 @@ import {
   IRumblePostBody,
   IRumbleWithSectionInfo,
 } from '../interfaces/rumbles.ts';
+import { ISubItem } from '../interfaces/submissions.ts';
 import { IUser } from '../interfaces/users.ts';
 import CleverSectionModel from '../models/cleverSections.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
 import RumbleModel from '../models/rumbles.ts';
 import RumbleSectionsModel from '../models/rumbleSections.ts';
+import SubmissionModel from '../models/submissions.ts';
+import UserModel from '../models/users.ts';
 import BaseService from './baseService.ts';
+import SubmissionService from './submission.ts';
 
 @Service()
 export default class RumbleService extends BaseService {
   constructor(
+    @Inject(UserModel) private userModel: UserModel,
     @Inject(RumbleModel) private rumbleModel: RumbleModel,
+    @Inject(SubmissionModel) private subModel: SubmissionModel,
+    @Inject(SubmissionService) private subService: SubmissionService,
     @Inject(CleverTeacherModel) private teacherModel: CleverTeacherModel,
     @Inject(CleverStudentModel) private studentModel: CleverStudentModel,
     @Inject(CleverSectionModel) private sectionModel: CleverSectionModel,
@@ -85,6 +92,39 @@ export default class RumbleService extends BaseService {
       );
 
       return students;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getSubsByStudentAndSection(
+    studentId: number,
+    sectionId: number
+  ): Promise<ISubItem[]> {
+    try {
+      this.logger.debug(
+        `Attempting to retrieve codename for student with id ${studentId}`
+      );
+      const [{ codename }] = await this.userModel.get({ id: studentId });
+
+      this.logger.debug(
+        `Attempting to retrieve submissions for student with id ${studentId} in section ${sectionId}`
+      );
+      const basicSubs = await this.subModel.getSubsForStudentInSection(
+        studentId,
+        sectionId
+      );
+
+      this.logger.debug(
+        `Attempting to process submission data for student with id ${studentId}`
+      );
+      const subPromises = basicSubs.map((s) =>
+        this.subService.retrieveSubItem(s, codename)
+      );
+      const subItems = Promise.all(subPromises);
+
+      return subItems;
     } catch (err) {
       this.logger.error(err);
       throw err;
