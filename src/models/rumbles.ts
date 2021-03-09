@@ -1,6 +1,11 @@
 import { Service, serviceCollection } from '../../deps.ts';
+import { ISection } from '../interfaces/cleverSections.ts';
 import { IStudentWithSubmissions } from '../interfaces/cleverStudents.ts';
-import { INewRumble, IRumble } from '../interfaces/rumbles.ts';
+import {
+  INewRumble,
+  IRumble,
+  IRumbleWithSectionInfo,
+} from '../interfaces/rumbles.ts';
 import BaseModel from './baseModel.ts';
 
 @Service()
@@ -9,7 +14,7 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
     super('rumbles');
   }
 
-  public async getActiveRumblesBySectionId(sectionId: number) {
+  public async getActiveRumblesBySection(section: ISection) {
     try {
       const rumbles = ((await this.db
         .table('rumbles')
@@ -20,10 +25,14 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
           'rumble_sections.sectionId'
         )
         .select('rumbles.*', 'rumble_sections.end_time')
-        .where('clever_sections.id', sectionId)
+        .where('clever_sections.id', section.id)
         .execute()) as unknown[]) as IRumble[];
 
-      return rumbles;
+      return rumbles.map<IRumbleWithSectionInfo>((r) => ({
+        ...r,
+        sectionId: section.id,
+        sectionName: section.name,
+      }));
     } catch (err) {
       this.logger.error(err);
       throw err;

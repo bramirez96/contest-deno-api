@@ -16,8 +16,12 @@ export default (app: IRouter) => {
     authHandler({ roles: [Roles.admin, Roles.teacher] }),
     async (req, res) => {
       try {
-        const students = await rumbleServiceInstance.getStudentsInRumble(
+        const students = await rumbleServiceInstance.getStudentsWithSubForRumble(
           parseInt(req.params.rumbleId, 10)
+        );
+        console.log(
+          'students',
+          students.map((s) => s.submissions)
         );
         res.setStatus(200).json(students);
       } catch (err) {

@@ -12,6 +12,7 @@ import {
   ISectionPostBody,
   ISectionWithRumbles,
 } from '../interfaces/cleverSections.ts';
+import { IStudentWithSubmissions } from '../interfaces/cleverStudents.ts';
 import { Roles } from '../interfaces/roles.ts';
 import {
   IRumblePostBody,
@@ -69,10 +70,14 @@ export default class RumbleService extends BaseService {
   public async getActiveRumblesForSections(sections: ISectionWithRumbles[]) {
     try {
       for await (const section of sections) {
-        const rumbleArray = await this.rumbleModel.getActiveRumblesBySectionId(
-          section.id
+        const rumbleArray = await this.rumbleModel.getActiveRumblesBySection(
+          section
         );
-        section.rumbles = rumbleArray;
+        section.rumbles = rumbleArray.map((r) => ({
+          ...r,
+          sectionId: section.id,
+          sectionName: section.name,
+        }));
       }
     } catch (err) {
       this.logger.error(err);
@@ -95,30 +100,6 @@ export default class RumbleService extends BaseService {
         const subs = await this.getSubsByStudentAndSection(
           student.id,
           sectionId
-        );
-        student.submissions = subs;
-      }
-
-      return students;
-    } catch (err) {
-      this.logger.error(err);
-      throw err;
-    }
-  }
-
-  public async getStudentsInRumble(rumbleId: number) {
-    // Leaving this in the service to open us up for more data later
-    try {
-      this.logger.debug(
-        `Attempting to retrieve students from section ${rumbleId}`
-      );
-
-      const students = await this.rumbleModel.getStudentsByRumbleId(rumbleId);
-
-      for await (const student of students) {
-        const subs = await this.getSubsByStudentAndSection(
-          student.id,
-          rumbleId
         );
         student.submissions = subs;
       }
@@ -157,6 +138,37 @@ export default class RumbleService extends BaseService {
       const subItems = Promise.all(subPromises);
 
       return subItems;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getStudentsWithSubForRumble(
+    rumbleId: number
+  ): Promise<IStudentWithSubmissions[]> {
+    try {
+      this.logger.debug(
+        `Attempting to retrieve students in rumble ${rumbleId}`
+      );
+
+      const students = await this.rumbleModel.getStudentsByRumbleId(rumbleId);
+
+      for await (const student of students) {
+        const sub = await this.subModel.getSubByStudentAndRumbleId(
+          student.id,
+          rumbleId
+        );
+        if (sub) {
+          const subItem = await this.subService.retrieveSubItem(
+            sub,
+            student.codename
+          );
+          student.submissions = [subItem];
+        } else student.submissions = [];
+      }
+
+      return students;
     } catch (err) {
       this.logger.error(err);
       throw err;
@@ -223,9 +235,7 @@ export default class RumbleService extends BaseService {
         userId: studentId,
       });
 
-      const rumbles = await this.rumbleModel.getActiveRumblesBySectionId(
-        sectionId
-      );
+      const rumbles = await this.rumbleModel.getActiveRumblesBySection(section);
 
       return { ...section, rumbles };
     } catch (err) {
