@@ -1,17 +1,17 @@
 import {
-  Router,
   IRouter,
-  Request,
-  Response,
+  isArray,
+  isNumber,
+  isString,
   log,
+  minNumber,
+  Request,
+  required,
+  Response,
+  Router,
   serviceCollection,
   validateArray,
   validateObject,
-  isString,
-  required,
-  isNumber,
-  minNumber,
-  isArray,
 } from '../../../deps.ts';
 import { Roles } from '../../interfaces/roles.ts';
 import { INewSubmission } from '../../interfaces/submissions.ts';
@@ -28,10 +28,11 @@ export default (app: IRouter) => {
   const subServiceInstance = serviceCollection.get(SubmissionService);
   app.use(['/submit', '/submission', '/submissions'], route);
 
-  // POST /
+  // POST / ?sourceId
   route.post(
     '/',
     authHandler(),
+    validate({ sourceId: [required] }, 'query'),
     // This will ensure there is only one item in the story field before upload
     validate<INewSubmission>({
       story: validateArray(
