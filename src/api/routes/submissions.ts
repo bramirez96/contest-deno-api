@@ -28,11 +28,12 @@ export default (app: IRouter) => {
   const subServiceInstance = serviceCollection.get(SubmissionService);
   app.use(['/submit', '/submission', '/submissions'], route);
 
+  // api/submissions/
+
   // POST / ?sourceId
   route.post(
     '/',
     authHandler(),
-    validate({ sourceId: [required] }, 'query'),
     // This will ensure there is only one item in the story field before upload
     validate<INewSubmission>({
       story: validateArray(
