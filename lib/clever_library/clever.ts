@@ -12,10 +12,19 @@ export default class CleverClient {
     this.basic =
       'Basic ' + Base64.fromString(`${config.clientId}:${config.clientSecret}`);
     this.redirectURI = config.redirectURI;
+
+    this.buttonURI = `https://clever.com/oauth/authorize?redirect_uri=${encodeURI(
+      config.redirectURI
+    )}&response_type=code&client_id=${encodeURI(config.clientId)}`;
   }
   private api: string;
   private redirectURI: string;
   private basic: string;
+  private buttonURI: string;
+
+  public getLoginButtonURI() {
+    return this.buttonURI;
+  }
 
   /**
    * Uses the `code` query parameter passed when redirected to a Clever

@@ -39,6 +39,11 @@ export default class CleverService extends BaseService {
     super();
   }
 
+  public getLoginButtonURI() {
+    const buttonURI = this.clever.getLoginButtonURI();
+    return buttonURI;
+  }
+
   public async authorizeUser(code: string): Promise<CleverAuthResponseType> {
     try {
       // Exchange user's code for a token
