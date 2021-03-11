@@ -101,7 +101,7 @@ export default (app: IRouter) => {
   // GET /:id
   route.get(
     '/:id',
-    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    authHandler({ roles: [Roles.teacher, Roles.admin, Roles.user] }),
     validate({ id: [required, isNumber] }, 'params'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
