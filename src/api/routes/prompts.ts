@@ -102,11 +102,10 @@ export default (app: IRouter) => {
   route.get(
     '/:id',
     authHandler({ roles: [Roles.teacher, Roles.admin, Roles.user] }),
-    validate({ id: [required, isNumber] }, 'params'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const [prompt] = await promptModelInstance.get({
-          id: parseInt(req.params.id),
+          id: parseInt(req.params.id, 10),
         });
 
         res.setStatus(200).json(prompt);

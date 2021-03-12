@@ -15,7 +15,7 @@ export default class CleverStudentModel extends BaseModel<
   public async getSectionsById(studentId: number) {
     try {
       this.logger.debug(
-        `Attempting to get sections for teacher with ID: ${studentId}`
+        `Attempting to get sections for student with ID: ${studentId}`
       );
 
       const sections = ((await this.db

@@ -1,4 +1,4 @@
-import { Router, IRouter, log, serviceCollection } from '../../../../deps.ts';
+import { IRouter, log, Router, serviceCollection } from '../../../../deps.ts';
 import CleverService from '../../../services/cleverService.ts';
 import authHandler from '../../middlewares/authHandler.ts';
 
