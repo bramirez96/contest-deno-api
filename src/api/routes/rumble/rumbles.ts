@@ -47,11 +47,42 @@ export default (app: IRouter) => {
         const students = await rumbleServiceInstance.getStudentsWithSubForRumble(
           parseInt(req.params.rumbleId, 10)
         );
-        console.log(
-          'students',
-          students.map((s) => s.submissions)
-        );
         res.setStatus(200).json(students);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  route.get(
+    '/:rumbleId/students/:studentId',
+    authHandler(),
+    async (req, res) => {
+      try {
+        const sub = await rumbleServiceInstance.getSubForStudentByRumble(
+          parseInt(req.params.rumbleId, 10),
+          parseInt(req.params.studentId, 10)
+        );
+        res.setStatus(200).json(sub);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  // PUT /rumbles/:rumbleId/start - begins a game and returns a Date
+  route.put(
+    '/:rumbleId/section/:sectionId/start',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    async (req, res) => {
+      try {
+        const endTime: Date = await rumbleServiceInstance.startRumble(
+          parseInt(req.params.sectionId, 10),
+          parseInt(req.params.rumbleId, 10)
+        );
+        res.setStatus(201).json(endTime);
       } catch (err) {
         logger.error(err);
         throw err;
