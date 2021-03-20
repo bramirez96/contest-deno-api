@@ -1,12 +1,4 @@
-import {
-  CleverClient,
-  createError,
-  ICleverStudent,
-  ICleverTeacher,
-  Inject,
-  Service,
-  serviceCollection,
-} from '../../deps.ts';
+import { createError, Inject, Service, serviceCollection } from '../../deps.ts';
 import {
   CleverAuthResponseType,
   IAuthResponse,
@@ -17,6 +9,11 @@ import { ISectionWithRumbles } from '../interfaces/cleverSections.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { IOAuthUser, IUser } from '../interfaces/users.ts';
+import {
+  CleverClient,
+  ICleverStudent,
+  ICleverTeacher,
+} from '../lib/clever_library/mod.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
 import SSOLookupModel from '../models/ssoLookups.ts';
@@ -48,9 +45,11 @@ export default class CleverService extends BaseService {
     try {
       // Exchange user's code for a token
       const token = await this.clever.getToken(code);
+      console.log({ token });
 
       // Get user's info from clever
       const rawUser = await this.clever.getCurrentUser(token);
+      console.log({ rawUser });
       const { id, type } = rawUser.data; // Pull id for easier use
       let roleId: number;
       if (type === 'student') roleId = Roles.user;
@@ -88,6 +87,7 @@ export default class CleverService extends BaseService {
           // We only support students and teachers! Throw an error on admins/staff!
           throw createError(401, 'Account type not supported');
         }
+        console.log({ user });
 
         // If the user has an email in their clever account, check our
         // user table for an email match. If we find a match, the user

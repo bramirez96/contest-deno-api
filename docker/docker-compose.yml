@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  pg:
+    image: postgres:12
+    container_name: ss-deno-be
+    ports:
+      - '5900:5932'
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - PGPORT=5932
+      - POSTGRES_MULTIPLE_DATABASES="ss-deno-be","ss-deno-test"
+    volumes:
+      - ./pg_scripts:/docker-entrypoint-initdb.d
+    networks:
+      - postgres
+    restart: always
+
+  pgadmin:
+    container_name: ss-deno-pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_SERVER_JSON_FILE: /tmp/.pgadmin/servers.json
+    volumes:
+      - ./pgadmin:/tmp/.pgadmin
+    ports:
+      - '${PGADMIN_PORT:-5950}:80'
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
