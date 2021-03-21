@@ -1,4 +1,3 @@
-// Opine v1.0.2
 // logger @0.83.0
 export * as log from 'https://deno.land/std@0.83.0/log/mod.ts';
 // uuid v0.83.0
@@ -11,6 +10,14 @@ export {
 export type { SendEmailRequest } from 'https://deno.land/x/aws_sdk@v0.0.1/client-sesv2/mod.ts';
 // bcrypt v0.2.4
 export * as bcrypt from 'https://deno.land/x/bcrypt@v0.2.4/mod.ts';
+// clever_sso_deno
+export { CleverClient } from 'https://deno.land/x/clever_sso_deno@v0.0.4/mod.ts';
+export type {
+  CleverGradeType,
+  CleverSubjectType,
+  IAuthorizationResponse,
+  ICleverProfile,
+} from 'https://deno.land/x/clever_sso_deno@v0.0.4/mod.ts';
 // cors @1.2.1
 export { opineCors } from 'https://deno.land/x/cors@v1.2.1/mod.ts';
 // Cotton v0.7.5

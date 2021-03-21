@@ -1,4 +1,10 @@
-import { createError, Inject, Service, serviceCollection } from '../../deps.ts';
+import {
+  CleverClient,
+  createError,
+  Inject,
+  Service,
+  serviceCollection,
+} from '../../deps.ts';
 import {
   CleverAuthResponseType,
   IAuthResponse,
@@ -9,11 +15,6 @@ import { ISectionWithRumbles } from '../interfaces/cleverSections.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { IOAuthUser, IUser } from '../interfaces/users.ts';
-import {
-  CleverClient,
-  ICleverStudent,
-  ICleverTeacher,
-} from '../lib/clever_library/mod.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
 import SSOLookupModel from '../models/ssoLookups.ts';
@@ -43,83 +44,38 @@ export default class CleverService extends BaseService {
 
   public async authorizeUser(code: string): Promise<CleverAuthResponseType> {
     try {
-      // Exchange user's code for a token
-      const token = await this.clever.getToken(code);
-      console.log({ token });
+      const response = await this.clever.ssoAuthWithCode<IUser>({
+        code,
+        getUserByCleverId: this.userModel.findByCleverId,
+        getUserByEmail: (email) =>
+          this.userModel.get({ email }, { first: true }),
+      });
 
-      // Get user's info from clever
-      const rawUser = await this.clever.getCurrentUser(token);
-      console.log({ rawUser });
-      const { id, type } = rawUser.data; // Pull id for easier use
-      let roleId: number;
-      if (type === 'student') roleId = Roles.user;
-      else if (type === 'teacher') roleId = Roles.teacher;
-      else throw createError(401, 'Account type not supported');
-
-      // Now we have user info, check if they exist in our database
-      const existingUser = await this.userModel.findByCleverId(rawUser.data.id);
-
-      if (existingUser) {
-        // If the user exists in our DB, sign them in! Easy!
-        const authToken = await this.authService.generateToken(existingUser);
-        Reflect.deleteProperty(existingUser, 'password');
-
-        // Return an auth response and user type!
+      if (response.status === 'SUCCESS') {
+        const authToken = await this.authService.generateToken(response.body);
+        Reflect.deleteProperty(response.body, 'password');
         return {
-          actionType: 'SUCCESS',
-          body: { token: authToken, user: existingUser },
-          cleverId: id,
-          roleId,
+          actionType: response.status,
+          body: { token: authToken, user: response.body },
+          cleverId: response.cleverId,
+          roleId: response.body.roleId,
         };
-      } else {
-        // We don't have a user account connected to their clever ID yet!
-        // Initialize a variable to hold the user's info when we get it from clever
-        let user: ICleverStudent | ICleverTeacher;
-
-        // Get the user's info based on their account type
-        if (rawUser.type === 'student') {
-          const res = await this.clever.getStudent(id, token);
-          user = res.data; // Store it in our pre-initialized variable
-        } else if (rawUser.type === 'teacher') {
-          const res = await this.clever.getTeacher(id, token);
-          user = res.data; // Store it in our pre-initialized variable
-        } else {
-          // We only support students and teachers! Throw an error on admins/staff!
-          throw createError(401, 'Account type not supported');
-        }
-        console.log({ user });
-
-        // If the user has an email in their clever account, check our
-        // user table for an email match. If we find a match, the user
-        // needs to merge their existing account!
-        if (user.email) {
-          // Check for email match
-          const userToMerge = await this.userModel.get(
-            { email: user.email },
-            { first: true }
-          );
-          if (userToMerge) {
-            // If we found a mergable user, return a merge response!!
-            return {
-              actionType: 'MERGE',
-              body: userToMerge,
-              cleverId: id,
-              roleId,
-            };
-          }
-        }
-        // If all of the above preconditions fail, we know the use does
-        // not have an account with us, and as such we must pass their
-        // clever info and user type to the frontend to allow them to
-        // create a new account in our database. The reason we pass the
-        // clever user data is to restrict onboarding friction by making
-        // it as easy as possible for our users.
+      } else if (response.status === 'MERGE') {
+        return {
+          actionType: 'MERGE',
+          body: response.body,
+          cleverId: response.cleverId,
+          roleId: response.body.roleId,
+        };
+      } else if (response.status === 'NEW') {
         return {
           actionType: 'NEW',
-          body: user,
-          cleverId: id,
-          roleId,
+          cleverId: response.cleverId,
+          body: response.body,
+          roleId: response.userType === 'teacher' ? Roles.teacher : Roles.user,
         };
+      } else {
+        throw new Error('Could not authenticate with Clever');
       }
     } catch (err) {
       this.logger.error(err);
