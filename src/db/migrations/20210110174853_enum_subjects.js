@@ -1,8 +1,8 @@
 // deno-lint-ignore-file
 exports.up = function (knex) {
   return knex.schema.createTable('enum_subjects', (t) => {
-    t.string('id').notNullable().unique().index().primary();
-    t.string('subject', 20).notNullable().unique().index();
+    t.string('id').unique().index().primary();
+    t.string('subject', 30).notNullable().unique().index();
   });
 };
 

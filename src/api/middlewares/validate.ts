@@ -10,8 +10,8 @@ import {
   Rule,
 } from '../../../deps.ts';
 
-export default <T = undefined>(
-  schema: IRulesFromType<T>,
+export default <ObjectInterface = undefined>(
+  schema: IRulesFromType<ObjectInterface>,
   toValidate: 'query' | 'body' | 'params' = 'body'
 ) => async (req: Request, res: Response, next: NextFunction) => {
   const logger: log.Logger = serviceCollection.get('logger');
@@ -37,7 +37,7 @@ export default <T = undefined>(
   }
 };
 
-type IRulesFromType<T> = {
-  [P in keyof T]?: Rule | Rule[];
+type IRulesFromType<ObjectInterface> = {
+  [ObjectKey in keyof ObjectInterface]?: Rule | Rule[];
 } &
   ValidationRules;

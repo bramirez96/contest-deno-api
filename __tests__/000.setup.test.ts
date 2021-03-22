@@ -22,7 +22,7 @@ try {
   roles, enum_grades, enum_subjects, users, prompts, submissions, \
   enum_flags, submission_flags, validations, resets, votes, top3, \
   winners, prompt_queue, sso_providers, sso_lookup, clever_sections, \
-  clever_students, clever_teachers, rumbles, rumble_sections \
+  clever_students, clever_teachers, rumbles, rumble_sections, enum_sources \
   RESTART IDENTITY CASCADE'
   );
 

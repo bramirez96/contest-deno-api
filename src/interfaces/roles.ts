@@ -3,7 +3,7 @@ export interface IRole extends INewRole {
 }
 
 export interface INewRole {
-  role: Roles;
+  role: Roles & string;
 }
 
 export enum Roles {
