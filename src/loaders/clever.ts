@@ -1,5 +1,5 @@
+import { CleverClient } from '../../deps.ts';
 import env from '../config/env.ts';
-import { CleverClient } from '../lib/clever_library/mod.ts';
 
 export default () => {
   console.log('Initializing clever client...');

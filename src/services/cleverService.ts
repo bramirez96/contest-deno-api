@@ -1,4 +1,10 @@
-import { createError, Inject, Service, serviceCollection } from '../../deps.ts';
+import {
+  CleverClient,
+  createError,
+  Inject,
+  Service,
+  serviceCollection,
+} from '../../deps.ts';
 import {
   CleverAuthResponseType,
   IAuthResponse,
@@ -9,11 +15,6 @@ import { ISectionWithRumbles } from '../interfaces/cleverSections.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { SSOLookups } from '../interfaces/ssoLookups.ts';
 import { IOAuthUser, IUser } from '../interfaces/users.ts';
-import {
-  CleverClient,
-  ICleverStudent,
-  ICleverTeacher,
-} from '../lib/clever_library/mod.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
 import SSOLookupModel from '../models/ssoLookups.ts';
@@ -48,7 +49,7 @@ export default class CleverService extends BaseService {
       console.log({ token });
 
       // Get user's info from clever
-      const rawUser = await this.clever.getCurrentUser(token);
+      const rawUser = await this.clever.getUserInfo(token);
       console.log({ rawUser });
       const { id, type } = rawUser.data; // Pull id for easier use
       let roleId: number;
@@ -73,21 +74,7 @@ export default class CleverService extends BaseService {
         };
       } else {
         // We don't have a user account connected to their clever ID yet!
-        // Initialize a variable to hold the user's info when we get it from clever
-        let user: ICleverStudent | ICleverTeacher;
-
-        // Get the user's info based on their account type
-        if (rawUser.type === 'student') {
-          const res = await this.clever.getStudent(id, token);
-          user = res.data; // Store it in our pre-initialized variable
-        } else if (rawUser.type === 'teacher') {
-          const res = await this.clever.getTeacher(id, token);
-          user = res.data; // Store it in our pre-initialized variable
-        } else {
-          // We only support students and teachers! Throw an error on admins/staff!
-          throw createError(401, 'Account type not supported');
-        }
-        console.log({ user });
+        const user = await this.clever.getUserProfile(rawUser, token);
 
         // If the user has an email in their clever account, check our
         // user table for an email match. If we find a match, the user
