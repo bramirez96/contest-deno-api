@@ -1,19 +1,18 @@
 import {
-  Router,
   IRouter,
-  Request,
-  Response,
+  isArray,
+  isNumber,
+  isString,
   log,
+  minNumber,
+  Request,
+  required,
+  Response,
+  Router,
   serviceCollection,
   validateArray,
   validateObject,
-  isString,
-  required,
-  isNumber,
-  minNumber,
-  isArray,
 } from '../../../deps.ts';
-import { Sources } from '../../interfaces/enumSources.ts';
 import { Roles } from '../../interfaces/roles.ts';
 import { INewSubmission } from '../../interfaces/submissions.ts';
 import SubmissionModel from '../../models/submissions.ts';
@@ -29,7 +28,9 @@ export default (app: IRouter) => {
   const subServiceInstance = serviceCollection.get(SubmissionService);
   app.use(['/submit', '/submission', '/submissions'], route);
 
-  // POST /
+  // api/submissions/
+
+  // POST / ?sourceId
   route.post(
     '/',
     authHandler(),
@@ -53,7 +54,7 @@ export default (app: IRouter) => {
         await subServiceInstance.processSubmission(
           req.body.story[0],
           parseInt(req.body.promptId, 10),
-          req.body.userInfo.id,
+          req.body.user.id,
           req.query.sourceId
         );
         res.setStatus(201).json({ message: 'Upload successful!' });
@@ -192,7 +193,8 @@ export default (app: IRouter) => {
       try {
         const flags = await subServiceInstance.flagSubmission(
           parseInt(req.params.id, 10),
-          req.body.flags
+          req.body.flags,
+          req.body.user.id
         );
 
         res

@@ -1,23 +1,23 @@
 // deno-lint-ignore-file
 exports.up = function (knex) {
-  return knex.schema.createTable('clever_students', (t) => {
+  return knex.schema.createTable('waiting_room', (t) => {
     t.increments('id');
-    t.integer('userId')
+    t.boolean('active').defaultTo(false);
+    t.integer('studentId')
       .unsigned()
       .notNullable()
-      .references('users.id')
+      .references('clever_students.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.integer('sectionId')
+    t.integer('rumbleId')
       .unsigned()
       .notNullable()
-      .references('clever_sections.id')
+      .references('rumbles.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
-    t.unique(['userId', 'sectionId']);
   });
 };
 
 exports.down = function (knex) {
-  return knex.schema.dropTableIfExists('clever_students');
+  return knex.schema.dropTableIfExists('waiting_room');
 };

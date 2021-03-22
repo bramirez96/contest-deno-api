@@ -1,13 +1,13 @@
 import {
   IRouter,
-  log,
-  serviceCollection,
-  Router,
-  required,
   isString,
-  Request,
-  Response,
+  log,
   match,
+  Request,
+  required,
+  Response,
+  Router,
+  serviceCollection,
 } from '../../../deps.ts';
 import {
   codenameRegex,
@@ -39,6 +39,16 @@ export default (app: IRouter) => {
       }
     }
   );
+
+  route.get('/clever/button', (req, res) => {
+    try {
+      const loginButtonURI = cleverInstance.getLoginButtonURI();
+      res.setStatus(200).json({ url: loginButtonURI });
+    } catch (err) {
+      logger.error(err);
+      throw err;
+    }
+  });
 
   // POST /api/auth/o/clever/signup?userType=student&cleverId=someID
   route.post(

@@ -12,7 +12,7 @@ import UserModel from '../../models/users.ts';
 
 /**
  * Defaults to requiring any authenticated user.
- * Adds to body: { userInfo: { id, email, codename } };
+ * Adds to body: { user: IUser };
  */
 export default (config?: IAuthHandlerConfig) => async (
   req: Request,
@@ -26,9 +26,6 @@ export default (config?: IAuthHandlerConfig) => async (
   const logger: log.Logger = serviceCollection.get('logger');
   const token = req.get('Authorization');
 
-  // Add this to the body no matter what to prevent errors
-  req.body.userInfo = {};
-
   if (!token || token === 'null') {
     // If no token, check if auth is even required...
     if (authRequired) throw createError(401, 'You must be logged in');
@@ -39,7 +36,7 @@ export default (config?: IAuthHandlerConfig) => async (
     // If it's there, we'll try to
     try {
       logger.debug('Attempting to verify token');
-      const { id, email, codename, exp } = (await jwt.verify(
+      const { id, exp } = (await jwt.verify(
         token,
         env.JWT.SECRET,
         env.JWT.ALGO
@@ -49,26 +46,29 @@ export default (config?: IAuthHandlerConfig) => async (
       if (!exp || exp < Date.now()) {
         // If token is expired, let them know
         throw createError(401, 'Token is expired');
-      } else if (!id || !email || !codename) {
+      } else if (!id) {
         // If token is formatted incorrectly
         throw createError(401, 'Invalid token body');
       } else {
-        if (roles) {
-          logger.debug(
-            `Successfully authenticated, authorizing for roles: \
+        logger.debug(
+          `Successfully authenticated, authorizing for roles: \
             ${roles.join(', ')}`
-          );
-          // Get an instance of the UserModel if we need to role check
-          const userModelInstance = serviceCollection.get(UserModel);
-          const role = await userModelInstance.getRole(parseInt(id, 10));
-          if (!roles.includes(role.id)) {
-            throw createError(401, 'Must be admin');
-          }
+        );
+        // Get an instance of the UserModel if we need to role check
+        const userModelInstance = serviceCollection.get(UserModel);
+        const [user] = await userModelInstance.get({ id: parseInt(id, 10) });
+        if (!roles.includes(user.roleId)) {
+          throw createError(401, 'Must be admin');
         }
-        // Pull the relevant snippets and continue
-        req.body.userInfo.email = email;
-        req.body.userInfo.id = id;
-        req.body.userInfo.codename = codename;
+
+        // Add the user info to the req body if all goes well
+        // But remove unecessary fields
+        Reflect.deleteProperty(user, 'password');
+        Reflect.deleteProperty(user, 'created_at');
+        Reflect.deleteProperty(user, 'updated_at');
+        Reflect.deleteProperty(user, 'isValidated');
+        req.body.user = user;
+
         next();
       }
     } catch (err) {

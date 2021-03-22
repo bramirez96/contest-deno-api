@@ -1,4 +1,4 @@
-import { ICleverStudent, ICleverTeacher } from '../../deps.ts';
+import { ICleverStudent, ICleverTeacher } from '../lib/clever_library/mod.ts';
 import { Roles } from './roles.ts';
 import { IUser } from './users.ts';
 
