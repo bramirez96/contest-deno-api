@@ -1,8 +1,8 @@
 # Database Setup
 
-BEN WAS HERE
+Make sure you have Docker installed on your machine, and then run `docker-compose -f docker/docker-compose.yml up -d`.
 
-Make sure you have Docker installed on your machine, and then run `docker-compose up -d`.
+> It is important that you run THAT SPECIFIC docker-compose file!
 
 Your database container should be set up. If there are any error on composition, you'll need to change ports listed in your Docker configuration files, or you can figure out what on your machine is being hosted on the ports we're attempting to use.
 
@@ -14,7 +14,7 @@ To log in to PGAdmin, open [http://localhost:5950](http://localhost:5950) in you
 
 **IF YOU LOG IN TO PGADMIN AND YOU ONLY SEE 2 DATABASES IN THE SERVER:**
 
-1. run `docker-compose down`
+1. run `docker-compose -f docker/docker-compose.yml down`
 2. delete the repo (sorry, you have to)
 3. run `git config --global core.autocrlf input`
 4. re-clone the repo

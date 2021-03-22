@@ -1,24 +1,23 @@
 import {
-  Router,
-  IRouter,
-  Request,
-  Response,
-  NextFunction,
-  serviceCollection,
-  log,
-  isNumber,
-  required,
-  isString,
-  isBool,
   createError,
-} from '../../../../deps.ts';
-import { INewPrompt, IPrompt } from '../../../interfaces/prompts.ts';
-import { Roles } from '../../../interfaces/roles.ts';
-import PromptQueueModel from '../../../models/promptQueue.ts';
-import PromptModel from '../../../models/prompts.ts';
-import AdminService from '../../../services/admin.ts';
-import authHandler from '../../middlewares/authHandler.ts';
-import validate from '../../middlewares/validate.ts';
+  IRouter,
+  isBool,
+  isNumber,
+  isString,
+  log,
+  NextFunction,
+  Request,
+  required,
+  Response,
+  Router,
+  serviceCollection,
+} from '../../../deps.ts';
+import { INewPrompt, IPrompt } from '../../interfaces/prompts.ts';
+import { Roles } from '../../interfaces/roles.ts';
+import PromptModel from '../../models/prompts.ts';
+import AdminService from '../../services/admin.ts';
+import authHandler from '../middlewares/authHandler.ts';
+import validate from '../middlewares/validate.ts';
 
 const route = Router();
 
@@ -55,13 +54,26 @@ export default (app: IRouter) => {
     '/active',
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const currentPrompt = await promptModelInstance.get(
-          { active: true },
-          { first: true }
-        );
+        const [currentPrompt] = await promptModelInstance.get({ active: true });
         if (!currentPrompt) throw createError(404, 'No prompt currently set!');
 
         res.setStatus(200).json(currentPrompt);
+      } catch (err) {
+        logger.error(err);
+        next(err);
+      }
+    }
+  );
+
+  // GET /queue
+  route.get(
+    '/queue',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const promptQueue = await promptModelInstance.getUpcoming();
+        // Returns an array of prompts that include a `starts_at` date field
+        res.setStatus(200).json(promptQueue);
       } catch (err) {
         logger.error(err);
         next(err);
@@ -89,14 +101,12 @@ export default (app: IRouter) => {
   // GET /:id
   route.get(
     '/:id',
-    authHandler({ roles: [Roles.teacher, Roles.admin] }),
-    validate({ id: [required, isNumber] }, 'params'),
+    authHandler({ roles: [Roles.teacher, Roles.admin, Roles.user] }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const prompt = await promptModelInstance.get(
-          { id: parseInt(req.params.id) },
-          { first: true }
-        );
+        const [prompt] = await promptModelInstance.get({
+          id: parseInt(req.params.id, 10),
+        });
 
         res.setStatus(200).json(prompt);
       } catch (err) {
@@ -110,11 +120,14 @@ export default (app: IRouter) => {
   route.post(
     '/',
     authHandler({ roles: [Roles.admin] }),
-    validate<INewPrompt>({ prompt: [required, isString] }, 'params'),
+    validate<INewPrompt>({ prompt: [required, isString] }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const newPrompt = await promptModelInstance.add(req.body, true);
-
+        const [newPrompt] = await promptModelInstance.add({
+          prompt: req.body.prompt,
+          approved: true,
+          creatorId: req.body.user.id,
+        });
         res.setStatus(201).json(newPrompt);
       } catch (err) {
         logger.error(err);
@@ -123,11 +136,35 @@ export default (app: IRouter) => {
     }
   );
 
+  // POST /custom
+  route.post(
+    '/custom',
+    authHandler({ roles: [Roles.teacher, Roles.admin] }),
+    validate({ prompt: [required, isString] }),
+    async (req, res) => {
+      try {
+        const [newPrompt] = await promptModelInstance.add({
+          prompt: req.body.prompt,
+          approved: false,
+          creatorId: req.body.user.id,
+        });
+        res.setStatus(201).json(newPrompt);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
   // PUT /:id
   route.put(
     '/:id',
     authHandler({ roles: [Roles.admin] }),
-    validate<IPrompt>({ active: [isBool], prompt: [isString] }),
+    validate<IPrompt>({
+      active: [isBool],
+      prompt: [isString],
+      approved: [isBool],
+    }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         await promptModelInstance.update(parseInt(req.params.id), req.body);
@@ -150,25 +187,6 @@ export default (app: IRouter) => {
         await promptModelInstance.delete(parseInt(req.params.id));
 
         res.setStatus(204).end();
-      } catch (err) {
-        logger.error(err);
-        next(err);
-      }
-    }
-  );
-
-  // GET /queue
-  route.get(
-    '/queue',
-    authHandler({ roles: [Roles.teacher, Roles.admin] }),
-    async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const queueModelInstance = serviceCollection.get(PromptQueueModel);
-        const promptQueue = await queueModelInstance.get(undefined, {
-          orderBy: 'starts_at',
-          order: 'ASC',
-        });
-        res.setStatus(200).json(promptQueue);
       } catch (err) {
         logger.error(err);
         next(err);

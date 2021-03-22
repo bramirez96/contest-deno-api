@@ -1,33 +1,195 @@
 import {
-  Service,
-  Inject,
-  serviceCollection,
   createError,
-  v5,
+  Inject,
   moment,
+  Service,
+  serviceCollection,
+  v5,
 } from '../../deps.ts';
 import env from '../config/env.ts';
-import { ISection, ISectionPostBody } from '../interfaces/cleverSections.ts';
-import { IRumble, IRumblePostBody } from '../interfaces/rumbles.ts';
+import {
+  ISection,
+  ISectionPostBody,
+  ISectionWithRumbles,
+} from '../interfaces/cleverSections.ts';
+import { IStudentWithSubmissions } from '../interfaces/cleverStudents.ts';
+import { Roles } from '../interfaces/roles.ts';
+import {
+  IRumblePostBody,
+  IRumbleWithSectionInfo,
+} from '../interfaces/rumbles.ts';
+import { ISubItem } from '../interfaces/submissions.ts';
+import { IUser } from '../interfaces/users.ts';
 import CleverSectionModel from '../models/cleverSections.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
 import RumbleModel from '../models/rumbles.ts';
 import RumbleSectionsModel from '../models/rumbleSections.ts';
+import SubmissionModel from '../models/submissions.ts';
 import UserModel from '../models/users.ts';
 import BaseService from './baseService.ts';
+import SubmissionService from './submission.ts';
 
 @Service()
 export default class RumbleService extends BaseService {
   constructor(
     @Inject(UserModel) private userModel: UserModel,
     @Inject(RumbleModel) private rumbleModel: RumbleModel,
+    @Inject(SubmissionModel) private subModel: SubmissionModel,
+    @Inject(SubmissionService) private subService: SubmissionService,
     @Inject(CleverTeacherModel) private teacherModel: CleverTeacherModel,
-    @Inject(RumbleSectionsModel) private rumbleSections: RumbleSectionsModel,
     @Inject(CleverStudentModel) private studentModel: CleverStudentModel,
-    @Inject(CleverSectionModel) private sectionModel: CleverSectionModel
+    @Inject(CleverSectionModel) private sectionModel: CleverSectionModel,
+    @Inject(RumbleSectionsModel) private rumbleSections: RumbleSectionsModel
   ) {
     super();
+  }
+
+  public async getSections(user: IUser) {
+    try {
+      this.logger.debug(`Getting sections for user ${user.id}`);
+
+      let sections: ISection[];
+      if (user.roleId === Roles.teacher) {
+        sections = await this.teacherModel.getSectionsById(user.id);
+      } else if (user.roleId === Roles.user) {
+        sections = await this.studentModel.getSectionsById(user.id);
+      } else {
+        throw createError(401, 'Invalid user type!');
+      }
+
+      await this.getActiveRumblesForSections(sections as ISectionWithRumbles[]);
+
+      return sections as ISectionWithRumbles[];
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getActiveRumblesForSections(sections: ISectionWithRumbles[]) {
+    try {
+      for await (const section of sections) {
+        const rumbleArray = await this.rumbleModel.getActiveRumblesBySection(
+          section
+        );
+        section.rumbles = rumbleArray.map((r) => ({
+          ...r,
+          sectionId: section.id,
+          sectionName: section.name,
+        }));
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getStudentsInSection(sectionId: number) {
+    // Leaving this in the service to open us up for more data later
+    try {
+      this.logger.debug(
+        `Attempting to retrieve students from section ${sectionId}`
+      );
+
+      const students = await this.sectionModel.getStudentsBySectionId(
+        sectionId
+      );
+
+      for await (const student of students) {
+        const subs = await this.getSubsByStudentAndSection(
+          student.id,
+          sectionId
+        );
+        student.submissions = subs;
+      }
+
+      return students;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getSubsByStudentAndSection(
+    studentId: number,
+    sectionId: number
+  ): Promise<ISubItem[]> {
+    try {
+      this.logger.debug(
+        `Attempting to retrieve codename for student with id ${studentId}`
+      );
+      const [{ codename }] = await this.userModel.get({ id: studentId });
+
+      this.logger.debug(
+        `Attempting to retrieve submissions for student with id ${studentId} in section ${sectionId}`
+      );
+      const basicSubs = await this.subModel.getSubsForStudentInSection(
+        studentId,
+        sectionId
+      );
+
+      this.logger.debug(
+        `Attempting to process submission data for student with id ${studentId}`
+      );
+      const subPromises = basicSubs.map((s) =>
+        this.subService.retrieveSubItem(s, codename)
+      );
+      const subItems = Promise.all(subPromises);
+
+      return subItems;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getStudentsWithSubForRumble(
+    rumbleId: number
+  ): Promise<IStudentWithSubmissions[]> {
+    try {
+      this.logger.debug(
+        `Attempting to retrieve students in rumble ${rumbleId}`
+      );
+
+      const students = await this.rumbleModel.getStudentsByRumbleId(rumbleId);
+
+      for await (const student of students) {
+        const sub = await this.subModel.getSubByStudentAndRumbleId(
+          student.id,
+          rumbleId
+        );
+        if (sub) {
+          const subItem = await this.subService.retrieveSubItem(
+            sub,
+            student.codename
+          );
+          student.submissions = [subItem];
+        } else student.submissions = [];
+      }
+
+      return students;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getSubForStudentByRumble(
+    rumbleId: number,
+    studentId: number
+  ): Promise<ISubItem> {
+    try {
+      const sub = await this.subModel.getSubByStudentAndRumbleId(
+        studentId,
+        rumbleId
+      );
+      const subItem = await this.subService.retrieveSubItem(sub);
+      return subItem;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 
   public async createSection(body: ISectionPostBody, teacherId: number) {
@@ -68,7 +230,7 @@ export default class RumbleService extends BaseService {
     joinCode: string,
     sectionId: number,
     studentId: number
-  ) {
+  ): Promise<ISectionWithRumbles> {
     try {
       // Get the section with the given id
       const section = await this.sectionModel.get(
@@ -90,36 +252,48 @@ export default class RumbleService extends BaseService {
         userId: studentId,
       });
 
-      return section;
+      const rumbles = await this.rumbleModel.getActiveRumblesBySection(section);
+
+      return { ...section, rumbles };
     } catch (err) {
       this.logger.error(err);
       throw err;
     }
   }
 
-  public async createGameInstance(body: IRumblePostBody, sectionId: number) {
+  public async createGameInstances(
+    body: IRumblePostBody,
+    sectionIds: number[]
+  ): Promise<IRumbleWithSectionInfo[]> {
     try {
-      let rumble: IRumble | undefined;
+      const rumbles: IRumbleWithSectionInfo[] = [];
       await this.db.transaction(async () => {
-        const joinCode = this.generateJoinCode(
-          `${body.numMinutes}-${body.promptId}`
-        );
-        const [res] = await this.rumbleModel.add({
-          joinCode,
-          canJoin: false,
-          maxSections: 1,
-          numMinutes: body.numMinutes,
-          promptId: body.promptId,
-        });
+        for await (const sectionId of sectionIds) {
+          const joinCode = this.generateJoinCode(
+            `${body.numMinutes}-${body.promptId}`
+          );
 
-        await this.rumbleSections.add({
-          rumbleId: res.id,
-          sectionId,
-        });
+          const [res] = await this.rumbleModel.add({
+            joinCode,
+            canJoin: false,
+            maxSections: 1,
+            numMinutes: body.numMinutes,
+            promptId: body.promptId,
+          });
 
-        rumble = res;
+          await this.rumbleSections.add({
+            rumbleId: res.id,
+            sectionId,
+          });
+
+          const [{ name }] = await this.sectionModel.get({ id: sectionId });
+
+          rumbles.push({ ...res, sectionName: name, sectionId });
+        }
+        // if (rumbles.length !== sections.length)
+        //   throw createError(409, 'Unable to create rumbles');
       });
-      return rumble;
+      return rumbles;
     } catch (err) {
       this.logger.error(err);
       throw err;

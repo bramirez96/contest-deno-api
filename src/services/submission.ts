@@ -1,4 +1,5 @@
 import { createError, Inject, Service, serviceCollection } from '../../deps.ts';
+import { Sources } from '../interfaces/enumSources.ts';
 import {
   IDSResponse,
   INewSubmission,
@@ -7,6 +8,7 @@ import {
   IUploadResponse,
 } from '../interfaces/submissions.ts';
 import { INewTop3 } from '../interfaces/top3.ts';
+import { IGetQuery } from '../models/baseModel.ts';
 import PromptModel from '../models/prompts.ts';
 import SubmissionModel from '../models/submissions.ts';
 import Top3Model from '../models/top3.ts';
@@ -14,8 +16,6 @@ import UserModel from '../models/users.ts';
 import BaseService from './baseService.ts';
 import BucketService from './bucket.ts';
 import DSService from './dsService.ts';
-import { IGetQuery } from '../models/baseModel.ts';
-import { Sources } from '../interfaces/enumSources.ts';
 
 @Service()
 export default class SubmissionService extends BaseService {
@@ -209,11 +209,16 @@ export default class SubmissionService extends BaseService {
     }
   }
 
-  public async flagSubmission(submissionId: number, flagIds: number[]) {
+  public async flagSubmission(
+    submissionId: number,
+    flagIds: number[],
+    creatorId?: number
+  ) {
     try {
       const flagItems = flagIds.map((flagId) => ({
         flagId,
         submissionId: submissionId,
+        creatorId,
       }));
       const flags = await this.db
         .table('submission_flags')
@@ -241,15 +246,13 @@ export default class SubmissionService extends BaseService {
     }
   }
 
-  private async retrieveSubItem(
+  public async retrieveSubItem(
     sub: ISubmission,
     codename?: string
   ): Promise<ISubItem> {
     try {
-      const fromS3 = await this.bucketService.get(sub.s3Label, sub.etag);
-
       // Generate img src tag
-      const src = this.generateImgSrc(fromS3.body);
+      const src = await this.getImgSrc(sub);
 
       // Get prompt
       const { prompt } = await this.promptModel.get(
@@ -302,12 +305,17 @@ export default class SubmissionService extends BaseService {
     };
   }
 
-  private generateImgSrc(body: Uint8Array) {
-    const buff = btoa(
-      body.reduce((data, byte) => data + String.fromCharCode(byte), '')
-    );
-
-    return `data:application/octet-stream;base64,${buff}`;
+  public async getImgSrc(sub: ISubmission) {
+    try {
+      const fromS3 = await this.bucketService.get(sub.s3Label, sub.etag);
+      const bufferString = btoa(
+        fromS3.body.reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+      return `data:application/octet-stream;base64,${bufferString}`;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 }
 

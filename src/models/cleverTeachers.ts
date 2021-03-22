@@ -27,7 +27,7 @@ export default class CleverTeacherModel extends BaseModel<
         )
         .innerJoin('users', 'clever_teachers.userId', 'users.id')
         .where('users.id', teacherId)
-        .select('sections.*')
+        .select('clever_sections.*')
         .execute()) as unknown[]) as ISection[];
 
       return sections;

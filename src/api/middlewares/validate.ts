@@ -1,13 +1,13 @@
 import {
-  ValidationRules,
-  validate,
-  Request,
-  Response,
-  NextFunction,
   createError,
   log,
-  serviceCollection,
+  NextFunction,
+  Request,
+  Response,
   Rule,
+  serviceCollection,
+  validate,
+  ValidationRules,
 } from '../../../deps.ts';
 
 export default <ObjectInterface = undefined>(

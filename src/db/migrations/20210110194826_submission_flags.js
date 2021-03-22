@@ -14,6 +14,11 @@ exports.up = function (knex) {
       .references('enum_flags.id')
       .onUpdate('CASCADE')
       .onDelete('RESTRICT');
+    t.integer('creatorId')
+      .unsigned()
+      .references('users.id')
+      .onUpdate('CASCADE')
+      .onDelete('RESTRICT');
     t.unique(['submissionId', 'flagId']);
   });
 };

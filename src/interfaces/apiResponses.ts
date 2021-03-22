@@ -1,4 +1,4 @@
-import { ICleverStudent, ICleverTeacher } from '../../deps.ts';
+import { ICleverProfile } from '../../deps.ts';
 import { Roles } from './roles.ts';
 import { IUser } from './users.ts';
 
@@ -75,6 +75,6 @@ export type CleverAuthResponseType =
   | {
       actionType: 'NEW';
       roleId: Roles & number;
-      body: ICleverStudent | ICleverTeacher;
+      body: ICleverProfile;
       cleverId: string;
     };
