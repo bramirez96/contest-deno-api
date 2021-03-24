@@ -1,4 +1,4 @@
-import { config, Algorithm } from '../../deps.ts';
+import { Algorithm, config } from '../../deps.ts';
 
 config({ export: true });
 
@@ -26,13 +26,22 @@ export default {
   SERVER_URL: Deno.env.get('SERVER_URL') || 'http://localhost:' + PORT,
   DB_URL: Deno.env.get(envPrefix() + 'DB_URL'),
   REACT_APP_URL,
-  DB_CONFIG: {
-    database: Deno.env.get(envPrefix() + 'DB_NAME') || '',
-    hostname: Deno.env.get(envPrefix() + 'DB_HOST') || '',
-    port: parseInt(Deno.env.get(envPrefix() + 'DB_PORT') || '0', 10),
-    username: Deno.env.get(envPrefix() + 'DB_USER') || '',
-    password: Deno.env.get(envPrefix() + 'DB_PASS') || '',
-  },
+  DB_CONFIG:
+    DENO_ENV === 'production'
+      ? {
+          database: Deno.env.get('RDS_DB_NAME') || '',
+          hostname: Deno.env.get('RDS_HOSTNAME') || '',
+          port: parseInt(Deno.env.get('RDS_PORT') || '', 10),
+          username: Deno.env.get('RDS_USERNAME') || '',
+          password: Deno.env.get('RDS_PASSWORD') || '',
+        }
+      : {
+          database: Deno.env.get(envPrefix() + 'DB_NAME') || '',
+          hostname: Deno.env.get(envPrefix() + 'DB_HOST') || '',
+          port: parseInt(Deno.env.get(envPrefix() + 'DB_PORT') || '0', 10),
+          username: Deno.env.get(envPrefix() + 'DB_USER') || '',
+          password: Deno.env.get(envPrefix() + 'DB_PASS') || '',
+        },
   SES_CONFIG: {
     credentials: {
       accessKeyId: Deno.env.get('AWS_ACCESS_KEY_ID') || '',
