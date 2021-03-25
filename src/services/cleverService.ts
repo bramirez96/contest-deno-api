@@ -45,12 +45,12 @@ export default class CleverService extends BaseService {
   public async authorizeUser(code: string): Promise<CleverAuthResponseType> {
     try {
       // Exchange user's code for a token
-      const token = await this.clever.getToken(code);
-      console.log({ token });
+      const {
+        data: { access_token: token },
+      } = await this.clever.getToken(code);
 
       // Get user's info from clever
-      const rawUser = await this.clever.getUserInfo(token);
-      console.log({ rawUser });
+      const { data: rawUser } = await this.clever.getUserInfo(token);
       const { id, type } = rawUser.data; // Pull id for easier use
       let roleId: number;
       if (type === 'student') roleId = Roles.user;
@@ -74,7 +74,7 @@ export default class CleverService extends BaseService {
         };
       } else {
         // We don't have a user account connected to their clever ID yet!
-        const user = await this.clever.getUserProfile(rawUser, token);
+        const { data: user } = await this.clever.getUserProfile(rawUser, token);
 
         // If the user has an email in their clever account, check our
         // user table for an email match. If we find a match, the user
