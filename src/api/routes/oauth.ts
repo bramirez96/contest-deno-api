@@ -36,6 +36,7 @@ export default (app: IRouter) => {
         res.setStatus(200).json(cleverResponse);
       } catch (err) {
         logger.error(err);
+        throw err;
       }
     }
   );
