@@ -71,7 +71,7 @@ export default class CleverService extends BaseService {
         };
       } else {
         // We don't have a user account connected to their clever ID yet!
-        const user = await this.clever.getUserProfile(rawUser, token);
+        const { data: user } = await this.clever.getUserProfile(rawUser, token);
 
         // If the user has an email in their clever account, check our
         // user table for an email match. If we find a match, the user

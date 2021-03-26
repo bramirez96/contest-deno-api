@@ -75,6 +75,6 @@ export type CleverAuthResponseType =
   | {
       actionType: 'NEW';
       roleId: Roles & number;
-      body: ICleverProfile;
+      body: ICleverProfile['data'];
       cleverId: string;
     };
