@@ -24,3 +24,5 @@ cli/tests/.test_coverage/
 .DS_Store?
 
 .env
+
+src/db/production_seeds/
