@@ -45,4 +45,18 @@ module.exports = {
       directory: './src/db/seeds',
     },
   },
+  production: {
+    client: 'pg',
+    connection: process.env.RDS_DB_URL,
+    pool: {
+      min: 2,
+      max: 10,
+    },
+    migrations: {
+      directory: './src/db/migrations',
+    },
+    seeds: {
+      directory: './src/db/production_seeds',
+    },
+  },
 };

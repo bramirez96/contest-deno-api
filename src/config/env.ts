@@ -1,4 +1,4 @@
-import { config, Algorithm } from '../../deps.ts';
+import { Algorithm, config } from '../../deps.ts';
 
 config({ export: true });
 
