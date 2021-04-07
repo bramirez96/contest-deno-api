@@ -60,6 +60,42 @@ export default class SubmissionModel extends BaseModel<
       throw err;
     }
   }
+
+  public async getSubsForFeedback(
+    studentId: number,
+    rumbleId: number
+  ): Promise<ISubmission[]> {
+    try {
+      const subs = ((await this.db
+        .table('users')
+        .innerJoin('rumble_feedback', 'rumble_feedback.voterId', 'users.id')
+        .innerJoin(
+          'submissions',
+          'submissions.id',
+          'rumble_feedback.submissionId'
+        )
+        .innerJoin('clever_students', 'clever_students.userId', 'users.id')
+        .innerJoin(
+          'clever_sections',
+          'clever_sections.id',
+          'clever_students.sectionId'
+        )
+        .innerJoin(
+          'rumble_sections',
+          'rumble_sections.sectionId',
+          'clever_sections.id'
+        )
+        .innerJoin('rumbles', 'rumbles.id', 'rumble_sections.rumbleId')
+        .select('submissions.*')
+        .where('users.id', studentId)
+        .where('rumbles.id', rumbleId)
+        .execute()) as unknown) as ISubmission[];
+      return subs;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
 }
 
 serviceCollection.addTransient(SubmissionModel);
