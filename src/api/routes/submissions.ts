@@ -15,7 +15,9 @@ import {
 } from '../../../deps.ts';
 import { Roles } from '../../interfaces/roles.ts';
 import { INewSubmission } from '../../interfaces/submissions.ts';
+import RumbleFeedbackModel from '../../models/rumbleFeedback.ts';
 import SubmissionModel from '../../models/submissions.ts';
+import RumbleService from '../../services/rumble.ts';
 import SubmissionService from '../../services/submission.ts';
 import authHandler from '../middlewares/authHandler.ts';
 import upload from '../middlewares/upload.ts';
@@ -26,6 +28,8 @@ const route = Router();
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const subServiceInstance = serviceCollection.get(SubmissionService);
+  const feedbackModelInstance = serviceCollection.get(RumbleFeedbackModel);
+  const rumbleServiceInstance = serviceCollection.get(RumbleService);
   app.use(['/submit', '/submission', '/submissions'], route);
 
   // api/submissions/
@@ -218,6 +222,36 @@ export default (app: IRouter) => {
           parseInt(req.params.flagId, 10)
         );
         res.setStatus(204).end();
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  route.put(
+    '/:submissionId/feedback',
+    authHandler({ roles: [Roles.admin, Roles.teacher] }),
+    async (req: Request, res: Response) => {
+      try {
+        await rumbleServiceInstance.addScoresToFeedback(req.body);
+        res.setStatus(204);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  route.get(
+    '/:submissionId/feedback',
+    authHandler({ roles: [Roles.admin, Roles.teacher, Roles.user] }),
+    async (req: Request, res: Response) => {
+      try {
+        const feedbackScores = await feedbackModelInstance.get({
+          submissionId: parseInt(req.params.submissionId, 10),
+        });
+        res.setStatus(200).json(feedbackScores);
       } catch (err) {
         logger.error(err);
         throw err;
