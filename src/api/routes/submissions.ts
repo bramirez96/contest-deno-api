@@ -235,7 +235,7 @@ export default (app: IRouter) => {
     async (req: Request, res: Response) => {
       try {
         await rumbleServiceInstance.addScoresToFeedback(req.body);
-        res.setStatus(204);
+        res.setStatus(204).end();
       } catch (err) {
         logger.error(err);
         throw err;
