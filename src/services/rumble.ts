@@ -14,6 +14,7 @@ import {
 } from '../interfaces/cleverSections.ts';
 import { IStudentWithSubmissions } from '../interfaces/cleverStudents.ts';
 import { Roles } from '../interfaces/roles.ts';
+import { IRumbleFeedback } from '../interfaces/rumbleFeedback.ts';
 import {
   IRumblePostBody,
   IRumbleWithSectionInfo,
@@ -23,6 +24,7 @@ import { IUser } from '../interfaces/users.ts';
 import CleverSectionModel from '../models/cleverSections.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
+import RumbleFeedbackModel from '../models/rumbleFeedback.ts';
 import RumbleModel from '../models/rumbles.ts';
 import RumbleSectionsModel from '../models/rumbleSections.ts';
 import SubmissionModel from '../models/submissions.ts';
@@ -40,9 +42,52 @@ export default class RumbleService extends BaseService {
     @Inject(CleverTeacherModel) private teacherModel: CleverTeacherModel,
     @Inject(CleverStudentModel) private studentModel: CleverStudentModel,
     @Inject(CleverSectionModel) private sectionModel: CleverSectionModel,
-    @Inject(RumbleSectionsModel) private rumbleSections: RumbleSectionsModel
+    @Inject(RumbleSectionsModel) private rumbleSections: RumbleSectionsModel,
+    @Inject(RumbleFeedbackModel) private rumbleFeedback: RumbleFeedbackModel
   ) {
     super();
+  }
+
+  public async getSubsForFeedback(
+    studentId: number,
+    rumbleId: number
+  ): Promise<ISubItem[]> {
+    try {
+      this.logger.debug(
+        `Getting submissions for feedback for user ${studentId}`
+      );
+
+      const submissions = await this.subModel.getSubsForFeedback(
+        studentId,
+        rumbleId
+      );
+
+      const subPromises = submissions.map((s) =>
+        this.subService.retrieveSubItem(s)
+      );
+
+      const subItems = await Promise.all(subPromises);
+      return subItems;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async addScoresToFeedback(feedback: IRumbleFeedback[]): Promise<void> {
+    try {
+      this.logger.debug(`Updating feedback scores...`);
+
+      const feedbackPromises = feedback.map(({ id, ...body }) =>
+        this.rumbleFeedback.update(id, body)
+      );
+      await this.db.transaction(async () => {
+        await Promise.all(feedbackPromises);
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 
   public async getSections(user: IUser) {
