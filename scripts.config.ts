@@ -26,6 +26,10 @@ const config: DenonConfig = {
       },
       watch: false,
     },
+    pytest: {
+      cmd: 'deno run scripts/index.ts',
+      allow: ['run'],
+    },
   },
 };
 
