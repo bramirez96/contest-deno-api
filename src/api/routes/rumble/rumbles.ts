@@ -89,4 +89,34 @@ export default (app: IRouter) => {
       }
     }
   );
+  route.get(
+    '/:rumbleId/feedback',
+    authHandler({ roles: [Roles.user, Roles.admin] }),
+    async (req, res) => {
+      try {
+        const submissions = await rumbleServiceInstance.getSubsForFeedback(
+          parseInt(req.params.rumbleId, 10),
+          parseInt(req.query.studentId, 10)
+        );
+        res.setStatus(201).json(submissions);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+  //endpoint for teachers to start feedback
+  // route.put(
+  //   '/:rumbleId/feedback/start',
+  //   authHandler({ roles: [Roles.user, Roles.admin] }),
+  //   async (req, res) => {
+  //     try {
+  //       await //?
+  //       res.setStatus(204);
+  //     } catch (err) {
+  //       logger.error(err);
+  //       throw err;
+  //     }
+  //   }
+  // );
 };

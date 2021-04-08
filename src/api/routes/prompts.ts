@@ -90,7 +90,7 @@ export default (app: IRouter) => {
         const adminServiceInstance = serviceCollection.get(AdminService);
         await adminServiceInstance.updateActivePrompt();
 
-        res.setStatus(204).json();
+        res.setStatus(204).end();
       } catch (err) {
         logger.error(err);
         next(err);
