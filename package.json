@@ -27,6 +27,8 @@
     "makeseed": "yarn knex seed:make",
     "lint:check": "npx eslint .",
     "build": "docker build -t storysquadllc/deno-be .",
+    "docker:run": "docker run -it storysquadllc/deno-be",
+    "docker:exec": "docker exec -it bf7e1fa5706a bash",
     "deploy": "yarn build && docker push storysquadllc/deno-be:latest"
   },
   "dependencies": {
