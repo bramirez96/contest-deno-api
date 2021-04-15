@@ -231,7 +231,7 @@ export default (app: IRouter) => {
 
   route.put(
     '/:submissionId/feedback',
-    authHandler({ roles: [Roles.admin, Roles.teacher] }),
+    authHandler(),
     async (req: Request, res: Response) => {
       try {
         await rumbleServiceInstance.addScoresToFeedback(req.body);
