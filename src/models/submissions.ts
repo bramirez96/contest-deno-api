@@ -44,7 +44,10 @@ export default class SubmissionModel extends BaseModel<
     }
   }
 
-  public async getSubByStudentAndRumbleId(studentId: number, rumbleId: number) {
+  public async getSubByStudentAndRumbleId(
+    studentId: number,
+    rumbleId: number
+  ): Promise<ISubmission | undefined> {
     try {
       const subs = ((await this.db
         .table('submissions')

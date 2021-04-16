@@ -1,9 +1,9 @@
 // deno-lint-ignore-file
 const students = [
-  { userId: 5, sectionId: 1 },
-  { userId: 5, sectionId: 2 },
+  { userId: 6, sectionId: 1 },
   { userId: 7, sectionId: 1 },
-  { userId: 7, sectionId: 2 },
+  { userId: 8, sectionId: 1 },
+  { userId: 9, sectionId: 1 },
 ];
 
 async function seed_clever_students(knex) {

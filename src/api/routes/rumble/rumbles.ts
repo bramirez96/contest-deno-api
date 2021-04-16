@@ -1,16 +1,8 @@
-import {
-  IRouter,
-  isNumber,
-  log,
-  required,
-  Router,
-  serviceCollection,
-} from '../../../../deps.ts';
+import { IRouter, log, Router, serviceCollection } from '../../../../deps.ts';
 import { Roles } from '../../../interfaces/roles.ts';
 import RumbleModel from '../../../models/rumbles.ts';
 import RumbleService from '../../../services/rumble.ts';
 import authHandler from '../../middlewares/authHandler.ts';
-import validate from '../../middlewares/validate.ts';
 
 const route = Router();
 
@@ -21,22 +13,17 @@ export default (app: IRouter) => {
 
   app.use('/rumbles', route);
 
-  route.get(
-    '/:rumbleId',
-    authHandler(),
-    validate({ id: [required, isNumber] }, 'params'),
-    async (req, res) => {
-      try {
-        const [rumble] = await rumbleModelInstance.get({
-          id: parseInt(req.params.id),
-        });
-        res.setStatus(200).json(rumble);
-      } catch (err) {
-        logger.error(err);
-        throw err;
-      }
+  route.get('/:rumbleId', authHandler(), async (req, res) => {
+    try {
+      const [rumble] = await rumbleModelInstance.get({
+        id: parseInt(req.params.id),
+      });
+      res.setStatus(200).json(rumble);
+    } catch (err) {
+      logger.error(err);
+      throw err;
     }
-  );
+  });
 
   // GET /rumbles/:rumbleId/students - returns a list of students with subs
   route.get(
@@ -89,6 +76,7 @@ export default (app: IRouter) => {
       }
     }
   );
+
   route.get('/:rumbleId/feedback', authHandler(), async (req, res) => {
     try {
       const submissions = await rumbleServiceInstance.getSubsForFeedback(
@@ -101,18 +89,17 @@ export default (app: IRouter) => {
       throw err;
     }
   });
-  //endpoint for teachers to start feedback
-  // route.put(
-  //   '/:rumbleId/feedback/start',
-  //   authHandler({ roles: [Roles.user, Roles.admin] }),
-  //   async (req, res) => {
-  //     try {
-  //       await //?
-  //       res.setStatus(204);
-  //     } catch (err) {
-  //       logger.error(err);
-  //       throw err;
-  //     }
-  //   }
-  // );
+
+  // endpoint for teachers to start feedback
+  route.put('/:rumbleId/feedback/start', authHandler(), async (req, res) => {
+    try {
+      await rumbleServiceInstance.startFeedback(
+        parseInt(req.params.rumbleId, 10)
+      );
+      res.setStatus(204).end();
+    } catch (err) {
+      logger.error(err);
+      throw err;
+    }
+  });
 };

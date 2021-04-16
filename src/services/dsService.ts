@@ -1,9 +1,9 @@
 import {
-  Service,
   Inject,
-  serviceCollection,
   log,
   PutObjectResponse,
+  Service,
+  serviceCollection,
 } from '../../deps.ts';
 import { IDSResponse } from '../interfaces/submissions.ts';
 
@@ -22,6 +22,15 @@ export default class DSService {
     });
 
     return res;
+  }
+
+  public async generateFeedbackAssignments(rumbleId: number): Promise<void> {
+    try {
+      await rumbleId;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 }
 

@@ -245,9 +245,10 @@ export default (app: IRouter) => {
 
   route.get(
     '/:submissionId/feedback',
-    authHandler({ roles: [Roles.admin, Roles.teacher, Roles.user] }),
+    authHandler(),
     async (req: Request, res: Response) => {
       try {
+        console.log({ subId: req.params.submissionId });
         const feedbackScores = await feedbackModelInstance.get({
           submissionId: parseInt(req.params.submissionId, 10),
         });

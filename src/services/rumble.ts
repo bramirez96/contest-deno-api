@@ -30,12 +30,14 @@ import RumbleSectionsModel from '../models/rumbleSections.ts';
 import SubmissionModel from '../models/submissions.ts';
 import UserModel from '../models/users.ts';
 import BaseService from './baseService.ts';
+import DSService from './dsService.ts';
 import SubmissionService from './submission.ts';
 
 @Service()
 export default class RumbleService extends BaseService {
   constructor(
     @Inject(UserModel) private userModel: UserModel,
+    @Inject(DSService) private dsService: DSService,
     @Inject(RumbleModel) private rumbleModel: RumbleModel,
     @Inject(SubmissionModel) private subModel: SubmissionModel,
     @Inject(SubmissionService) private subService: SubmissionService,
@@ -223,12 +225,15 @@ export default class RumbleService extends BaseService {
   public async getSubForStudentByRumble(
     rumbleId: number,
     studentId: number
-  ): Promise<ISubItem> {
+  ): Promise<ISubItem | undefined> {
     try {
       const sub = await this.subModel.getSubByStudentAndRumbleId(
         studentId,
         rumbleId
       );
+      // If no sub is found, return undefined
+      if (!sub) return undefined;
+
       const subItem = await this.subService.retrieveSubItem(sub);
       return subItem;
     } catch (err) {
@@ -361,6 +366,15 @@ export default class RumbleService extends BaseService {
 
       // Return the end time to the user
       return endTime;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async startFeedback(rumbleId: number): Promise<void> {
+    try {
+      await this.dsService.generateFeedbackAssignments(rumbleId);
     } catch (err) {
       this.logger.error(err);
       throw err;
