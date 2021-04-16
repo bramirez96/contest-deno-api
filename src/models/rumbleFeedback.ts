@@ -1,4 +1,4 @@
-import { Service, serviceCollection } from '../../deps.ts';
+import { QueryValues, Service, serviceCollection } from '../../deps.ts';
 import {
   INewRumbleFeedback,
   IRumbleFeedback,
@@ -32,9 +32,23 @@ export default class RumbleFeedbackModel extends BaseModel<
       .innerJoin('rumbles', 'rumbles.promptId', 'prompts.id')
       .where('rumble_feedback.voterId', voterId)
       .where('rumbles.id', rumbleId)
+      .select('rumble_feedback.*')
       .execute()) as unknown) as IRumbleFeedback[];
 
     return feedback;
+  }
+
+  public async updateFeedback({
+    submissionId,
+    voterId,
+    ...scores
+  }: Omit<IRumbleFeedback, 'id'>): Promise<void> {
+    await this.db
+      .table('rumble_feedback')
+      .where('voterId', voterId)
+      .where('submissionId', submissionId)
+      .update((scores as unknown) as QueryValues)
+      .execute();
   }
 }
 

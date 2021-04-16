@@ -80,10 +80,10 @@ export default (app: IRouter) => {
   route.get('/:rumbleId/feedback', authHandler(), async (req, res) => {
     try {
       const submissions = await rumbleServiceInstance.getSubsForFeedback(
-        parseInt(req.params.rumbleId, 10),
-        parseInt(req.query.studentId, 10)
+        parseInt(req.query.studentId, 10),
+        parseInt(req.params.rumbleId, 10)
       );
-      res.setStatus(201).json(submissions);
+      res.setStatus(200).json(submissions);
     } catch (err) {
       logger.error(err);
       throw err;

@@ -248,7 +248,6 @@ export default (app: IRouter) => {
     authHandler(),
     async (req: Request, res: Response) => {
       try {
-        console.log({ subId: req.params.submissionId });
         const feedbackScores = await feedbackModelInstance.get({
           submissionId: parseInt(req.params.submissionId, 10),
         });

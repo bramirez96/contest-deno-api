@@ -70,28 +70,17 @@ export default class SubmissionModel extends BaseModel<
   ): Promise<ISubmission[]> {
     try {
       const subs = ((await this.db
-        .table('users')
-        .innerJoin('rumble_feedback', 'rumble_feedback.voterId', 'users.id')
+        .table('rumble_feedback')
         .innerJoin(
           'submissions',
           'submissions.id',
           'rumble_feedback.submissionId'
         )
-        .innerJoin('clever_students', 'clever_students.userId', 'users.id')
-        .innerJoin(
-          'clever_sections',
-          'clever_sections.id',
-          'clever_students.sectionId'
-        )
-        .innerJoin(
-          'rumble_sections',
-          'rumble_sections.sectionId',
-          'clever_sections.id'
-        )
-        .innerJoin('rumbles', 'rumbles.id', 'rumble_sections.rumbleId')
-        .select('submissions.*')
-        .where('users.id', studentId)
+        .innerJoin('prompts', 'prompts.id', 'submissions.promptId')
+        .innerJoin('rumbles', 'rumbles.promptId', 'prompts.id')
+        .where('rumble_feedback.voterId', studentId)
         .where('rumbles.id', rumbleId)
+        .select('submissions.*')
         .execute()) as unknown) as ISubmission[];
       return subs;
     } catch (err) {

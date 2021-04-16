@@ -69,6 +69,7 @@ export default class RumbleService extends BaseService {
       );
 
       const subItems = await Promise.all(subPromises);
+
       return subItems;
     } catch (err) {
       this.logger.error(err);
@@ -80,9 +81,10 @@ export default class RumbleService extends BaseService {
     try {
       this.logger.debug(`Updating feedback scores...`);
 
-      const feedbackPromises = feedback.map(({ id, ...body }) =>
-        this.rumbleFeedback.update(id, body)
-      );
+      const feedbackPromises = feedback.map(({ id, ...body }) => {
+        return this.rumbleFeedback.updateFeedback(body);
+      });
+
       await this.db.transaction(async () => {
         await Promise.all(feedbackPromises);
       });
