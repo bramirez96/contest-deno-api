@@ -38,6 +38,8 @@ export default (app: IRouter) => {
     }
   );
 
+  // TODO 409 foreign key conflict
+  // TODO None for gradeId retrns 400
   route.post(
     '/:teacherId/sections',
     authHandler({ roles: [Roles.admin, Roles.teacher] }),

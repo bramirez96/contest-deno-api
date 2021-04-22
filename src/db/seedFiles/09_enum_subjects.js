@@ -14,6 +14,7 @@ const subjects = [
   { id: 'PE and health', subject: 'PE/Health' },
   { id: 'arts and music', subject: 'Arts/Music' },
   { id: 'other', subject: 'Other' },
+  // TODO fix this
   { id: '', subject: 'None' },
 ];
 
