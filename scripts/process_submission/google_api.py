@@ -3,7 +3,8 @@ from os import environ, getenv, path
 from dotenv import load_dotenv
 from google.cloud import vision
 from google.cloud.vision import types
-from scripts.process_submission.moderation.text_moderation import BadWordTextModerator
+from scripts.process_submission.moderation.text_moderation import \
+    BadWordTextModerator
 
 # XXX: Documentation parses to Markdown on FastAPI Swagger UI
 # Attribution: Most of this code is from transcription.py, safe_search.py, and
@@ -100,7 +101,7 @@ class GoogleAPI:
         # Calculate rotation with rotation_degrees function
         rotation = self.rotation_degrees(response)
 
-        return (page_confidence < 0.85), flagged, transcribed_text, rotation
+        return page_confidence, flagged, transcribed_text, rotation
 
     def rotation_degrees(self, response):
         '''

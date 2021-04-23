@@ -1,10 +1,4 @@
-import {
-  Service,
-  Inject,
-  serviceCollection,
-  log,
-  PutObjectResponse,
-} from '../../deps.ts';
+import { Inject, log, PutObjectResponse, Service } from '../../deps.ts';
 import { IDSResponse } from '../interfaces/submissions.ts';
 
 @Service()
@@ -20,9 +14,31 @@ export default class DSService {
       score: Math.floor(Math.random() * 40 + 10), // Rand 10-50
       rotation: 0,
     });
-
     return res;
   }
+
+  //   try {
+  //     const cmd = Deno.run({
+  //       cmd: [
+  //         'python',
+  //         'scripts/process_submission/main.py',
+  //         JSON.stringify(submission),
+  //       ],
+  //       stderr: 'piped',
+  //       stdin: 'piped',
+  //       stdout: 'piped',
+  //     });
+  //     const { err, output } = await this.processScriptResponse<IDSResponse>(
+  //       cmd
+  //     );
+  //     cmd.close();
+  //     if (err) throw new Error(err);
+  //     return output;
+  //   } catch (err) {
+  //     console.log(err);
+  //     throw err;
+  //   }
+  // }
 }
 
 serviceCollection.addTransient(DSService);
