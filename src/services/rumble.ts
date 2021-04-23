@@ -377,6 +377,7 @@ export default class RumbleService extends BaseService {
   public async startFeedback(rumbleId: number): Promise<void> {
     try {
       await this.dsService.generateFeedbackAssignments(rumbleId);
+      // TODO finish this
     } catch (err) {
       this.logger.error(err);
       throw err;

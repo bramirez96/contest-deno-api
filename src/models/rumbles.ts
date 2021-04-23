@@ -24,10 +24,15 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
           'clever_sections.id',
           'rumble_sections.sectionId'
         )
-        .select('rumbles.*', 'rumble_sections.end_time')
+        .select(
+          'rumbles.*',
+          'rumble_sections.end_time',
+          'rumble_sections.phase'
+        )
         .where('clever_sections.id', section.id)
         .execute()) as unknown[]) as IRumble[];
 
+      // TODO put the WHOLE section on the rumble instead of this info piece
       return rumbles.map<IRumbleWithSectionInfo>((r) => ({
         ...r,
         sectionId: section.id,

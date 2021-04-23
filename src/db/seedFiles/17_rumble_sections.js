@@ -2,8 +2,18 @@
 const moment = require('moment');
 
 const rumbleSections = [
-  { rumbleId: 1, sectionId: 1, end_time: moment.utc().subtract(24, 'h') },
-  { rumbleId: 2, sectionId: 1, end_time: moment.utc().subtract(1, 'h') },
+  {
+    rumbleId: 1,
+    sectionId: 1,
+    end_time: moment.utc().subtract(24, 'h'),
+    phase: 'COMPLETE',
+  },
+  {
+    rumbleId: 2,
+    sectionId: 1,
+    end_time: moment.utc().subtract(1, 'h'),
+    phase: 'FEEDBACK',
+  },
   { rumbleId: 3, sectionId: 1 },
 ];
 
