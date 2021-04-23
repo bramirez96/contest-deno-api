@@ -22,5 +22,9 @@ cli/tests/.test_coverage/
 # MacOS generated files
 .DS_Store
 .DS_Store?
+#notebook checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+.python
 
 .env
