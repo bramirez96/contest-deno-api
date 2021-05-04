@@ -1,5 +1,6 @@
 import { RumblePhases } from './rumbleSections.ts';
 
+// TODO update this to include full section instead of this, requires a lot of fe/be work
 export interface IRumbleWithSectionInfo extends IRumble {
   sectionName: string;
   sectionId: number;
@@ -21,4 +22,5 @@ export interface INewRumble extends IRumblePostBody {
 export interface IRumblePostBody {
   numMinutes: number;
   promptId: number;
+  start_time?: Date;
 }

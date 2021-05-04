@@ -313,24 +313,27 @@ export default class RumbleService extends BaseService {
     }
   }
 
-  public async createGameInstances(
-    body: IRumblePostBody,
-    sectionIds: number[]
-  ): Promise<IRumbleWithSectionInfo[]> {
+  public async createGameInstances({
+    rumble,
+    sectionIds,
+  }: {
+    rumble: IRumblePostBody;
+    sectionIds: number[];
+  }): Promise<IRumbleWithSectionInfo[]> {
     try {
       const rumbles: IRumbleWithSectionInfo[] = [];
       await this.db.transaction(async () => {
         for await (const sectionId of sectionIds) {
           const joinCode = this.generateJoinCode(
-            `${body.numMinutes}-${body.promptId}`
+            `${rumble.numMinutes}-${rumble.promptId}`
           );
 
           const [res] = await this.rumbleModel.add({
             joinCode,
             canJoin: false,
             maxSections: 1,
-            numMinutes: body.numMinutes,
-            promptId: body.promptId,
+            numMinutes: rumble.numMinutes,
+            promptId: rumble.promptId,
           });
 
           await this.rumbleSections.add({
