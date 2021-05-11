@@ -1,11 +1,11 @@
 import {
-  Opine,
-  Request,
-  Response,
-  NextFunction,
   createError,
   IError,
   log,
+  NextFunction,
+  Opine,
+  Request,
+  Response,
   serviceCollection,
 } from '../../deps.ts';
 
@@ -38,6 +38,6 @@ export default (app: Opine) => {
     logger.debug(`${err.status} - { error: '${err.message}' }`);
     res
       .setStatus(err.status || 500)
-      .json({ message: err.message || 'Something went wrong.' });
+      .json({ message: err.message || 'Something went wrong' });
   });
 };

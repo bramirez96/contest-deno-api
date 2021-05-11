@@ -1,16 +1,16 @@
 import {
-  Router,
-  Request,
-  Response,
-  isString,
-  isNumber,
-  isEmail,
-  required,
-  match,
-  IRouter,
-  serviceCollection,
-  log,
   createError,
+  IRouter,
+  isEmail,
+  isNumber,
+  isString,
+  log,
+  match,
+  Request,
+  required,
+  Response,
+  Router,
+  serviceCollection,
 } from '../../../deps.ts';
 import {
   codenameRegex,
@@ -18,11 +18,11 @@ import {
   passwordRegex,
   uuidV5Regex,
 } from '../../config/dataConstraints.ts';
-import validate from '../middlewares/validate.ts';
-import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
-import { INewUser } from '../../interfaces/users.ts';
 import { Roles } from '../../interfaces/roles.ts';
+import { INewUser } from '../../interfaces/users.ts';
+import AuthService from '../../services/auth.ts';
+import validate from '../middlewares/validate.ts';
 import oauth from './oauth.ts';
 
 const route = Router();

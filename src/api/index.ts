@@ -1,10 +1,10 @@
 import { Router } from '../../deps.ts';
 import auth from './routes/auth.ts';
 import contestRoutes from './routes/contest/index.ts';
-import users from './routes/users.ts';
+import prompts from './routes/prompts.ts';
 import rumbleRoutes from './routes/rumble/index.ts';
 import submissions from './routes/submissions.ts';
-import prompts from './routes/prompts.ts';
+import users from './routes/users.ts';
 
 export default () => {
   console.log('Loading routers...');

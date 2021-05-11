@@ -1,0 +1,6 @@
+components:
+  schemas:
+    Date:
+      type: string
+      description: a date string in ISO format
+      example: '2021-05-10T00:00:00.000Z'

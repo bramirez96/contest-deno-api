@@ -1,0 +1,19 @@
+{
+  "definition": {
+    "openapi": "'3.0.0'",
+    "info": {
+      "title": "Deno Contest API",
+      "version": "2.0.0",
+      "description": "This is documentation for the Story Squad Deno API. All endpoints on this API have the following prefix: /api"
+    },
+    "tags": [
+      { "name": "Auth", "description": "Authentication/Authorization" },
+      { "name": "Submissions", "description": "Submitting Writing/Drawings" }
+    ],
+    "components": {
+      "securitySchemes": {},
+      "responses": {}
+    }
+  },
+  "apis": ["./src/api/routes/**/*.yaml"]
+}
