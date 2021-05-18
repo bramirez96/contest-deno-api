@@ -1,11 +1,11 @@
 import {
-  Service,
+  Handlebars,
   Inject,
+  log,
+  SendEmailCommand,
+  Service,
   serviceCollection,
   SES,
-  SendEmailCommand,
-  log,
-  Handlebars,
 } from '../../deps.ts';
 import hbsConfig from '../../hbsConfig.ts';
 import env from '../config/env.ts';

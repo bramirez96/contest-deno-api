@@ -1,21 +1,21 @@
 import {
-  Router,
-  Request,
-  Response,
-  isString,
-  isNumber,
-  isEmail,
-  minLength,
-  maxLength,
-  required,
-  match,
-  IRouter,
-  serviceCollection,
-  isIn,
-  isBool,
   createError,
+  IRouter,
+  isBool,
+  isEmail,
+  isIn,
+  isNumber,
+  isString,
   log,
+  match,
+  maxLength,
+  minLength,
   moment,
+  Request,
+  required,
+  Response,
+  Router,
+  serviceCollection,
 } from '../../../deps.ts';
 import {
   codenameRegex,
@@ -35,6 +35,7 @@ export default (app: IRouter) => {
   app.use('/users', route);
 
   // GET /
+  // TODO postman
   route.get('/', async (req: Request, res: Response) => {
     try {
       const userList = await userModelInstance.get(undefined, {
@@ -53,6 +54,7 @@ export default (app: IRouter) => {
   });
 
   // GET /:id
+  // TODO postman
   route.get('/:id', async (req: Request, res: Response) => {
     try {
       const userId = req.params.id;
@@ -88,6 +90,8 @@ export default (app: IRouter) => {
   });
 
   // POST /
+  // TODO postman
+  // TODO LOCK THIS DOWN ADMIN ONLY
   route.post(
     '/',
     validate({
@@ -117,6 +121,7 @@ export default (app: IRouter) => {
   );
 
   // PUT /:id
+  // TODO postman
   route.put(
     '/:id',
     validate({
@@ -145,6 +150,7 @@ export default (app: IRouter) => {
   );
 
   // DELETE /:id
+  // TODO postman
   route.delete('/:id', async (req: Request, res: Response) => {
     try {
       const userId = req.params.id;

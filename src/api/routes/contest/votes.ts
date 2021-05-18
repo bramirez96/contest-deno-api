@@ -1,12 +1,12 @@
 import {
-  Router,
   IRouter,
+  log,
+  minNumber,
   Request,
   Response,
-  log,
+  Router,
   serviceCollection,
   validateArray,
-  minNumber,
 } from '../../../../deps.ts';
 import ContestService from '../../../services/contest.ts';
 import authHandler from '../../middlewares/authHandler.ts';
@@ -34,9 +34,9 @@ export default (app: IRouter) => {
       try {
         await contestInstance.submitVote(
           req.body.votes,
-          parseInt(req.body.user.id, 10) || undefined
+          parseInt(req.body.user?.id, 10) || undefined
         );
-        res.setStatus(201).json({ ERR: 'ERR' });
+        res.setStatus(201).json({ message: 'Votes cast successfully' });
       } catch (err) {
         logger.error(err);
         throw err;

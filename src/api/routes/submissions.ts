@@ -69,6 +69,7 @@ export default (app: IRouter) => {
   );
 
   // GET /
+  // TODO postman
   route.get(
     '/',
     authHandler({ roles: [Roles.admin] }),
@@ -113,6 +114,7 @@ export default (app: IRouter) => {
   });
 
   // GET /top/admin
+  // TODO postman
   route.get(
     '/top/admin',
     authHandler({ roles: [Roles.admin] }),
@@ -128,6 +130,7 @@ export default (app: IRouter) => {
   );
 
   // POST /top
+  // TODO postman
   route.post(
     '/top',
     authHandler({ roles: [Roles.admin] }),
@@ -144,6 +147,7 @@ export default (app: IRouter) => {
   );
 
   // GET /:id - This is good for shareability! Public
+  // TODO postman
   route.get('/:id', async (req: Request, res: Response) => {
     try {
       const sub = await subServiceInstance.getById(parseInt(req.params.id, 10));
@@ -155,6 +159,7 @@ export default (app: IRouter) => {
   });
 
   // DELETE /:id
+  // TODO postman
   route.delete(
     '/:id',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
@@ -171,6 +176,7 @@ export default (app: IRouter) => {
   );
 
   // GET /:id/flags
+  // TODO postman
   route.get(
     '/:id/flags',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
@@ -188,6 +194,7 @@ export default (app: IRouter) => {
   );
 
   // POST /:id/flags
+  // TODO postman
   route.post(
     '/:id/flags',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
@@ -211,6 +218,7 @@ export default (app: IRouter) => {
   );
 
   // DELETE /:id/flags/:flagId - Only admin can unflag? Not teachers?
+  // TODO postman
   route.delete(
     '/:id/flags/:flagId',
     authHandler({ roles: [Roles.admin] }),

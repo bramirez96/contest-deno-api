@@ -1,17 +1,17 @@
 import {
-  Service,
-  Inject,
-  serviceCollection,
-  jwt,
   bcrypt,
   createError,
-  v5,
+  Inject,
+  jwt,
   moment,
+  Service,
+  serviceCollection,
+  v5,
 } from '../../deps.ts';
 import env from '../config/env.ts';
 import { IAuthResponse } from '../interfaces/apiResponses.ts';
 import { Roles } from '../interfaces/roles.ts';
-import { IUser, INewUser } from '../interfaces/users.ts';
+import { INewUser, IUser } from '../interfaces/users.ts';
 import ResetModel from '../models/resets.ts';
 import UserModel from '../models/users.ts';
 import ValidationModel from '../models/validations.ts';
@@ -84,8 +84,6 @@ export default class AuthService extends BaseService {
     try {
       const user = await this.userModel.get({ codename }, { first: true });
       if (!user) throw createError(404, 'User not found');
-      if (!user.isValidated)
-        throw createError(403, 'Account must be validated');
 
       this.logger.debug(`Verifying password for user (CODENAME: ${codename})`);
       const validPassword = await bcrypt.compare(password, user.password);
