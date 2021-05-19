@@ -1,4 +1,4 @@
-import { Algorithm, config } from '../../deps.ts';
+import { Algorithm, config, LambdaClientConfig } from '../../deps.ts';
 
 config({ export: true });
 
@@ -19,6 +19,10 @@ const envPrefix = () => {
 
 const REACT_APP_URL = Deno.env.get('REACT_APP_URL') || 'http://localhost:3000';
 
+const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID') || '';
+const AWS_SECRET_KEY = Deno.env.get('AWS_SECRET_KEY') || '';
+const S3_REGION = Deno.env.get('S3_REGION') || '';
+
 export default {
   DENO_ENV: DENO_ENV === 'ci' ? 'testing' : DENO_ENV,
   PORT: parseInt(PORT, 10),
@@ -35,19 +39,26 @@ export default {
   },
   SES_CONFIG: {
     credentials: {
-      accessKeyId: Deno.env.get('AWS_ACCESS_KEY_ID') || '',
-      secretAccessKey: Deno.env.get('AWS_SECRET_KEY') || '',
+      accessKeyId: AWS_ACCESS_KEY_ID,
+      secretAccessKey: AWS_SECRET_KEY,
     },
-    region: Deno.env.get('S3_REGION') || '',
+    region: S3_REGION,
     // email: Deno.env.get('SES_EMAIL') || '',
     email: `"Story Squad" <${Deno.env.get('SES_EMAIL') || ''}>`,
   },
   S3_CONFIG: {
-    accessKeyID: Deno.env.get('AWS_ACCESS_KEY_ID') || '',
-    secretKey: Deno.env.get('AWS_SECRET_KEY') || '',
+    accessKeyID: AWS_ACCESS_KEY_ID,
+    secretKey: AWS_SECRET_KEY,
     bucket: Deno.env.get('S3_BUCKET') || '',
-    region: Deno.env.get('S3_REGION') || '',
+    region: S3_REGION,
   },
+  LAMBDA_CONFIG: {
+    credentials: {
+      accessKeyId: AWS_ACCESS_KEY_ID,
+      secretAccessKey: AWS_SECRET_KEY,
+    },
+    region: S3_REGION,
+  } as LambdaClientConfig,
   JWT: {
     SECRET: Deno.env.get('JWT_SECRET') || 'somefakesecret',
     ALGO: (Deno.env.get('JWT_ALGORITHM') as Algorithm) || 'HS512',
