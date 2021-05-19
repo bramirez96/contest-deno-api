@@ -360,6 +360,9 @@ export default class RumbleService extends BaseService {
         { first: true }
       );
 
+      // Return early with the end time it it's already been started?
+      if (rumble.end_time) return rumble.end_time;
+
       // Calculate the end time from the game length
       const endTime = this.calculateEndTime(rumble.numMinutes);
 

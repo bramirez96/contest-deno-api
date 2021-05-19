@@ -33,6 +33,7 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
         .execute()) as unknown[]) as IRumble[];
 
       // TODO put the WHOLE section on the rumble instead of this info piece
+      // TODO !IMPORTANT
       return rumbles.map<IRumbleWithSectionInfo>((r) => ({
         ...r,
         sectionId: section.id,
