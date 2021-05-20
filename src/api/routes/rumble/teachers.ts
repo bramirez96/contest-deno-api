@@ -62,6 +62,19 @@ export default (app: IRouter) => {
     }
   );
 
+  route.get('/:teacherId/rumbles', async (req, res) => {
+    try {
+      const r = await rumbleServiceInstance.getRumblesForUser(
+        parseInt(req.params.teacherId, 10)
+      );
+      res.setStatus(200).json(r);
+    } catch (err) {
+      logger.error(err);
+      throw err;
+    }
+  });
+
+  // TODO move this to rumbles endpoint
   route.post(
     '/:teacherId/rumbles',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
