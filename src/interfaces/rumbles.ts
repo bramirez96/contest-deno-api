@@ -1,7 +1,7 @@
 import { RumblePhases } from './rumbleSections.ts';
 
 export interface IRumbleWithSectionInfo extends IRumble {
-  sectionName: string;
+  sectionName?: string;
   sectionId: number;
 }
 

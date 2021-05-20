@@ -62,9 +62,10 @@ export default (app: IRouter) => {
     }
   );
 
+  // GET a teacher's rumbles
   route.get('/:teacherId/rumbles', async (req, res) => {
     try {
-      const r = await rumbleServiceInstance.getRumblesForUser(
+      const r = await rumbleServiceInstance.getRumblesForTeacher(
         parseInt(req.params.teacherId, 10)
       );
       res.setStatus(200).json(r);

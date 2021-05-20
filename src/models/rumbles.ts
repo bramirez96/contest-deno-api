@@ -71,9 +71,11 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
     }
   }
 
-  public async getRumblesByTeacherId({ userId }: { userId: number }) {
+  public async getRumblesByTeacherId(
+    userId: number
+  ): Promise<IRumbleWithSectionInfo[]> {
     try {
-      const rumbles = await this.db
+      const rumbles = ((await this.db
         .table('rumbles')
         .innerJoin('rumble_sections', 'rumble_sections.rumbleId', 'rumbles.id')
         .innerJoin(
@@ -81,11 +83,20 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
           'clever_sections.id',
           'rumble_sections.sectionId'
         )
+        .innerJoin(
+          'clever_teachers',
+          'clever_teachers.sectionId',
+          'clever_sections.id'
+        )
         .select(
           'rumbles.*',
+          'rumble_sections.sectionId',
           'rumble_sections.end_time',
           'rumble_sections.phase'
-        );
+        )
+        .where('clever_teachers.userId', userId)
+        .execute()) as unknown[]) as IRumbleWithSectionInfo[];
+
       return rumbles;
     } catch (err) {
       this.logger.error(err);

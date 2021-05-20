@@ -50,11 +50,12 @@ export default class RumbleService extends BaseService {
     super();
   }
 
-  public async getRumblesForUser(
+  public async getRumblesForTeacher(
     userId: number
   ): Promise<IRumbleWithSectionInfo[]> {
     try {
-      const rumbles = await this.rumbleModel.getRumblesByUserId({ userId });
+      const rumbles = await this.rumbleModel.getRumblesByTeacherId(userId);
+      return rumbles;
     } catch (err) {
       this.logger.error(err);
       throw err;
