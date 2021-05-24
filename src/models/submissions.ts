@@ -88,6 +88,27 @@ export default class SubmissionModel extends BaseModel<
       throw err;
     }
   }
+
+  public async getFeedbackIDsByRumbleID(
+    rumbleId: number
+  ): Promise<{ submissionId: number; userId: number }[]> {
+    try {
+      const TEST_SECTION_ID = 1; // TODO remove this and add section ID?
+      const subs = ((await this.db
+        .table('rumble_sections')
+        .innerJoin('rumbles', 'rumbles.id', 'rumble_sections.rumbleId')
+        .innerJoin('prompts', 'prompts.id', 'rumbles.promptId')
+        .innerJoin('submissions', 'submissions.promptId', 'prompts.id')
+        .where('rumbles.id', rumbleId)
+        .where('rumble_sections.sectionId', TEST_SECTION_ID)
+        .select('submissions.id', 'submissions.userId')
+        .execute()) as unknown) as ISubmission[];
+      return subs.map(({ userId, id }) => ({ userId, submissionId: id }));
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
 }
 
 serviceCollection.addTransient(SubmissionModel);
