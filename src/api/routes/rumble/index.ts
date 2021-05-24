@@ -1,5 +1,6 @@
 import { IRouter, Router } from '../../../../deps.ts';
 import data from './data.ts';
+import feedback from './feedback.ts';
 import rumbles from './rumbles.ts';
 import sections from './sections.ts';
 import students from './students.ts';
@@ -15,6 +16,7 @@ export default (app: IRouter) => {
   sections(rumbleRouter);
   rumbles(rumbleRouter);
   data(rumbleRouter);
+  feedback(rumbleRouter);
 
   console.log('Rumble routers loaded.');
 };

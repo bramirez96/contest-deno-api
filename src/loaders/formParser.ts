@@ -1,11 +1,11 @@
 import {
+  FormFile,
+  log,
+  multiParser,
+  NextFunction,
   Request,
   Response,
-  NextFunction,
-  log,
   serviceCollection,
-  multiParser,
-  FormFile,
 } from '../../deps.ts';
 
 export default () => async (

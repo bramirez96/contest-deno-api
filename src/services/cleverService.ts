@@ -45,16 +45,13 @@ export default class CleverService extends BaseService {
   public async authorizeUser(code: string): Promise<CleverAuthResponseType> {
     try {
       // Exchange user's code for a token
-      const token = await this.clever.getToken(code);
-      console.log({ token });
+      const { access_token: token } = await this.clever.getToken(code);
 
       // Get user's info from clever
       const rawUser = await this.clever.getUserInfo(token);
-      console.log({ rawUser });
-      const { id, type } = rawUser.data; // Pull id for easier use
       let roleId: number;
-      if (type === 'student') roleId = Roles.user;
-      else if (type === 'teacher') roleId = Roles.teacher;
+      if (rawUser.type === 'student') roleId = Roles.user;
+      else if (rawUser.type === 'teacher') roleId = Roles.teacher;
       else throw createError(401, 'Account type not supported');
 
       // Now we have user info, check if they exist in our database
@@ -69,12 +66,12 @@ export default class CleverService extends BaseService {
         return {
           actionType: 'SUCCESS',
           body: { token: authToken, user: existingUser },
-          cleverId: id,
+          cleverId: rawUser.data.id,
           roleId,
         };
       } else {
         // We don't have a user account connected to their clever ID yet!
-        const user = await this.clever.getUserProfile(rawUser, token);
+        const { data: user } = await this.clever.getUserProfile(rawUser, token);
 
         // If the user has an email in their clever account, check our
         // user table for an email match. If we find a match, the user
@@ -90,7 +87,7 @@ export default class CleverService extends BaseService {
             return {
               actionType: 'MERGE',
               body: userToMerge,
-              cleverId: id,
+              cleverId: rawUser.data.id,
               roleId,
             };
           }
@@ -104,7 +101,7 @@ export default class CleverService extends BaseService {
         return {
           actionType: 'NEW',
           body: user,
-          cleverId: id,
+          cleverId: rawUser.data.id,
           roleId,
         };
       }

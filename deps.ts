@@ -12,13 +12,13 @@ export type { SendEmailRequest } from 'https://deno.land/x/aws_sdk@v0.0.1/client
 // bcrypt v0.2.4
 export * as bcrypt from 'https://deno.land/x/bcrypt@v0.2.4/mod.ts';
 // clever
-export { CleverClient } from 'https://deno.land/x/clever_sso_deno@v0.0.42/mod.ts';
+export { CleverClient } from 'https://deno.land/x/clever_sso_deno@v0.0.47/mod.ts';
 export type {
   CleverGradeType,
   CleverSubjectType,
   ICleverProfile,
   ICleverUserInfo,
-} from 'https://deno.land/x/clever_sso_deno@v0.0.42/mod.ts';
+} from 'https://deno.land/x/clever_sso_deno@v0.0.47/mod.ts';
 // cors @1.2.1
 export { opineCors } from 'https://deno.land/x/cors@v1.2.1/mod.ts';
 // Cotton v0.7.5
@@ -89,6 +89,7 @@ export type {
   PutObjectOptions,
   PutObjectResponse,
 } from 'https://deno.land/x/s3@0.3.0/mod.ts';
+export { sha512 } from 'https://deno.land/x/sha512@v1.0.3/mod.ts';
 // validasaur v0.15.0
 export {
   firstMessages,
@@ -113,7 +114,9 @@ export type {
   ValidationResult,
   ValidationRules,
 } from 'https://deno.land/x/validasaur@v0.15.0/mod.ts';
-
-// di v0.1.1 (dependency injector)
+// axiod v0.21
+export { axiod };
+import axiod from 'https://deno.land/x/axiod@0.21/mod.ts';
 import { ServiceCollection } from 'https://deno.land/x/di@v0.1.1/mod.ts';
+
 export const serviceCollection = new ServiceCollection();

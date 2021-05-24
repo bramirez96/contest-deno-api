@@ -14,6 +14,7 @@ import {
 } from '../interfaces/cleverSections.ts';
 import { IStudentWithSubmissions } from '../interfaces/cleverStudents.ts';
 import { Roles } from '../interfaces/roles.ts';
+import { IRumbleFeedback } from '../interfaces/rumbleFeedback.ts';
 import {
   IRumblePostBody,
   IRumbleWithSectionInfo,
@@ -23,26 +24,74 @@ import { IUser } from '../interfaces/users.ts';
 import CleverSectionModel from '../models/cleverSections.ts';
 import CleverStudentModel from '../models/cleverStudents.ts';
 import CleverTeacherModel from '../models/cleverTeachers.ts';
+import RumbleFeedbackModel from '../models/rumbleFeedback.ts';
 import RumbleModel from '../models/rumbles.ts';
 import RumbleSectionsModel from '../models/rumbleSections.ts';
 import SubmissionModel from '../models/submissions.ts';
 import UserModel from '../models/users.ts';
 import BaseService from './baseService.ts';
+import DSService from './dsService.ts';
 import SubmissionService from './submission.ts';
 
 @Service()
 export default class RumbleService extends BaseService {
   constructor(
     @Inject(UserModel) private userModel: UserModel,
+    @Inject(DSService) private dsService: DSService,
     @Inject(RumbleModel) private rumbleModel: RumbleModel,
     @Inject(SubmissionModel) private subModel: SubmissionModel,
     @Inject(SubmissionService) private subService: SubmissionService,
     @Inject(CleverTeacherModel) private teacherModel: CleverTeacherModel,
     @Inject(CleverStudentModel) private studentModel: CleverStudentModel,
     @Inject(CleverSectionModel) private sectionModel: CleverSectionModel,
-    @Inject(RumbleSectionsModel) private rumbleSections: RumbleSectionsModel
+    @Inject(RumbleSectionsModel) private rumbleSections: RumbleSectionsModel,
+    @Inject(RumbleFeedbackModel) private rumbleFeedback: RumbleFeedbackModel
   ) {
     super();
+  }
+
+  public async getSubsForFeedback(
+    studentId: number,
+    rumbleId: number
+  ): Promise<ISubItem[]> {
+    try {
+      this.logger.debug(
+        `Getting submissions for feedback for user ${studentId}`
+      );
+
+      const submissions = await this.subModel.getSubsForFeedback(
+        studentId,
+        rumbleId
+      );
+
+      const subPromises = submissions.map((s) =>
+        this.subService.retrieveSubItem(s)
+      );
+
+      const subItems = await Promise.all(subPromises);
+
+      return subItems;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async addScoresToFeedback(feedback: IRumbleFeedback[]): Promise<void> {
+    try {
+      this.logger.debug(`Updating feedback scores...`);
+
+      const feedbackPromises = feedback.map(({ id, ...body }) => {
+        return this.rumbleFeedback.updateFeedback(body);
+      });
+
+      await this.db.transaction(async () => {
+        await Promise.all(feedbackPromises);
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 
   public async getSections(user: IUser) {
@@ -178,12 +227,15 @@ export default class RumbleService extends BaseService {
   public async getSubForStudentByRumble(
     rumbleId: number,
     studentId: number
-  ): Promise<ISubItem> {
+  ): Promise<ISubItem | undefined> {
     try {
       const sub = await this.subModel.getSubByStudentAndRumbleId(
         studentId,
         rumbleId
       );
+      // If no sub is found, return undefined
+      if (!sub) return undefined;
+
       const subItem = await this.subService.retrieveSubItem(sub);
       return subItem;
     } catch (err) {
@@ -316,6 +368,37 @@ export default class RumbleService extends BaseService {
 
       // Return the end time to the user
       return endTime;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async startFeedback(rumbleId: number): Promise<void> {
+    try {
+      const subs = await this.subModel.getFeedbackIDsByRumbleID(rumbleId);
+      console.log('subs to be processed for feedback', subs);
+
+      // Return early! Nothing to generate.
+      // TODO - should we throw an error for this??
+      if (subs.length === 0 || !subs) return;
+
+      const matchups = this.dsService.generateFeedbackMatchups(subs);
+
+      // Get the ID of the cross-reference that connects a section to a rumble
+      // TODO make sure this works
+      const { id: rumbleSectionId } = await this.rumbleSections.get(
+        { rumbleId },
+        { first: true }
+      );
+
+      await this.db.transaction(async () => {
+        await this.rumbleSections.update(rumbleSectionId, {
+          phase: 'FEEDBACK',
+        });
+        await this.rumbleFeedback.add(matchups);
+        // If it successfully adds these rows, the promise is resolved and we end the query
+      });
     } catch (err) {
       this.logger.error(err);
       throw err;

@@ -15,6 +15,7 @@ import {
 } from '../../../deps.ts';
 import { Roles } from '../../interfaces/roles.ts';
 import { INewSubmission } from '../../interfaces/submissions.ts';
+import RumbleFeedbackModel from '../../models/rumbleFeedback.ts';
 import SubmissionModel from '../../models/submissions.ts';
 import SubmissionService from '../../services/submission.ts';
 import authHandler from '../middlewares/authHandler.ts';
@@ -26,6 +27,8 @@ const route = Router();
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const subServiceInstance = serviceCollection.get(SubmissionService);
+  const feedbackModelInstance = serviceCollection.get(RumbleFeedbackModel);
+
   app.use(['/submit', '/submission', '/submissions'], route);
 
   // api/submissions/
@@ -51,12 +54,12 @@ export default (app: IRouter) => {
     upload('story'),
     async (req: Request, res: Response) => {
       try {
-        await subServiceInstance.processSubmission(
-          req.body.story[0],
-          parseInt(req.body.promptId, 10),
-          req.body.user.id,
-          req.query.sourceId
-        );
+        await subServiceInstance.processSubmission({
+          uploadResponse: req.body.story[0], // TODO This endpoint is restricted to one submission for now
+          promptId: parseInt(req.body.promptId, 10),
+          userId: req.body.user.id,
+          sourceId: req.query.sourceId,
+        });
         res.setStatus(201).json({ message: 'Upload successful!' });
       } catch (err) {
         logger.error(err);
@@ -218,6 +221,22 @@ export default (app: IRouter) => {
           parseInt(req.params.flagId, 10)
         );
         res.setStatus(204).end();
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  route.get(
+    '/:submissionId/feedback',
+    authHandler(),
+    async (req: Request, res: Response) => {
+      try {
+        const feedbackScores = await feedbackModelInstance.get({
+          submissionId: parseInt(req.params.submissionId, 10),
+        });
+        res.setStatus(200).json(feedbackScores);
       } catch (err) {
         logger.error(err);
         throw err;

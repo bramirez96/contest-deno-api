@@ -37,15 +37,6 @@ const seedUsers = [
     roleId: 2,
   },
   {
-    codename: 'StudentSuccess',
-    email: 'f.young@example.net',
-    firstname: 'Fahey',
-    lastname: 'Young',
-    password: '$2a$10$cZajEDkFrgEsdEbVYed4IeM6RAy75/FV9KRlJDZ63O1Cc0KNp13tG', // somepass123A
-    isValidated: true,
-    roleId: 1,
-  },
-  {
     codename: 'TeacherMerge',
     email: 'daniel.casandra@example.net',
     firstname: 'Casandra',
@@ -55,12 +46,48 @@ const seedUsers = [
     roleId: 2,
   },
   {
+    codename: 'StudentSuccess',
+    email: 'f.young@example.net',
+    firstname: 'Fahey',
+    lastname: 'Young',
+    password: '$2a$10$cZajEDkFrgEsdEbVYed4IeM6RAy75/FV9KRlJDZ63O1Cc0KNp13tG', // somepass123A
+    isValidated: true,
+    roleId: 1,
+  },
+  {
     codename: 'Student2',
     email: 'j_barbara@example.org',
     firstname: 'Barbara',
     lastname: 'Jacobs',
-    password: '$2a$10$cZajEDkFrgEsdEbVYed4IeM6RAy75/FV9KRlJDZ63O1Cc0KNp13tG',
+    password: '$2a$10$cZajEDkFrgEsdEbVYed4IeM6RAy75/FV9KRlJDZ63O1Cc0KNp13tG', // somepass123A
     isValidated: true,
+    roleId: 1,
+  },
+  {
+    codename: 'Student3',
+    email: 'k.donald@example.com',
+    firstname: 'Donald',
+    lastname: 'Kovacek',
+    password: '$2a$10$cZajEDkFrgEsdEbVYed4IeM6RAy75/FV9KRlJDZ63O1Cc0KNp13tG', // somepass123A
+    isValidated: true,
+    roleId: 1,
+  },
+  {
+    codename: 'Student4',
+    email: 'ruby.k@example.com',
+    firstname: 'Ruby',
+    lastname: 'Kreiger',
+    password: '$2a$10$cZajEDkFrgEsdEbVYed4IeM6RAy75/FV9KRlJDZ63O1Cc0KNp13tG', // somepass123A
+    isValidated: true,
+    roleId: 1,
+  },
+  {
+    codename: 'Student5',
+    email: 's.angelo@example.net',
+    firstname: 'Angelo',
+    lastname: 'Sawayn',
+    password: '$2a$10$cZajEDkFrgEsdEbVYed4IeM6RAy75/FV9KRlJDZ63O1Cc0KNp13tG', // somepass123A
+    isValidated: false,
     roleId: 1,
   },
 ];

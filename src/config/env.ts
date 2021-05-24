@@ -1,4 +1,4 @@
-import { config, Algorithm } from '../../deps.ts';
+import { Algorithm, config } from '../../deps.ts';
 
 config({ export: true });
 
@@ -25,6 +25,8 @@ export default {
   UUID_NAMESPACE: Deno.env.get('UUID_NAMESPACE') || '',
   SERVER_URL: Deno.env.get('SERVER_URL') || 'http://localhost:' + PORT,
   DB_URL: Deno.env.get(envPrefix() + 'DB_URL'),
+  DS_API_URL: Deno.env.get('DS_API_URL') || '',
+  DS_API_TOKEN: Deno.env.get('DS_API_TOKEN') || '',
   REACT_APP_URL,
   DB_CONFIG: {
     database: Deno.env.get(envPrefix() + 'DB_NAME') || '',
@@ -39,7 +41,8 @@ export default {
       secretAccessKey: Deno.env.get('AWS_SECRET_KEY') || '',
     },
     region: Deno.env.get('S3_REGION') || '',
-    email: Deno.env.get('SES_EMAIL') || '',
+    // email: Deno.env.get('SES_EMAIL') || '',
+    email: `"Story Squad" <${Deno.env.get('SES_EMAIL') || ''}>`,
   },
   S3_CONFIG: {
     accessKeyID: Deno.env.get('AWS_ACCESS_KEY_ID') || '',

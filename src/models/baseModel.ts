@@ -1,10 +1,10 @@
 import {
+  DatabaseResult,
   log,
+  OrderDirection,
+  PostgresAdapter,
   QueryValues,
   serviceCollection,
-  PostgresAdapter,
-  DatabaseResult,
-  OrderDirection,
 } from '../../deps.ts';
 
 /**
@@ -73,6 +73,9 @@ export default class BaseModel<NewItem, FullItem> {
     if (filter) {
       sql.where(...Object.entries(filter)[0]);
     }
+    if (config?.first) {
+      sql.limit(1);
+    }
     if (config?.limit) {
       sql.limit(config.limit);
     }
@@ -89,14 +92,14 @@ export default class BaseModel<NewItem, FullItem> {
 
   public async update(
     id: number,
-    changes: Partial<FullItem> & DatabaseResult
+    changes: Partial<FullItem>
   ): Promise<FullItem> {
     this.logger.debug(`Attempting to retrieve one row from ${this.tableName}`);
 
     const [response] = ((await this.db
       .table(this.tableName)
       .where('id', id)
-      .update(changes)
+      .update(changes as DatabaseResult)
       .returning('*')
       .execute()) as unknown) as FullItem[];
 
