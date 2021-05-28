@@ -117,6 +117,7 @@ export default class SubmissionService extends BaseService {
       .table('top3')
       .innerJoin('submissions', 'submissions.id', 'top3.submissionId')
       .order('top3.created_at', 'DESC')
+      .limit(3)
       .select('submissions.*')
       .execute()) as unknown) as ISubmission[];
 
