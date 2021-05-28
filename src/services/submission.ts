@@ -1,11 +1,14 @@
 import { createError, Inject, Service, serviceCollection } from '../../deps.ts';
+import {
+  IDSAPIPageSubmission,
+  IProcessedDSResponse,
+  IUploadResponse,
+} from '../interfaces/dsServiceTypes.ts';
 import { Sources } from '../interfaces/enumSources.ts';
 import {
-  IDSResponse,
   INewSubmission,
   ISubItem,
   ISubmission,
-  IUploadResponse,
 } from '../interfaces/submissions.ts';
 import { INewTop3 } from '../interfaces/top3.ts';
 import { IGetQuery } from '../models/baseModel.ts';
@@ -154,14 +157,23 @@ export default class SubmissionService extends BaseService {
     }
   }
 
-  public async processSubmission(
-    uploadResponse: IUploadResponse,
-    promptId: number,
-    userId: number,
-    sourceId: Sources & number = Sources.FDSC // Default to FDSC
-  ) {
+  public async processSubmission({
+    promptId,
+    uploadResponse,
+    userId,
+    sourceId = Sources.FDSC, // Default to FDSC
+  }: {
+    uploadResponse: IDSAPIPageSubmission;
+    promptId: number;
+    userId: number;
+    sourceId: Sources & number;
+  }) {
     try {
-      const dsReponse = await this.dsService.sendSubmissionToDS(uploadResponse);
+      // const dsReponse = await this.dsService.sendSubmissionToDS(uploadResponse);
+      const dsReponse = await this.dsService.sendSubmissionToDS([
+        uploadResponse,
+      ]);
+      console.log('res', uploadResponse);
 
       const newSub = this.formatNewSub(
         uploadResponse,
@@ -286,22 +298,22 @@ export default class SubmissionService extends BaseService {
   }
 
   private formatNewSub(
-    u: IUploadResponse,
-    d: IDSResponse,
+    { etag, s3Label }: IUploadResponse,
+    { confidence, rotation, score, transcription }: IProcessedDSResponse,
     promptId: number,
     userId: number,
     sourceId: Sources & number
   ): INewSubmission {
     return {
-      confidence: d.confidence,
-      score: d.score,
-      transcription: d.transcription,
-      rotation: d.rotation,
-      etag: u.etag,
-      s3Label: u.s3Label,
-      userId: userId,
-      promptId: promptId,
-      sourceId: sourceId,
+      confidence,
+      score,
+      transcription,
+      rotation,
+      etag,
+      s3Label,
+      userId,
+      promptId,
+      sourceId,
     };
   }
 

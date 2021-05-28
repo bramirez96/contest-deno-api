@@ -1,16 +1,16 @@
 import {
-  Router,
-  Request,
-  Response,
-  isString,
-  isNumber,
-  isEmail,
-  required,
-  match,
-  IRouter,
-  serviceCollection,
-  log,
   createError,
+  IRouter,
+  isEmail,
+  isNumber,
+  isString,
+  log,
+  match,
+  Request,
+  required,
+  Response,
+  Router,
+  serviceCollection,
 } from '../../../deps.ts';
 import {
   codenameRegex,
@@ -18,11 +18,12 @@ import {
   passwordRegex,
   uuidV5Regex,
 } from '../../config/dataConstraints.ts';
-import validate from '../middlewares/validate.ts';
-import AuthService from '../../services/auth.ts';
 import env from '../../config/env.ts';
-import { INewUser } from '../../interfaces/users.ts';
 import { Roles } from '../../interfaces/roles.ts';
+import { INewUser } from '../../interfaces/users.ts';
+import AuthService from '../../services/auth.ts';
+import authHandler from '../middlewares/authHandler.ts';
+import validate from '../middlewares/validate.ts';
 import oauth from './oauth.ts';
 
 const route = Router();
@@ -48,9 +49,9 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response) => {
       try {
-        await authServiceInstance.SignUp(req.body);
+        const response = await authServiceInstance.SignUp(req.body);
 
-        res.setStatus(201).json({ message: 'User creation successful.' });
+        res.setStatus(201).json(response);
       } catch (err) {
         logger.error(err);
         throw err;
@@ -107,6 +108,36 @@ export default (app: IRouter) => {
 
         const redirectURL = env.REACT_APP_URL + '/activate?authToken=' + token;
         res.redirect(302, redirectURL);
+      } catch (err) {
+        logger.error(err);
+        throw err;
+      }
+    }
+  );
+
+  // PUT /activation
+  route.put('/activation', authHandler(), async (req, res) => {
+    try {
+      await authServiceInstance.ResendValidationEmail(req.body.user);
+      res.setStatus(204).end();
+    } catch (err) {
+      logger.error(err);
+      throw err;
+    }
+  });
+
+  // POST /activation
+  route.post(
+    '/activation',
+    authHandler(),
+    validate({
+      newEmail: [required, isEmail, match(emailRegex)],
+      age: [required, isNumber],
+    }),
+    async (req, res) => {
+      try {
+        await authServiceInstance.SendNewValidationEmail(req.body);
+        res.setStatus(204).end();
       } catch (err) {
         logger.error(err);
         throw err;
