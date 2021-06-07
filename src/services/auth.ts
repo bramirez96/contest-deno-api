@@ -12,13 +12,10 @@ import env from '../config/env.ts';
 import { IAuthResponse } from '../interfaces/apiResponses.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { INewUser, IUser } from '../interfaces/users.ts';
-<<<<<<< HEAD
-=======
 import {
   IGetNewValidationBody,
   Validators,
 } from '../interfaces/validations.ts';
->>>>>>> e1d10016dae24a6af33220d947b1a27249a083df
 import ResetModel from '../models/resets.ts';
 import UserModel from '../models/users.ts';
 import ValidationModel from '../models/validations.ts';
