@@ -27,7 +27,8 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
         .select(
           'rumbles.*',
           'rumble_sections.end_time',
-          'rumble_sections.phase'
+          'rumble_sections.phase',
+          'rumble_sections.start_time'
         )
         .where('clever_sections.id', section.id)
         .execute()) as unknown[]) as IRumble[];

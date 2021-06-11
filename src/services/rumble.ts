@@ -338,6 +338,7 @@ export default class RumbleService extends BaseService {
 
           await this.rumbleSections.add({
             rumbleId: res.id,
+            start_time: rumble.start_time,
             sectionId,
           });
 
