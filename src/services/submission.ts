@@ -193,13 +193,7 @@ export default class SubmissionService extends BaseService {
       return submission;
     } catch (err) {
       // If any part of upload fails, attempt to remove the item from the bucket for data integrity
-      try {
-        await this.bucketService.remove(uploadResponse.s3Label);
-      } catch (err) {
-        this.logger.critical(
-          `S3 object ${uploadResponse.s3Label} is untracked!`
-        );
-      }
+      this.logger.critical(`S3 object ${uploadResponse.s3Label} is untracked!`);
       this.logger.error(err);
       throw err;
     }

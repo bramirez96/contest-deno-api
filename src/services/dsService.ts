@@ -27,35 +27,36 @@ export default class DSService {
     pages: IDSAPIPageSubmission[]
   ): Promise<IProcessedDSResponse> {
     /* Mock Data */
-    await pages; // Shut up linter?
-    const res = await Promise.resolve<IDSAPITextSubmissionResponse>({
-      Transcription: 'asdaksfmnasdlkcfmnasdlfkasmfdlkasdf',
-      Confidence: 50,
-      SquadScore: Math.floor(Math.random() * 40 + 10), // Rand 10-50
-      Rotation: 0,
-      ModerationFlag: false,
-      SubmissionID: 1,
-    });
-    // const formattedPages = pages.reduce<
-    //   Record<string, Pick<IDSAPIPageSubmission, 'Checksum' | 'filekey'>>
-    // >(
-    //   (acc, page, index) => ({
-    //     ...acc,
-    //     [`${index}`]: {
-    //       Checksum: page.Checksum,
-    //       filekey: page.s3Label,
-    //     },
-    //   }),
-    //   {}
-    // );
-    // console.log('pages', pages);
-    // console.log('formatted pages', formattedPages);
-    // const res = await this.submitTextSubmissionToDSAPI({
-    //   StoryId: 1,
+    // const res = await Promise.resolve<IDSAPITextSubmissionResponse>({
+    //   Transcription: 'asdaksfmnasdlkcfmnasdlfkasmfdlkasdf',
+    //   Confidence: 50,
+    //   SquadScore: Math.floor(Math.random() * 40 + 10), // Rand 10-50
+    //   Rotation: 0,
+    //   ModerationFlag: false,
     //   SubmissionID: 1,
-    //   Pages: formattedPages,
     // });
-    return this.formatDSTextSubmission(res);
+    // return this.formatDSTextSubmission(res);
+    const formattedPages = pages.reduce<
+      Record<string, Pick<IDSAPIPageSubmission, 'Checksum' | 'filekey'>>
+    >(
+      (acc, page, index) => ({
+        ...acc,
+        [`${index + 1}`]: {
+          Checksum: page.Checksum,
+          filekey: page.s3Label,
+        },
+      }),
+      {}
+    );
+    const dsPostBody = {
+      StoryId: 1,
+      SubmissionID: 1,
+      Pages: formattedPages,
+    };
+    console.log('pages', pages);
+    console.log('formatted pages', formattedPages);
+    const res = await this.submitTextSubmissionToDSAPI(dsPostBody);
+    return res;
   }
 
   /**
@@ -116,13 +117,17 @@ export default class DSService {
     body: IDSAPITextSubmissionPostBody
   ): Promise<IProcessedDSResponse> {
     try {
-      console.log('ds req start');
-      const { data } = (await DSClient.post(`/submission/text`, body)) as {
+      console.log('ds req start', body);
+      const res = (await DSClient.post(
+        `/submission/text`,
+        // JSON.stringify(body)
+        body
+      )) as {
         data: IDSAPITextSubmissionResponse;
       };
-      console.log('ds req end');
+      console.log('ds req end', res);
       // Format the returned data
-      return this.formatDSTextSubmission(data);
+      return this.formatDSTextSubmission(res.data);
     } catch (err) {
       this.logger.error('text sub', err);
       throw err;
