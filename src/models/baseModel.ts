@@ -94,6 +94,12 @@ export default class BaseModel<NewItem, FullItem> {
     if (config?.first) {
       sql.limit(1);
     }
+    if (config?.first) {
+      sql.limit(1);
+    }
+    if (config?.first) {
+      sql.limit(1);
+    }
     if (config?.limit) {
       sql.limit(config.limit);
     }

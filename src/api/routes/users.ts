@@ -103,6 +103,8 @@ export default (app: IRouter) => {
   });
 
   // POST /
+  // TODO postman
+  // TODO LOCK THIS DOWN ADMIN ONLY
   route.post(
     '/',
     validate({
@@ -132,6 +134,7 @@ export default (app: IRouter) => {
   );
 
   // PUT /:id
+  // TODO postman
   route.put(
     '/:id',
     validate({

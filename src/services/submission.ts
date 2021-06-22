@@ -47,13 +47,13 @@ export default class SubmissionService extends BaseService {
     );
 
     // Pull codename for use in the retrieve subs, this reduces queries to db
-    const { codename } = await this.userModel.get(
-      { id: userId },
-      { first: true }
-    );
+    const user = await this.userModel.get({ id: userId }, { first: true });
+
+    if (!user) throw createError(404, 'User not found');
+
     // Query the S3 bucket/database for submission info
     const subItems = await Promise.all(
-      subs.map((s) => this.retrieveSubItem(s, codename))
+      subs.map((s) => this.retrieveSubItem(s, user.codename))
     );
 
     return subItems;

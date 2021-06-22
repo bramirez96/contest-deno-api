@@ -24,5 +24,6 @@ cli/tests/.test_coverage/
 .DS_Store?
 
 .env
+yarn-error.log
 
 src/db/production_seeds/

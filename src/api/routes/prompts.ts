@@ -81,6 +81,7 @@ export default (app: IRouter) => {
   );
 
   // PUT /active <- this runs the service that updates current prompt
+  // TODO postman
   route.put(
     '/active',
     authHandler({ roles: [Roles.admin] }),
@@ -100,7 +101,7 @@ export default (app: IRouter) => {
   // GET /:id
   route.get(
     '/:id',
-    authHandler({ roles: [Roles.teacher, Roles.admin, Roles.user] }),
+    authHandler(),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const [prompt] = await promptModelInstance.get({
@@ -116,6 +117,7 @@ export default (app: IRouter) => {
   );
 
   // POST /
+  // TODO postman
   route.post(
     '/',
     authHandler({ roles: [Roles.admin] }),
@@ -136,6 +138,7 @@ export default (app: IRouter) => {
   );
 
   // POST /custom
+  // TODO postman
   route.post(
     '/custom',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
@@ -156,6 +159,7 @@ export default (app: IRouter) => {
   );
 
   // PUT /:id
+  // TODO postman
   route.put(
     '/:id',
     authHandler({ roles: [Roles.admin] }),
@@ -178,6 +182,7 @@ export default (app: IRouter) => {
   );
 
   // DELETE /:id
+  // TODO postman
   route.delete(
     '/:id',
     authHandler({ roles: [Roles.admin] }),
