@@ -11,9 +11,10 @@ export interface IRumble extends INewRumble {
   created_at: Date;
   end_time?: Date;
   phase: RumblePhases;
+  start_time?: Date;
 }
 
-export interface INewRumble extends IRumblePostBody {
+export interface INewRumble extends Omit<IRumblePostBody, 'start_time'> {
   canJoin: boolean;
   joinCode: string;
   maxSections: number;

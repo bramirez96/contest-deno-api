@@ -347,6 +347,9 @@ export default class RumbleService extends BaseService {
           const joinCode = this.generateJoinCode(
             `${rumble.numMinutes}-${rumble.promptId}`
           );
+          const endTime = (moment(rumble.start_time)
+            .add(rumble.numMinutes, 'm')
+            .toISOString() as unknown) as Date;
 
           const [res] = await this.rumbleModel.add({
             joinCode,
@@ -360,11 +363,17 @@ export default class RumbleService extends BaseService {
             rumbleId: res.id,
             start_time: rumble.start_time,
             sectionId,
+            end_time: endTime,
           });
 
           const [{ name }] = await this.sectionModel.get({ id: sectionId });
 
-          rumbles.push({ ...res, sectionName: name, sectionId });
+          rumbles.push({
+            ...res,
+            sectionName: name,
+            sectionId,
+            end_time: endTime,
+          });
         }
         // if (rumbles.length !== sections.length)
         //   throw createError(409, 'Unable to create rumbles');
