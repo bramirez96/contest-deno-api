@@ -27,6 +27,7 @@ const route = Router();
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const subServiceInstance = serviceCollection.get(SubmissionService);
+  const subModelInstance = serviceCollection.get(SubmissionModel);
   const feedbackModelInstance = serviceCollection.get(RumbleFeedbackModel);
 
   app.use(['/submit', '/submission', '/submissions'], route);
@@ -54,13 +55,14 @@ export default (app: IRouter) => {
     upload('story'),
     async (req: Request, res: Response) => {
       try {
-        await subServiceInstance.processSubmission({
+        const submission = await subServiceInstance.processSubmission({
           uploadResponse: req.body.story[0], // TODO This endpoint is restricted to one submission for now
           promptId: parseInt(req.body.promptId, 10),
           userId: req.body.user.id,
           sourceId: req.query.sourceId,
+          rumbleId: +req.body.rumbleId || undefined,
         });
-        res.setStatus(201).json({ message: 'Upload successful!' });
+        res.setStatus(201).json(submission);
       } catch (err) {
         logger.error(err);
         throw err;
@@ -69,27 +71,30 @@ export default (app: IRouter) => {
   );
 
   // GET /
-  // TODO postman
-  route.get(
-    '/',
-    authHandler({ roles: [Roles.admin] }),
-    async (req: Request, res: Response) => {
-      try {
-        // TODO read query params into a generic query!
-        const subs = await subServiceInstance.getSubs({
-          limit: parseInt(req.query.limit, 10) || 10,
-          offset: parseInt(req.query.offset, 10) || 0,
-          orderBy: req.query.orderBy || 'id',
-          order: req.query.order || 'ASC',
-        });
+  route.get('/', authHandler(), async (req: Request, res: Response) => {
+    try {
+      const idQuery = req.query.ids;
+      const idList =
+        typeof idQuery === 'string'
+          ? idQuery.split(',').map((id) => +id) // Split into a string array and cast those strings to ints
+          : typeof idQuery === 'number'
+          ? [idQuery]
+          : undefined;
 
-        res.setStatus(200).json(subs);
-      } catch (err) {
-        logger.error(err);
-        throw err;
-      }
+      const subs = await subModelInstance.get(undefined, {
+        limit: parseInt(req.query.limit, 10) || 10,
+        offset: parseInt(req.query.offset, 10) || 0,
+        orderBy: req.query.orderBy || 'id',
+        order: req.query.order || 'ASC',
+        ids: idList,
+      });
+
+      res.setStatus(200).json(subs);
+    } catch (err) {
+      logger.error(err);
+      throw err;
     }
-  );
+  });
 
   // GET /winner
   route.get('/winner', async (req: Request, res: Response) => {
