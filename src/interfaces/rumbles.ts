@@ -13,7 +13,7 @@ export interface IRumble extends INewRumble {
   phase: RumblePhases;
 }
 
-export interface INewRumble extends IRumblePostBody {
+export interface INewRumble extends Omit<IRumblePostBody, 'start_time'> {
   canJoin: boolean;
   joinCode: string;
   maxSections: number;
