@@ -2,13 +2,13 @@ import { createError, Inject, Service, serviceCollection } from '../../deps.ts';
 import {
   IDSAPIPageSubmission,
   IProcessedDSResponse,
-  IUploadResponse
+  IUploadResponse,
 } from '../interfaces/dsServiceTypes.ts';
 import { Sources } from '../interfaces/enumSources.ts';
 import {
   INewSubmission,
   ISubItem,
-  ISubmission
+  ISubmission,
 } from '../interfaces/submissions.ts';
 import { INewTop3 } from '../interfaces/top3.ts';
 import PromptModel from '../models/prompts.ts';
@@ -307,10 +307,7 @@ export default class SubmissionService extends BaseService {
       userId,
       promptId,
       sourceId,
-<<<<<<< HEAD
-=======
       rumbleId,
->>>>>>> b1aa906ce476737e5c4489dfed5c2042e63cdbdd
     };
   }
 
