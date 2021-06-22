@@ -2,16 +2,15 @@ import { createError, Inject, Service, serviceCollection } from '../../deps.ts';
 import {
   IDSAPIPageSubmission,
   IProcessedDSResponse,
-  IUploadResponse,
+  IUploadResponse
 } from '../interfaces/dsServiceTypes.ts';
 import { Sources } from '../interfaces/enumSources.ts';
 import {
   INewSubmission,
   ISubItem,
-  ISubmission,
+  ISubmission
 } from '../interfaces/submissions.ts';
 import { INewTop3 } from '../interfaces/top3.ts';
-import { IGetQuery } from '../models/baseModel.ts';
 import PromptModel from '../models/prompts.ts';
 import SubmissionModel from '../models/submissions.ts';
 import Top3Model from '../models/top3.ts';
@@ -88,16 +87,6 @@ export default class SubmissionService extends BaseService {
     return { subs: processedSubs, hasVoted: top3.length > 0 };
   }
 
-  public async getSubs(
-    config?: Omit<IGetQuery<false, keyof ISubmission>, 'first'>
-  ) {
-    const subs = await this.submissionModel.get(undefined, config);
-    const subItems = await Promise.all(
-      subs.map((s) => this.retrieveSubItem(s))
-    );
-    return subItems;
-  }
-
   public async getById(id: number) {
     try {
       const sub = await this.submissionModel.get({ id }, { first: true });
@@ -117,6 +106,7 @@ export default class SubmissionService extends BaseService {
       .table('top3')
       .innerJoin('submissions', 'submissions.id', 'top3.submissionId')
       .order('top3.created_at', 'DESC')
+      .limit(3)
       .select('submissions.*')
       .execute()) as unknown) as ISubmission[];
 
@@ -162,25 +152,26 @@ export default class SubmissionService extends BaseService {
     uploadResponse,
     userId,
     sourceId = Sources.FDSC, // Default to FDSC
+    rumbleId,
   }: {
     uploadResponse: IDSAPIPageSubmission;
     promptId: number;
     userId: number;
     sourceId: Sources & number;
+    rumbleId?: number;
   }) {
     try {
-      // const dsReponse = await this.dsService.sendSubmissionToDS(uploadResponse);
       const dsReponse = await this.dsService.sendSubmissionToDS([
         uploadResponse,
       ]);
-      console.log('res', uploadResponse);
 
       const newSub = this.formatNewSub(
         uploadResponse,
         dsReponse,
         promptId,
         userId,
-        sourceId
+        sourceId,
+        rumbleId
       );
 
       let submission: ISubmission | undefined;
@@ -189,7 +180,7 @@ export default class SubmissionService extends BaseService {
       });
       if (!submission) throw createError(409, 'File upload failed');
 
-      return submission;
+      return this.retrieveSubItem(submission);
     } catch (err) {
       // If any part of upload fails, attempt to remove the item from the bucket for data integrity
       try {
@@ -290,6 +281,7 @@ export default class SubmissionService extends BaseService {
         rotation: sub.rotation,
         codename,
         userId: sub.userId,
+        rumbleId: sub.rumbleId,
       };
     } catch (err) {
       this.logger.error(err);
@@ -302,7 +294,8 @@ export default class SubmissionService extends BaseService {
     { confidence, rotation, score, transcription }: IProcessedDSResponse,
     promptId: number,
     userId: number,
-    sourceId: Sources & number
+    sourceId: Sources & number,
+    rumbleId?: number
   ): INewSubmission {
     return {
       confidence,
@@ -314,6 +307,10 @@ export default class SubmissionService extends BaseService {
       userId,
       promptId,
       sourceId,
+<<<<<<< HEAD
+=======
+      rumbleId,
+>>>>>>> b1aa906ce476737e5c4489dfed5c2042e63cdbdd
     };
   }
 

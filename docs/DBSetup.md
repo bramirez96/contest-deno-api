@@ -1,6 +1,16 @@
 # Database Setup
 
-Make sure you have Docker installed on your machine, and then run `docker-compose -f docker/docker-compose.yml up -d`.
+Make sure you have Docker installed on your machine, and then run one of the following:
+
+```bash
+# The short way:
+yarn up
+```
+
+```bash
+# The long way:
+docker-compose -f docker/docker-compose.yml up -d
+```
 
 > It is important that you run THAT SPECIFIC docker-compose file!
 
