@@ -373,6 +373,7 @@ export default class RumbleService extends BaseService {
             sectionName: name,
             sectionId,
             end_time: endTime,
+            start_time: rumble.start_time,
           });
         }
         // if (rumbles.length !== sections.length)
