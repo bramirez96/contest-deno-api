@@ -2,7 +2,6 @@ import {
   createError,
   IRouter,
   isBool,
-  isNumber,
   isString,
   log,
   NextFunction,
@@ -171,6 +170,7 @@ export default (app: IRouter) => {
     }),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
+        Reflect.deleteProperty(req.body, 'user');
         await promptModelInstance.update(parseInt(req.params.id), req.body);
 
         res.setStatus(204).end();
@@ -186,7 +186,7 @@ export default (app: IRouter) => {
   route.delete(
     '/:id',
     authHandler({ roles: [Roles.admin] }),
-    validate({ id: [required, isNumber] }, 'params'),
+    validate({ id: [required] }, 'params'),
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         await promptModelInstance.delete(parseInt(req.params.id));

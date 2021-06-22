@@ -12,6 +12,10 @@ import env from '../config/env.ts';
 import { IAuthResponse } from '../interfaces/apiResponses.ts';
 import { Roles } from '../interfaces/roles.ts';
 import { INewUser, IUser } from '../interfaces/users.ts';
+import {
+  IGetNewValidationBody,
+  Validators,
+} from '../interfaces/validations.ts';
 import ResetModel from '../models/resets.ts';
 import UserModel from '../models/users.ts';
 import ValidationModel from '../models/validations.ts';
@@ -29,10 +33,11 @@ export default class AuthService extends BaseService {
     super();
   }
 
-  public async SignUp(body: INewUser) {
+  public async SignUp(body: INewUser): Promise<IAuthResponse> {
     try {
       // Initialize variable to store sendTo email for validation
       let sendTo: string;
+      let isParent = false;
       // Check body data one more time for safety since we explicitly cast later
       if (!body.age) throw createError(400, 'No age received');
       if (!body.email) throw createError(400, 'No email received');
@@ -47,10 +52,13 @@ export default class AuthService extends BaseService {
           );
         } else {
           sendTo = body.parentEmail;
+          isParent = true;
         }
       } else {
         sendTo = body.email;
       }
+
+      let response: IAuthResponse | undefined;
       // Start a transaction for data integrity
       await this.db.transaction(async () => {
         // Further sanitize data
@@ -59,18 +67,27 @@ export default class AuthService extends BaseService {
 
         // Create a new user object
         const hashedPassword = await this.hashPassword(body.password);
-        const { id } = await this.userModel.add(
+        const user = await this.userModel.add(
           { ...body, password: hashedPassword, roleId: Roles['user'] },
           true
         );
 
-        // Generate Validation for user
-        const { url, code } = this.generateValidationURL(body.codename, sendTo);
-        await this.validationModel.add({ code, userId: id, email: sendTo });
-        await this.mailer.sendValidationEmail(sendTo, url);
+        // send validation email
+        this.SendValidationEmail({
+          sendTo,
+          isParent,
+          user,
+        });
 
-        this.logger.debug(`User (ID: ${id}) successfully registered`);
+        // Remove password hash from response body
+        Reflect.deleteProperty(user, 'password');
+        const token = await this.generateToken(user);
+        response = { user, token };
+        this.logger.debug(`User (ID: ${user.id}) successfully registered`);
       });
+
+      if (response === undefined) throw createError(500);
+      return response;
     } catch (err) {
       this.logger.error(err);
       throw err;
@@ -141,6 +158,75 @@ export default class AuthService extends BaseService {
     }
   }
 
+  public async SendNewValidationEmail(
+    data: IGetNewValidationBody
+  ): Promise<void> {
+    try {
+      let sendTo: string;
+      let isParent = false;
+
+      if (!data.age) throw createError(400, 'No age received');
+
+      if (data.age < 13) {
+        if (data.newEmail === data.user.email) {
+          throw createError(400, 'Underage users must send to parent email');
+        } else {
+          sendTo = data.newEmail;
+          isParent = true;
+        }
+      } else {
+        if (!data.newEmail) {
+          throw createError(400, 'No email received');
+        } else {
+          sendTo = data.newEmail;
+        }
+      }
+
+      // checks time since last email sent
+      const validation = await this.validationModel.getRecentByUserId(
+        data.user.id
+      );
+
+      if (!validation) throw createError(404, 'No validation found');
+
+      const timeSinceLastRequest = Date.now() - validation.created_at.getTime();
+
+      if (timeSinceLastRequest < 600000) {
+        throw createError(429, 'Cannot send another email so soon');
+      } else {
+        // Able to generate another code, so delete the old one
+        await this.resetModel.update(validation.id, { completed: true });
+      }
+
+      // send validation email
+      await this.SendValidationEmail({
+        sendTo,
+        isParent,
+        user: data.user,
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async ResendValidationEmail(user: IUser): Promise<void> {
+    try {
+      const validation = await this.validationModel.getRecentByUserId(user.id);
+      if (!validation) {
+        throw createError(404, 'No validation found');
+      }
+      await this.SendValidationEmail({
+        sendTo: validation.email,
+        isParent: validation.validatorId === Validators.parent,
+        user,
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
   public async GetResetEmail(email: string) {
     try {
       const user = await this.userModel.get({ email }, { first: true });
@@ -148,7 +234,7 @@ export default class AuthService extends BaseService {
 
       const resetItem = await this.resetModel.get(
         { userId: user.id },
-        { first: true }
+        { first: true, orderBy: 'created_at', order: 'DESC' }
       );
 
       await this.db.transaction(async () => {
@@ -156,7 +242,7 @@ export default class AuthService extends BaseService {
           const timeSinceLastRequest =
             Date.now() - resetItem.created_at.getTime();
           if (timeSinceLastRequest < 600000) {
-            throw createError(429, 'Cannot get another code so soon');
+            throw createError(429, 'Cannot send another email so soon');
           } else {
             // Able to generate another code, so delete the old one
             await this.resetModel.update(resetItem.id, { completed: true });
@@ -164,10 +250,9 @@ export default class AuthService extends BaseService {
         }
 
         const code = this.generateResetCode(user);
-        await this.db.transaction(async () => {
-          await this.resetModel.add({ code, userId: user.id });
-          await this.mailer.sendPasswordResetEmail(user, code);
-        });
+
+        await this.resetModel.add({ code, userId: user.id });
+        await this.mailer.sendPasswordResetEmail(user, code);
       });
     } catch (err) {
       this.logger.error(err);
@@ -210,10 +295,36 @@ export default class AuthService extends BaseService {
     }
   }
 
+  private async SendValidationEmail(args: {
+    sendTo: string;
+    isParent: boolean;
+    user: IUser;
+  }) {
+    // Generate Validation for user
+    const { url, code } = this.generateValidationURL(
+      args.user.codename,
+      args.sendTo
+    );
+    await this.validationModel.add({
+      code,
+      userId: args.user.id,
+      email: args.sendTo,
+      validatorId: args.isParent ? Validators.parent : Validators.user,
+    });
+    if (!args.isParent) {
+      await this.mailer.sendValidationEmail(args.sendTo, url);
+    } else {
+      await this.mailer.sendParentValidationEmail(
+        args.sendTo,
+        url,
+        args.user.firstname
+      );
+    }
+  }
+
   public generateToken(user: Omit<IUser, 'password'>) {
     this.logger.debug(`Generating JWT for user (ID: ${user.id})`);
-    const daysUntilExpiry = 2;
-    const exp = moment.utc().add(daysUntilExpiry, 'd');
+    const exp = moment.utc().add(env.AUTH_TOKEN_EXP_TIME, 'd');
 
     this.logger.debug(`Signing JWT for user (ID: ${user.id})`);
     return jwt.create(

@@ -51,6 +51,48 @@ export default class MailService {
     }
   }
 
+  public async sendParentValidationEmail(
+    email: string,
+    url: string,
+    firstname: string
+  ) {
+    try {
+      this.logger.debug(
+        `Sending parent activation email for child user (EMAIL: ${email})`
+      );
+      const handle = new Handlebars(hbsConfig());
+      const result = await handle.renderView('parentActivation', {
+        url,
+        firstname,
+      });
+      const emailContent = new SendEmailCommand({
+        Destination: {
+          ToAddresses: [email],
+        },
+        FromEmailAddress: env.SES_CONFIG.email,
+        Content: {
+          Simple: {
+            Body: {
+              Html: {
+                Data: result,
+              },
+            },
+            Subject: {
+              Data: `${firstname} needs their Story Squad account verified`,
+            },
+          },
+        },
+      });
+      await this.mailer.send(emailContent);
+      this.logger.debug(
+        `Activation email successfully sent to parent for child user (EMAIL: ${email})`
+      );
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
   public async sendPasswordResetEmail(user: IUser, token: string) {
     const urlParams = new URLSearchParams({ code: token, email: user.email });
     const url = env.REACT_APP_URL + '/reset?' + urlParams.toString();
