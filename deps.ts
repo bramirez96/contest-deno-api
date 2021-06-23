@@ -79,6 +79,9 @@ export type {
   Request,
   Response,
 } from 'https://deno.land/x/opine@1.0.2/mod.ts';
+// redis v0.22.2
+export { connect as redisConnect } from 'https://deno.land/x/redis@v0.22.2/mod.ts';
+export type { RedisConnectOptions } from 'https://deno.land/x/redis@v0.22.2/mod.ts';
 // deno_s3 @0.3.0
 export { S3Bucket } from 'https://deno.land/x/s3@0.3.0/mod.ts';
 export type {

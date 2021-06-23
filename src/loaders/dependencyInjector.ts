@@ -1,9 +1,10 @@
 import { serviceCollection } from '../../deps.ts';
-import pgConnect from './postgres.ts';
-import logger from './logger.ts';
-import mailer from './mailer.ts';
 import bucket from './bucket.ts';
 import clever from './clever.ts';
+import logger from './logger.ts';
+import mailer from './mailer.ts';
+import pgConnect from './postgres.ts';
+import redis from './redis.ts';
 
 export default async () => {
   try {
@@ -21,6 +22,9 @@ export default async () => {
 
     const cleverClient = clever();
     serviceCollection.addStatic('clever', cleverClient);
+
+    const redisClient = redis();
+    serviceCollection.addStatic('redis', redisClient);
   } catch (err) {
     console.log({ err });
     throw err;
