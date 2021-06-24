@@ -1,5 +1,3 @@
-import { IProcessedDSResponse } from './dsServiceTypes.ts';
-
 export interface ISubItem {
   id: number;
   userId: number;
@@ -16,9 +14,13 @@ export interface ISubmission extends INewSubmission {
   created_at: Date;
 }
 
-export interface INewSubmission extends IProcessedDSResponse {
+export interface INewSubmission {
   s3Label: string;
   etag: string;
+  transcription: string;
+  confidence: number;
+  score: number;
+  rotation: number;
   userId: number;
   promptId: number;
   sourceId?: number;

@@ -4,58 +4,50 @@ import {
   IDSAPIPageSubmission,
   IDSAPITextSubmissionPostBody,
   IDSAPITextSubmissionResponse,
-  IProcessedDSResponse,
 } from '../interfaces/dsServiceTypes.ts';
 import { INewRumbleFeedback } from '../interfaces/rumbleFeedback.ts';
 
-const DSClient = axiod.create({
-  baseURL: env.DS_API_URL,
-  headers: {
-    Authorization: env.DS_API_TOKEN,
-  },
-});
-
 @Service()
 export default class DSService {
+  // A connection to the DS FastAPI server on Elastic Beanstalk
   constructor(@Inject('logger') private logger: log.Logger) {}
 
-  /**
-   * IMPORTANT! The DS API expects a field called file key but that key
-   * is the S3 key of the file. The upload middleware incorrect
-   */
-  public async sendSubmissionToDS(
-    pages: IDSAPIPageSubmission[]
-  ): Promise<IProcessedDSResponse> {
+  public async sendSubmissionToDS({
+    pages,
+    promptId,
+    submissionId = 0,
+  }: {
+    pages: IDSAPIPageSubmission[];
+    promptId: number;
+    submissionId?: number;
+  }): Promise<IDSAPITextSubmissionResponse> {
     /* Mock Data */
-    await pages; // Shut up linter?
-    const res = await Promise.resolve<IDSAPITextSubmissionResponse>({
-      Transcription: 'asdaksfmnasdlkcfmnasdlfkasmfdlkasdf',
-      Confidence: 50,
-      SquadScore: Math.floor(Math.random() * 40 + 10), // Rand 10-50
-      Rotation: 0,
-      ModerationFlag: false,
-      SubmissionID: 1,
-    });
-    // const formattedPages = pages.reduce<
-    //   Record<string, Pick<IDSAPIPageSubmission, 'Checksum' | 'filekey'>>
-    // >(
-    //   (acc, page, index) => ({
-    //     ...acc,
-    //     [`${index}`]: {
-    //       Checksum: page.Checksum,
-    //       filekey: page.s3Label,
-    //     },
-    //   }),
-    //   {}
-    // );
-    // console.log('pages', pages);
-    // console.log('formatted pages', formattedPages);
-    // const res = await this.submitTextSubmissionToDSAPI({
-    //   StoryId: 1,
+    // const res = await Promise.resolve<IDSAPITextSubmissionResponse>({
+    //   Transcription: 'asdaksfmnasdlkcfmnasdlfkasmfdlkasdf',
+    //   Confidence: 50,
+    //   SquadScore: Math.floor(Math.random() * 40 + 10), // Rand 10-50
+    //   Rotation: 0,
+    //   ModerationFlag: false,
     //   SubmissionID: 1,
-    //   Pages: formattedPages,
     // });
-    return this.formatDSTextSubmission(res);
+    const formattedPages = pages.reduce(
+      (acc, page, index) => ({
+        ...acc,
+        [`${index + 1}`]: {
+          Checksum: page.Checksum,
+          filekey: page.s3Label,
+        },
+      }),
+      {}
+    );
+    // TODO look into removing these?
+    const dsReqBody = {
+      StoryId: promptId,
+      SubmissionID: submissionId,
+      Pages: formattedPages,
+    };
+    const res = await this.sendText(dsReqBody);
+    return res;
   }
 
   /**
@@ -112,33 +104,22 @@ export default class DSService {
     return response;
   }
 
-  private async submitTextSubmissionToDSAPI(
+  private async sendText(
     body: IDSAPITextSubmissionPostBody
-  ): Promise<IProcessedDSResponse> {
+  ): Promise<IDSAPITextSubmissionResponse> {
     try {
-      console.log('ds req start');
-      const { data } = (await DSClient.post(`/submission/text`, body)) as {
-        data: IDSAPITextSubmissionResponse;
-      };
-      console.log('ds req end');
-      // Format the returned data
-      return this.formatDSTextSubmission(data);
+      console.log('ds req start', body);
+      const { data } = await axiod.post(
+        `/submission/text`,
+        body,
+        env.DS_API_CONFIG
+      );
+      console.log('ds req end', data);
+      return data;
     } catch (err) {
-      this.logger.error('text sub', err);
+      this.logger.error('text sub', { err });
       throw err;
     }
-  }
-
-  private formatDSTextSubmission(
-    data: IDSAPITextSubmissionResponse
-  ): IProcessedDSResponse {
-    // TODO do something with transcription and moderation flag
-    return {
-      confidence: data.Confidence,
-      rotation: data.Rotation,
-      score: data.SquadScore,
-      transcription: data.Transcription,
-    };
   }
 }
 

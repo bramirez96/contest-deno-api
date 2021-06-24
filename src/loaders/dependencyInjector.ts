@@ -1,17 +1,21 @@
 import { serviceCollection } from '../../deps.ts';
-import pgConnect from './postgres.ts';
-import logger from './logger.ts';
-import mailer from './mailer.ts';
 import bucket from './bucket.ts';
 import clever from './clever.ts';
+import logger from './logger.ts';
+import mailer from './mailer.ts';
+import postgres from './postgres.ts';
+import redis from './redis.ts';
 
 export default async () => {
   try {
     const log = await logger();
     serviceCollection.addStatic('logger', log);
 
-    const pg = await pgConnect();
-    serviceCollection.addStatic('pg', pg);
+    const pgMain = await postgres.main();
+    serviceCollection.addStatic('pg', pgMain);
+
+    const pgDS = await postgres.ds();
+    serviceCollection.addStatic('ds', pgDS);
 
     const mail = mailer();
     serviceCollection.addStatic('mail', mail);
@@ -21,6 +25,9 @@ export default async () => {
 
     const cleverClient = clever();
     serviceCollection.addStatic('clever', cleverClient);
+
+    const redisClient = redis();
+    serviceCollection.addStatic('redis', redisClient);
   } catch (err) {
     console.log({ err });
     throw err;

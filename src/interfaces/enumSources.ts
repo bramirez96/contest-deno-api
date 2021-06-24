@@ -9,4 +9,5 @@ export interface INewSource {
 export enum Sources {
   FDSC = 1,
   Rumble = 2,
+  Monster = 3,
 }

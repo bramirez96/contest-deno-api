@@ -58,9 +58,11 @@ export default (app: IRouter) => {
         const submission = await subServiceInstance.processSubmission({
           uploadResponse: req.body.story[0], // TODO This endpoint is restricted to one submission for now
           promptId: parseInt(req.body.promptId, 10),
-          userId: req.body.user.id,
-          sourceId: req.query.sourceId,
+          user: req.body.user,
           rumbleId: +req.body.rumbleId || undefined,
+          sourceId: req.query.sourceId,
+          transcriptionSourceId: req.query.transcriptionSourceId,
+          transcription: req.body.transcription,
         });
         res.setStatus(201).json(submission);
       } catch (err) {
