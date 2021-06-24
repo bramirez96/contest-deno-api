@@ -3,7 +3,7 @@ import bucket from './bucket.ts';
 import clever from './clever.ts';
 import logger from './logger.ts';
 import mailer from './mailer.ts';
-import pgConnect from './postgres.ts';
+import postgres from './postgres.ts';
 import redis from './redis.ts';
 
 export default async () => {
@@ -11,8 +11,11 @@ export default async () => {
     const log = await logger();
     serviceCollection.addStatic('logger', log);
 
-    const pg = await pgConnect();
-    serviceCollection.addStatic('pg', pg);
+    const pgMain = await postgres.main();
+    serviceCollection.addStatic('pg', pgMain);
+
+    const pgDS = await postgres.ds();
+    serviceCollection.addStatic('ds', pgDS);
 
     const mail = mailer();
     serviceCollection.addStatic('mail', mail);

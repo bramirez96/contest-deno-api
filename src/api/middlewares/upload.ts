@@ -9,10 +9,7 @@ import {
   serviceCollection,
   sha512,
 } from '../../../deps.ts';
-import {
-  DSChecksumMap,
-  IDSAPIPageSubmission,
-} from '../../interfaces/dsServiceTypes.ts';
+import { IDSAPIPageSubmission } from '../../interfaces/dsServiceTypes.ts';
 import BucketService from '../../services/bucket.ts';
 
 export default (...fileNames: string[]) => async (
@@ -23,7 +20,6 @@ export default (...fileNames: string[]) => async (
   const logger: log.Logger = serviceCollection.get('logger');
   try {
     const bucketServiceInstance = serviceCollection.get(BucketService);
-    const checksums: DSChecksumMap = {};
 
     // Loop over each FormData field with file data, one file name at a time
     for await (const fname of fileNames) {
@@ -52,18 +48,32 @@ export default (...fileNames: string[]) => async (
         Checksum: generateChecksum(content),
         filekey: name,
       }));
-      console.log('chsunm', checksumList[0].Checksum);
+      console.log(
+        checksumList.reduce(
+          (prev, { Checksum }, i) => `${prev} [${i}] cksm: ${Checksum} :::::`,
+          ':::::'
+        )
+      );
 
       // Resolve those promises together and replace the form data in the body with the file names
       const resolved = await Promise.all(promiseList);
+      console.log(
+        resolved.reduce(
+          (prev, { s3Label, etag }, i) =>
+            `${prev} [${i}] label: ${s3Label}, etag: ${etag} :::::`,
+          ':::::'
+        )
+      );
 
       // Overwrite the previous fields in the body
-      req.body[fname] = resolved.map<IDSAPIPageSubmission>((r, i) => ({
+      const newReqBodyEntry = resolved.map<IDSAPIPageSubmission>((r, i) => ({
         // Add the processed request
         ...r,
         // And then add the checksum info for DS
         ...checksumList[i],
       }));
+      req.body[fname] = newReqBodyEntry;
+      console.log('updated body field', newReqBodyEntry);
 
       logger.debug(
         `Successfully uploaded ${fileArray.length} files for field: ${fname}`,
@@ -71,7 +81,6 @@ export default (...fileNames: string[]) => async (
       );
     }
 
-    req.body.dsChecksumMap = checksums;
     next();
   } catch (err) {
     logger.error(err);

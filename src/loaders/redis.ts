@@ -5,14 +5,13 @@ export default () => {
   console.log('Loading Redis client...');
 
   let redis;
-  try {
-    if (env.DENO_ENV === 'testing') {
-      redis = redisConnect(env.REDIS_CONFIG);
-    } else {
-      redis = redisConnect(env.REDIS_CONFIG);
-    }
-  } catch (err) {
-    console.log('Could not connect to Redis', err);
+  if (!env.REDIS_CONFIG.hostname && !env.REDIS_CONFIG.port) {
+    console.log('Redis is not configured in your environment');
+    redis = {};
+  } else if (env.DENO_ENV === 'testing') {
+    redis = redisConnect(env.REDIS_CONFIG);
+  } else {
+    redis = redisConnect(env.REDIS_CONFIG);
   }
 
   return redis;

@@ -59,4 +59,20 @@ module.exports = {
       directory: './src/db/production_seeds',
     },
   },
+
+  // DS Database connection
+  ds: {
+    client: 'pg',
+    connection: process.env.DS_DB_URL,
+    pool: {
+      min: 2,
+      max: 10,
+    },
+    migrations: {
+      directory: './src/db/dataScience/migrations',
+    },
+    seeds: {
+      directory: './src/db/dataScience/seeds',
+    },
+  },
 };

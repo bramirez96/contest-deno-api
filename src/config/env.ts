@@ -34,11 +34,19 @@ export default {
       Authorization: Deno.env.get('DS_API_TOKEN') || '',
     },
   },
+  // Dedicated DS Database Connection
+  DS_DB_CONFIG: {
+    database: Deno.env.get(envPrefix() + 'DS_DB_NAME') || '',
+    hostname: Deno.env.get(envPrefix() + 'DS_DB_HOST') || '',
+    port: parseInt(Deno.env.get(envPrefix() + 'DS_DB_PORT') || '0', 10),
+    username: Deno.env.get(envPrefix() + 'DS_DB_USER') || '',
+    password: Deno.env.get(envPrefix() + 'DS_DB_PASS') || '',
+  },
 
   // REDIS Config
   REDIS_CONFIG: {
-    hostname: Deno.env.get('REDIS_HOST') || '',
-    port: Deno.env.get('REDIS_PORT') || '',
+    hostname: Deno.env.get('REDIS_HOST'),
+    port: Deno.env.get('REDIS_PORT'),
   } as RedisConnectOptions,
 
   // Time in days, defaults to 30 if not set in .env
