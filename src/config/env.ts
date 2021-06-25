@@ -52,7 +52,7 @@ export default {
     hostname: Deno.env.get('REDIS_HOST'),
     port: Deno.env.get('REDIS_PORT'),
   } as RedisConnectOptions,
-  
+
   // Time in days, defaults to 30 if not set in .env
   AUTH_TOKEN_EXP_TIME: parseInt(
     Deno.env.get('AUTH_TOKEN_EXP_TIME') || '30',

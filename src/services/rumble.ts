@@ -101,7 +101,9 @@ export default class RumbleService extends BaseService {
     try {
       this.logger.debug(`Updating feedback scores...`);
 
-      const feedbackPromises = feedback.map(({ id, ...body }) => {
+      const feedbackPromises = feedback.map(({ ...body }) => {
+        // Remove the ID from the body
+        Reflect.deleteProperty(body, 'id');
         return this.rumbleFeedback.updateFeedback(body);
       });
 
