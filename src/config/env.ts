@@ -18,6 +18,8 @@ const envPrefix = () => {
 };
 
 const REACT_APP_URL = Deno.env.get('REACT_APP_URL') || 'http://localhost:3000';
+const DS_API_URL = Deno.env.get('DS_API_URL') || '';
+const DS_API_TOKEN = Deno.env.get('DS_API_TOKEN') || '';
 
 export default {
   REACT_APP_URL,
@@ -28,10 +30,12 @@ export default {
   DB_URL: Deno.env.get(envPrefix() + 'DB_URL'),
 
   // DS API Client Configuration
+  DS_API_URL,
+  DS_API_TOKEN,
   DS_API_CONFIG: {
-    baseURL: Deno.env.get('DS_API_URL') || '',
+    baseURL: DS_API_URL,
     headers: {
-      Authorization: Deno.env.get('DS_API_TOKEN') || '',
+      Authorization: DS_API_TOKEN,
     },
   },
   // Dedicated DS Database Connection
@@ -48,7 +52,7 @@ export default {
     hostname: Deno.env.get('REDIS_HOST'),
     port: Deno.env.get('REDIS_PORT'),
   } as RedisConnectOptions,
-
+  
   // Time in days, defaults to 30 if not set in .env
   AUTH_TOKEN_EXP_TIME: parseInt(
     Deno.env.get('AUTH_TOKEN_EXP_TIME') || '30',
