@@ -27,7 +27,8 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
         .select(
           'rumbles.*',
           'rumble_sections.end_time',
-          'rumble_sections.phase'
+          'rumble_sections.phase',
+          'rumble_sections.start_time'
         )
         .where('clever_sections.id', section.id)
         .execute()) as unknown[]) as IRumble[];
@@ -65,6 +66,40 @@ export default class RumbleModel extends BaseModel<INewRumble, IRumble> {
         .execute()) as unknown[]) as IStudentWithSubmissions[];
 
       return students;
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
+  }
+
+  public async getRumbleInfo(rumble: IRumble): Promise<IRumbleWithSectionInfo> {
+    try {
+      const [rumbleInfo] = ((await this.db
+        .table('rumble_sections')
+        .innerJoin(
+          'clever_sections',
+          'clever_sections.id',
+          'rumble_sections.sectionId'
+        )
+        .select(
+          'rumble_sections.end_time',
+          'rumble_sections.phase',
+          'clever_sections.name',
+          'rumble_sections.sectionId'
+        )
+        .where('rumbleId', rumble.id)
+        .execute()) as unknown) as (Pick<
+        IRumbleWithSectionInfo,
+        'phase' | 'end_time' | 'sectionId'
+      > & { name: string })[];
+
+      return {
+        ...rumble,
+        sectionId: rumbleInfo.sectionId,
+        sectionName: rumbleInfo.name,
+        end_time: rumbleInfo.end_time,
+        phase: rumbleInfo.phase,
+      };
     } catch (err) {
       this.logger.error(err);
       throw err;

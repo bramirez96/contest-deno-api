@@ -27,6 +27,7 @@ const route = Router();
 export default (app: IRouter) => {
   const logger: log.Logger = serviceCollection.get('logger');
   const subServiceInstance = serviceCollection.get(SubmissionService);
+  const subModelInstance = serviceCollection.get(SubmissionModel);
   const feedbackModelInstance = serviceCollection.get(RumbleFeedbackModel);
 
   app.use(['/submit', '/submission', '/submissions'], route);
@@ -54,13 +55,16 @@ export default (app: IRouter) => {
     upload('story'),
     async (req: Request, res: Response) => {
       try {
-        await subServiceInstance.processSubmission({
+        const submission = await subServiceInstance.processSubmission({
           uploadResponse: req.body.story[0], // TODO This endpoint is restricted to one submission for now
           promptId: parseInt(req.body.promptId, 10),
-          userId: req.body.user.id,
+          user: req.body.user,
+          rumbleId: +req.body.rumbleId || undefined,
           sourceId: req.query.sourceId,
+          transcriptionSourceId: req.query.transcriptionSourceId,
+          transcription: req.body.transcription,
         });
-        res.setStatus(201).json({ message: 'Upload successful!' });
+        res.setStatus(201).json(submission);
       } catch (err) {
         logger.error(err);
         throw err;
@@ -69,26 +73,30 @@ export default (app: IRouter) => {
   );
 
   // GET /
-  route.get(
-    '/',
-    authHandler({ roles: [Roles.admin] }),
-    async (req: Request, res: Response) => {
-      try {
-        // TODO read query params into a generic query!
-        const subs = await subServiceInstance.getSubs({
-          limit: parseInt(req.query.limit, 10) || 10,
-          offset: parseInt(req.query.offset, 10) || 0,
-          orderBy: req.query.orderBy || 'id',
-          order: req.query.order || 'ASC',
-        });
+  route.get('/', authHandler(), async (req: Request, res: Response) => {
+    try {
+      const idQuery = req.query.ids;
+      const idList =
+        typeof idQuery === 'string'
+          ? idQuery.split(',').map((id) => +id) // Split into a string array and cast those strings to ints
+          : typeof idQuery === 'number'
+          ? [idQuery]
+          : undefined;
 
-        res.setStatus(200).json(subs);
-      } catch (err) {
-        logger.error(err);
-        throw err;
-      }
+      const subs = await subModelInstance.get(undefined, {
+        limit: parseInt(req.query.limit, 10) || 10,
+        offset: parseInt(req.query.offset, 10) || 0,
+        orderBy: req.query.orderBy || 'id',
+        order: req.query.order || 'ASC',
+        ids: idList,
+      });
+
+      res.setStatus(200).json(subs);
+    } catch (err) {
+      logger.error(err);
+      throw err;
     }
-  );
+  });
 
   // GET /winner
   route.get('/winner', async (req: Request, res: Response) => {
@@ -113,6 +121,7 @@ export default (app: IRouter) => {
   });
 
   // GET /top/admin
+  // TODO postman
   route.get(
     '/top/admin',
     authHandler({ roles: [Roles.admin] }),
@@ -128,6 +137,7 @@ export default (app: IRouter) => {
   );
 
   // POST /top
+  // TODO postman
   route.post(
     '/top',
     authHandler({ roles: [Roles.admin] }),
@@ -144,6 +154,7 @@ export default (app: IRouter) => {
   );
 
   // GET /:id - This is good for shareability! Public
+  // TODO postman
   route.get('/:id', async (req: Request, res: Response) => {
     try {
       const sub = await subServiceInstance.getById(parseInt(req.params.id, 10));
@@ -155,6 +166,7 @@ export default (app: IRouter) => {
   });
 
   // DELETE /:id
+  // TODO postman
   route.delete(
     '/:id',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
@@ -171,6 +183,7 @@ export default (app: IRouter) => {
   );
 
   // GET /:id/flags
+  // TODO postman
   route.get(
     '/:id/flags',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
@@ -188,6 +201,7 @@ export default (app: IRouter) => {
   );
 
   // POST /:id/flags
+  // TODO postman
   route.post(
     '/:id/flags',
     authHandler({ roles: [Roles.teacher, Roles.admin] }),
@@ -211,6 +225,7 @@ export default (app: IRouter) => {
   );
 
   // DELETE /:id/flags/:flagId - Only admin can unflag? Not teachers?
+  // TODO postman
   route.delete(
     '/:id/flags/:flagId',
     authHandler({ roles: [Roles.admin] }),

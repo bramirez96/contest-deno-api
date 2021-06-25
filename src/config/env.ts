@@ -1,4 +1,4 @@
-import { Algorithm, config } from '../../deps.ts';
+import { Algorithm, config, RedisConnectOptions } from '../../deps.ts';
 
 config({ export: true });
 
@@ -18,6 +18,8 @@ const envPrefix = () => {
 };
 
 const REACT_APP_URL = Deno.env.get('REACT_APP_URL') || 'http://localhost:3000';
+const DS_API_URL = Deno.env.get('DS_API_URL') || '';
+const DS_API_TOKEN = Deno.env.get('DS_API_TOKEN') || '';
 
 export default {
   REACT_APP_URL,
@@ -26,8 +28,30 @@ export default {
   UUID_NAMESPACE: Deno.env.get('UUID_NAMESPACE') || '',
   SERVER_URL: Deno.env.get('SERVER_URL') || 'http://localhost:' + PORT,
   DB_URL: Deno.env.get(envPrefix() + 'DB_URL'),
-  DS_API_URL: Deno.env.get('DS_API_URL') || '',
-  DS_API_TOKEN: Deno.env.get('DS_API_TOKEN') || '',
+
+  // DS API Client Configuration
+  DS_API_URL,
+  DS_API_TOKEN,
+  DS_API_CONFIG: {
+    baseURL: DS_API_URL,
+    headers: {
+      Authorization: DS_API_TOKEN,
+    },
+  },
+  // Dedicated DS Database Connection
+  DS_DB_CONFIG: {
+    database: Deno.env.get(envPrefix() + 'DS_DB_NAME') || '',
+    hostname: Deno.env.get(envPrefix() + 'DS_DB_HOST') || '',
+    port: parseInt(Deno.env.get(envPrefix() + 'DS_DB_PORT') || '0', 10),
+    username: Deno.env.get(envPrefix() + 'DS_DB_USER') || '',
+    password: Deno.env.get(envPrefix() + 'DS_DB_PASS') || '',
+  },
+
+  // REDIS Config
+  REDIS_CONFIG: {
+    hostname: Deno.env.get('REDIS_HOST'),
+    port: Deno.env.get('REDIS_PORT'),
+  } as RedisConnectOptions,
 
   // Time in days, defaults to 30 if not set in .env
   AUTH_TOKEN_EXP_TIME: parseInt(

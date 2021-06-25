@@ -1,7 +1,8 @@
 import { createError, Inject, Service, serviceCollection } from '../../deps.ts';
 import {
+  DSTranscriptionSources,
   IDSAPIPageSubmission,
-  IProcessedDSResponse,
+  IDSAPITextSubmissionResponse,
   IUploadResponse,
 } from '../interfaces/dsServiceTypes.ts';
 import { Sources } from '../interfaces/enumSources.ts';
@@ -11,7 +12,8 @@ import {
   ISubmission,
 } from '../interfaces/submissions.ts';
 import { INewTop3 } from '../interfaces/top3.ts';
-import { IGetQuery } from '../models/baseModel.ts';
+import { IUser } from '../interfaces/users.ts';
+import DSModel from '../models/dsModels.ts';
 import PromptModel from '../models/prompts.ts';
 import SubmissionModel from '../models/submissions.ts';
 import Top3Model from '../models/top3.ts';
@@ -28,7 +30,8 @@ export default class SubmissionService extends BaseService {
     @Inject(UserModel) private userModel: UserModel,
     @Inject(PromptModel) private promptModel: PromptModel,
     @Inject(Top3Model) private top3Model: Top3Model,
-    @Inject(DSService) private dsService: DSService
+    @Inject(DSService) private dsService: DSService,
+    @Inject(DSModel) private dsModel: DSModel
   ) {
     super();
   }
@@ -48,13 +51,13 @@ export default class SubmissionService extends BaseService {
     );
 
     // Pull codename for use in the retrieve subs, this reduces queries to db
-    const { codename } = await this.userModel.get(
-      { id: userId },
-      { first: true }
-    );
+    const user = await this.userModel.get({ id: userId }, { first: true });
+
+    if (!user) throw createError(404, 'User not found');
+
     // Query the S3 bucket/database for submission info
     const subItems = await Promise.all(
-      subs.map((s) => this.retrieveSubItem(s, codename))
+      subs.map((s) => this.retrieveSubItem(s, user.codename))
     );
 
     return subItems;
@@ -88,16 +91,6 @@ export default class SubmissionService extends BaseService {
     return { subs: processedSubs, hasVoted: top3.length > 0 };
   }
 
-  public async getSubs(
-    config?: Omit<IGetQuery<false, keyof ISubmission>, 'first'>
-  ) {
-    const subs = await this.submissionModel.get(undefined, config);
-    const subItems = await Promise.all(
-      subs.map((s) => this.retrieveSubItem(s))
-    );
-    return subItems;
-  }
-
   public async getById(id: number) {
     try {
       const sub = await this.submissionModel.get({ id }, { first: true });
@@ -117,6 +110,7 @@ export default class SubmissionService extends BaseService {
       .table('top3')
       .innerJoin('submissions', 'submissions.id', 'top3.submissionId')
       .order('top3.created_at', 'DESC')
+      .limit(3)
       .select('submissions.*')
       .execute()) as unknown) as ISubmission[];
 
@@ -160,45 +154,74 @@ export default class SubmissionService extends BaseService {
   public async processSubmission({
     promptId,
     uploadResponse,
-    userId,
+    user,
     sourceId = Sources.FDSC, // Default to FDSC
+    rumbleId,
+    transcription,
+    transcriptionSourceId = DSTranscriptionSources.DS,
   }: {
     uploadResponse: IDSAPIPageSubmission;
     promptId: number;
-    userId: number;
+    user: IUser;
     sourceId: Sources & number;
+    rumbleId?: number;
+    transcriptionSourceId: DSTranscriptionSources & number;
+    transcription?: string;
   }) {
     try {
-      // const dsReponse = await this.dsService.sendSubmissionToDS(uploadResponse);
-      const dsReponse = await this.dsService.sendSubmissionToDS([
-        uploadResponse,
-      ]);
-      console.log('res', uploadResponse);
+      this.logger.debug('sending', uploadResponse, 'to ds');
+      const dsResponse = await this.dsService.sendSubmissionToDS({
+        pages: [uploadResponse],
+        promptId,
+      });
+      this.logger.debug('recieved', dsResponse, 'from ds');
 
+      this.logger.debug('formatting');
       const newSub = this.formatNewSub(
         uploadResponse,
-        dsReponse,
+        dsResponse,
         promptId,
-        userId,
-        sourceId
+        user.id,
+        sourceId,
+        rumbleId
       );
+      this.logger.debug('formatted sub successfully:', newSub);
 
-      let submission: ISubmission | undefined;
-      await this.db.transaction(async () => {
-        submission = await this.submissionModel.add(newSub, true);
-      });
-      if (!submission) throw createError(409, 'File upload failed');
+      this.logger.debug('adding new sub', newSub);
+      const submission = await this.submissionModel.add(newSub, true);
+      if (!submission) throw createError(409, 'Could not add to database');
+      this.logger.debug('new submission created', submission);
 
-      return submission;
-    } catch (err) {
-      // If any part of upload fails, attempt to remove the item from the bucket for data integrity
+      this.logger.debug('retrieving sub item with id', submission.id);
+      const subItem = await this.retrieveSubItem(submission);
+      this.logger.debug('sub item retrieved', subItem);
+
       try {
-        await this.bucketService.remove(uploadResponse.s3Label);
+        await this.dsModel.addTranscription({
+          uploadResponse,
+          dsResponse,
+          subItem,
+          user,
+          sourceId,
+          transcription,
+          transcriptionSourceId,
+        });
       } catch (err) {
-        this.logger.critical(
-          `S3 object ${uploadResponse.s3Label} is untracked!`
+        this.logger.info(
+          `Failed to save submission ${submission.id} to DS database`
         );
       }
+
+      return subItem;
+    } catch (err) {
+      // If any part of upload fails, attempt to remove the item from the bucket for data integrity
+      // try {
+      //   await this.bucketService.remove(uploadResponse.s3Label);
+      // } catch (err) {
+      //   this.logger.critical(
+      //     `S3 object ${uploadResponse.s3Label} is untracked!`
+      //   );
+      // }
       this.logger.error(err);
       throw err;
     }
@@ -290,6 +313,7 @@ export default class SubmissionService extends BaseService {
         rotation: sub.rotation,
         codename,
         userId: sub.userId,
+        rumbleId: sub.rumbleId,
       };
     } catch (err) {
       this.logger.error(err);
@@ -299,21 +323,28 @@ export default class SubmissionService extends BaseService {
 
   private formatNewSub(
     { etag, s3Label }: IUploadResponse,
-    { confidence, rotation, score, transcription }: IProcessedDSResponse,
+    {
+      Confidence: confidence,
+      Rotation: rotation,
+      SquadScore: score,
+      Transcription: transcription,
+    }: IDSAPITextSubmissionResponse,
     promptId: number,
     userId: number,
-    sourceId: Sources & number
+    sourceId: Sources & number,
+    rumbleId?: number
   ): INewSubmission {
     return {
-      confidence,
-      score,
+      confidence: Math.round(confidence),
+      score: Math.round(score),
       transcription,
-      rotation,
+      rotation: Math.round(rotation),
       etag,
       s3Label,
       userId,
       promptId,
       sourceId,
+      rumbleId,
     };
   }
 

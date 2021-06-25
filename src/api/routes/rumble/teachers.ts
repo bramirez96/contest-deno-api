@@ -76,10 +76,10 @@ export default (app: IRouter) => {
     }),
     async (req, res) => {
       try {
-        const rumble = await rumbleServiceInstance.createGameInstances(
-          req.body.rumble,
-          req.body.sectionIds
-        );
+        const rumble = await rumbleServiceInstance.createGameInstances({
+          rumble: req.body.rumble,
+          sectionIds: req.body.sectionIds,
+        });
         res.setStatus(201).json(rumble);
       } catch (err) {
         logger.error(err);
