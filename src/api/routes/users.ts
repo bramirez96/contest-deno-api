@@ -33,30 +33,39 @@ export default (app: IRouter) => {
   app.use('/users', route);
 
   // GET /
-  route.get('/', async (req, res) => {
+  route.head('/', async (req, res) => {
     try {
-      const userList = await userModelInstance.get(undefined, {
-        limit: parseInt(req.params.limit, 10) || 10,
-        offset: parseInt(req.params.offset, 10) || 0,
-        orderBy: (req.params.orderBy as keyof IUser) || 'id',
-        order: (req.params.order as 'ASC' | 'DESC') || 'ASC',
-        first: req.params.first === 'true',
-      });
+      const codename = req.params.codename;
+      const email = req.params.email;
+      const userList = await userModelInstance.get(
+        { codename: codename, email: email },
 
-      res.setStatus(200).json(userList);
+        {
+          limit: parseInt(req.query.limit, 10) ?? 10,
+          offset: parseInt(req.query.offset, 10) || 0,
+          orderBy: (req.query.orderBy as keyof IUser) ?? 'id',
+          order: (req.query.order as 'ASC' | 'DESC') ?? 'ASC',
+          first: req.query.first === 'true',
+        }
+      );
+
+      const headerLength = Array.isArray(userList) ? 'userList.length' : '1';
+      res.headers?.append('content-length', headerLength);
+
+      res.setStatus(204).end();
     } catch (err) {
       logger.error(err);
       throw err;
     }
   });
 
-  route.head('/', async (req, res) => {
+  route.get('/', async (req, res) => {
     try {
       const userList = await userModelInstance.get(undefined, {
-        limit: parseInt(req.params.limit, 10) || 10,
-        offset: parseInt(req.params.offset, 10) || 0,
-        orderBy: (req.params.orderBy as keyof IUser) || 'id',
-        order: (req.params.order as 'ASC' | 'DESC') || 'ASC',
+        limit: parseInt(req.query.limit, 10) ?? 10,
+        offset: parseInt(req.query.offset, 10) ?? 0,
+        orderBy: (req.query.orderBy as keyof IUser) ?? 'id',
+        order: (req.params.order as 'ASC' | 'DESC') ?? 'ASC',
         first: req.params.first === 'true',
       });
 
