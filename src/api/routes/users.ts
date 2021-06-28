@@ -49,8 +49,9 @@ export default (app: IRouter) => {
         }
       );
 
-      const headerLength = Array.isArray(userList) ? 'userList.length' : '1';
-      res.headers?.append('content-length', headerLength);
+      //Error: Parse Error: Invalid character in Content-Length
+      const headerLength = Array.isArray(userList) ? 'userList.length' : '0';
+      res.headers?.append('content-length', 'headerLength');
 
       res.setStatus(204).end();
     } catch (err) {
