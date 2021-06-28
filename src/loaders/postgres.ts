@@ -38,7 +38,7 @@ export default {
 
       return db;
     } catch (err) {
-      console.log(env.DB_CONFIG);
+      console.log(env.DS_DB_CONFIG);
       console.log(err.message, err);
     }
   },

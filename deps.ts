@@ -102,6 +102,7 @@ export {
   flattenMessages,
   isArray,
   isBool,
+  isDate,
   isEmail,
   isIn,
   isNumber,

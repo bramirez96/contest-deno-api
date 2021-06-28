@@ -9,7 +9,7 @@ const valid: Omit<INewUser, 'roleId'>[] = [
     firstname: 'Firstname1',
     lastname: 'Lastname1',
     password: 'somepass123A',
-    age: 24,
+    dob: '1990-01-01',
     parentEmail: 'parentEmail1@email.com',
   },
   {
@@ -18,7 +18,7 @@ const valid: Omit<INewUser, 'roleId'>[] = [
     firstname: 'Firstname2',
     lastname: 'Lastname2',
     password: 'somepass123A',
-    age: 24,
+    dob: '1990-01-01',
     parentEmail: 'parentEmail2@email.com',
   },
   {
@@ -27,7 +27,7 @@ const valid: Omit<INewUser, 'roleId'>[] = [
     firstname: 'Firstname3',
     lastname: 'Lastname3',
     password: 'somepass123A',
-    age: 12,
+    dob: '2020-06-20',
     parentEmail: 'parentEmail3@email.com',
   },
 ];
@@ -43,7 +43,7 @@ const tooYoung = {
   firstname: 'Firstname1',
   lastname: 'Lastname1',
   password: 'somepass123A',
-  age: 10,
+  dob: '2020-01-01',
 };
 
 const newPass = 'newPassword123';
