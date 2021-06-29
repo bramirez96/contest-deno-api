@@ -57,7 +57,7 @@ export default class SubmissionService extends BaseService {
 
     // Query the S3 bucket/database for submission info
     const subItems = await Promise.all(
-      subs.map((s) => this.retrieveSubItem(s, user.codename))
+      subs.map((s) => this.retrieveSubItem(s, user))
     );
 
     return subItems;
@@ -193,7 +193,7 @@ export default class SubmissionService extends BaseService {
       this.logger.debug('new submission created', submission);
 
       this.logger.debug('retrieving sub item with id', submission.id);
-      const subItem = await this.retrieveSubItem(submission);
+      const subItem = await this.retrieveSubItem(submission, user);
       this.logger.debug('sub item retrieved', subItem);
 
       try {
@@ -283,7 +283,7 @@ export default class SubmissionService extends BaseService {
 
   public async retrieveSubItem(
     sub: ISubmission,
-    codename?: string
+    user?: IUser
   ): Promise<ISubItem> {
     try {
       // Generate img src tag
@@ -295,13 +295,13 @@ export default class SubmissionService extends BaseService {
         { first: true }
       );
 
-      // Get Codename
-      if (!codename) {
-        const user = await this.userModel.get(
+      // Get User
+      if (!user) {
+        const userInfo = await this.userModel.get(
           { id: sub.userId },
           { first: true }
         );
-        codename = user.codename;
+        user = userInfo;
       }
 
       // Remove s3 info from the response and add the image data
@@ -311,9 +311,11 @@ export default class SubmissionService extends BaseService {
         score: sub.score,
         prompt,
         rotation: sub.rotation,
-        codename,
+        codename: user.codename,
         userId: sub.userId,
         rumbleId: sub.rumbleId,
+        dob: user.dob,
+        created_at: sub.created_at,
       };
     } catch (err) {
       this.logger.error(err);
@@ -327,7 +329,6 @@ export default class SubmissionService extends BaseService {
       Confidence: confidence,
       Rotation: rotation,
       SquadScore: score,
-      Transcription: transcription,
     }: IDSAPITextSubmissionResponse,
     promptId: number,
     userId: number,
@@ -337,7 +338,6 @@ export default class SubmissionService extends BaseService {
     return {
       confidence: Math.round(confidence),
       score: Math.round(score),
-      transcription,
       rotation: Math.round(rotation),
       etag,
       s3Label,

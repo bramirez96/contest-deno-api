@@ -1,6 +1,7 @@
 import {
   createError,
   IRouter,
+  isDate,
   isEmail,
   isNumber,
   isString,
@@ -41,15 +42,25 @@ export default (app: IRouter) => {
     validate<INewUser>({
       codename: [required, isString, match(codenameRegex)],
       email: [required, isEmail, match(emailRegex)],
-      parentEmail: [required, isEmail, match(emailRegex)],
+      parentEmail: [isEmail, match(emailRegex)],
       password: [required, isString, match(passwordRegex)],
-      age: [required, isNumber],
+      dob: [required, isDate],
       firstname: [required, isString],
       lastname: [required, isString],
     }),
     async (req: Request, res: Response) => {
       try {
-        const response = await authServiceInstance.SignUp(req.body);
+        const response = await authServiceInstance.register({
+          codename: req.body.codename,
+          firstname: req.body.firstname,
+          password: req.body.password,
+          roleId: req.body.roleId,
+          dob: req.body.dob,
+          email: req.body.email,
+          isValidated: req.body.isValidated,
+          lastname: req.body.lastname,
+          parentEmail: req.body.parentEmail,
+        });
 
         res.setStatus(201).json(response);
       } catch (err) {

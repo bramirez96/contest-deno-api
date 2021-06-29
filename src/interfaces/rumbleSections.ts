@@ -11,4 +11,4 @@ export interface INewRumbleSections {
   end_time?: Date;
 }
 
-export type RumblePhases = 'INACTIVE' | 'ACTIVE' | 'FEEDBACK' | 'COMPLETE';
+export type RumblePhases = 'WAITING' | 'WRITING' | 'FEEDBACK' | 'COMPLETE';

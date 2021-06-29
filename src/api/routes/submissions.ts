@@ -61,7 +61,8 @@ export default (app: IRouter) => {
           user: req.body.user,
           rumbleId: +req.body.rumbleId || undefined,
           sourceId: req.query.sourceId,
-          transcriptionSourceId: req.query.transcriptionSourceId,
+          transcriptionSourceId:
+            req.query.tsrcId || req.query.transcriptionSourceId, // Creating both a shorthand AND verbose version
           transcription: req.body.transcription,
         });
         res.setStatus(201).json(submission);

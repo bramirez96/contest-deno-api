@@ -51,10 +51,8 @@ export default class SubmissionModel extends BaseModel<
     try {
       const subs = ((await this.db
         .table('submissions')
-        .innerJoin('prompts', 'prompts.id', 'submissions.promptId')
-        .innerJoin('rumbles', 'rumbles.promptId', 'prompts.id')
-        .where('rumbles.id', rumbleId)
-        .where('submissions.userId', studentId)
+        .where('rumbleId', rumbleId)
+        .where('userId', studentId)
         .select('submissions.*')
         .execute()) as unknown[]) as ISubmission[];
       return subs[0];

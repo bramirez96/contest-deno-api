@@ -190,7 +190,7 @@ export default class RumbleService extends BaseService {
       this.logger.debug(
         `Attempting to retrieve codename for student with id ${studentId}`
       );
-      const [{ codename }] = await this.userModel.get({ id: studentId });
+      const [user] = await this.userModel.get({ id: studentId });
 
       this.logger.debug(
         `Attempting to retrieve submissions for student with id ${studentId} in section ${sectionId}`
@@ -204,7 +204,7 @@ export default class RumbleService extends BaseService {
         `Attempting to process submission data for student with id ${studentId}`
       );
       const subPromises = basicSubs.map((s) =>
-        this.subService.retrieveSubItem(s, codename)
+        this.subService.retrieveSubItem(s, user)
       );
       const subItems = Promise.all(subPromises);
 
@@ -231,10 +231,7 @@ export default class RumbleService extends BaseService {
           rumbleId
         );
         if (sub) {
-          const subItem = await this.subService.retrieveSubItem(
-            sub,
-            student.codename
-          );
+          const subItem = await this.subService.retrieveSubItem(sub, student);
           student.submissions = [subItem];
         } else student.submissions = [];
       }

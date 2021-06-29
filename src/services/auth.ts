@@ -33,18 +33,20 @@ export default class AuthService extends BaseService {
     super();
   }
 
-  public async SignUp(body: INewUser): Promise<IAuthResponse> {
+  public async register(body: INewUser): Promise<IAuthResponse> {
     try {
+      // Check body data one more time for safety since we explicitly cast later
+      if (!body.dob) throw createError(400, 'No DOB received');
+      const age = moment().diff(moment(body.dob), 'years');
+
       // Initialize variable to store sendTo email for validation
       let sendTo: string;
       let isParent = false;
-      // Check body data one more time for safety since we explicitly cast later
-      if (!body.age) throw createError(400, 'No age received');
       if (!body.email) throw createError(400, 'No email received');
       if (!body.password) throw createError(400, 'No password received');
       if (!body.codename) throw createError(400, 'No codename received');
       // Underage users must have a parent email on file for validation
-      if (body.age < 13) {
+      if (age < 13) {
         if (!body.parentEmail || body.email === body.parentEmail) {
           throw createError(
             400,
@@ -62,15 +64,15 @@ export default class AuthService extends BaseService {
       // Start a transaction for data integrity
       await this.db.transaction(async () => {
         // Further sanitize data
-        Reflect.deleteProperty(body, 'age');
         Reflect.deleteProperty(body, 'parentEmail');
 
         // Create a new user object
         const hashedPassword = await this.hashPassword(body.password);
-        const user = await this.userModel.add(
-          { ...body, password: hashedPassword, roleId: Roles['user'] },
-          true
-        );
+        const [user] = await this.userModel.add({
+          ...body,
+          password: hashedPassword,
+          roleId: Roles['user'],
+        });
 
         // send validation email
         this.SendValidationEmail({
