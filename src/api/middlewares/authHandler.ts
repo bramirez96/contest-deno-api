@@ -8,6 +8,7 @@ import {
   serviceCollection,
 } from '../../../deps.ts';
 import env from '../../config/env.ts';
+import { Roles } from '../../interfaces/roles.ts';
 import UserModel from '../../models/users.ts';
 
 /**
@@ -58,7 +59,7 @@ export default (config?: IAuthHandlerConfig) => async (
         // Get an instance of the UserModel if we need to role check
         const userModelInstance = serviceCollection.get(UserModel);
         const [user] = await userModelInstance.get({ id: parseInt(id, 10) });
-        if (!roles.includes(user.roleId)) {
+        if (user.roleId !== Roles.admin && !roles.includes(user.roleId)) {
           throw createError(401, 'Not authorized (Access Restricted)');
         } else if (validationRequired && !user.isValidated) {
           throw createError(401, 'Account must be validated');
