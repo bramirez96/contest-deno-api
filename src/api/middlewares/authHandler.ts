@@ -22,6 +22,7 @@ export default (config?: IAuthHandlerConfig) => async (
   // Set defaults for these config values
   const roles = config?.roles ?? [1, 2, 3];
   const authRequired = config?.authRequired ?? true;
+  const validationRequired = config?.validationRequired ?? false;
 
   const logger: log.Logger = serviceCollection.get('logger');
   const token = req.get('Authorization');
@@ -58,7 +59,9 @@ export default (config?: IAuthHandlerConfig) => async (
         const userModelInstance = serviceCollection.get(UserModel);
         const [user] = await userModelInstance.get({ id: parseInt(id, 10) });
         if (!roles.includes(user.roleId)) {
-          throw createError(401, 'Must be admin');
+          throw createError(401, 'Not authorized (Access Restricted)');
+        } else if (validationRequired && !user.isValidated) {
+          throw createError(401, 'Account must be validated');
         }
 
         // Add the user info to the req body if all goes well
@@ -80,5 +83,6 @@ export default (config?: IAuthHandlerConfig) => async (
 
 interface IAuthHandlerConfig {
   authRequired?: boolean;
+  validationRequired?: boolean;
   roles?: number[];
 }
